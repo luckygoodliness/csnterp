@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>financialsubject-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="3">
+        <JText pos="A2:A2" fieldLabel_s="subjectName" cid="subjectName" field="subjectName"/>
+        <JText pos="B2:B2" fieldLabel_s="isenabled" cid="isenabled" field="isenabled"/>
+        <!--<JFromTo pos="A3:B3" subXtype="JDatetime" fieldLabel_s="createTime" cid="createTime" field="create_time"/>-->
+        <!--<JFromTo pos="C3:D3" subXtype="JDatetime" fieldLabel_s="updateTime" cid="updateTime" field="update_time"/>-->
+    </conditions>
+    <results>
+        <JTextCol text_s="subjectNo" dataIndex="subjectNo" width_n="100"/>
+        <JTextCol text_s="subjectName" dataIndex="subjectName" width_n="350"/>
+        <JTextCol text_s="descp" dataIndex="descp" width_n="350"/>
+        <JTextCol text_s="createBy" dataIndex="createBy" width_n="100"/>
+        <!--<JTextCol text_s="descp" dataIndex="descp" width_n="120"/>-->
+        <!--<JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120"/>-->
+        <!--<JTextCol text_s="companyName" dataIndex="companyName" width_n="120"/>-->
+        <!--<JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120"/>-->
+        <!--<JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>-->
+        <!--<JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120"/>-->
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="200"/>
+        <!--<JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>-->
+        <!--<JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>-->
+    </results>
+</commonquery>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonreport version="1.0">
+    <report>
+        <reporttype>L</reporttype>
+        <reporttemplate>erp/asset/AssetZTJC.cpt</reporttemplate>
+        <reportcache>false</reportcache>
+    </report>
+    <conditions columns="4">
+        <JHidden cid="officeIdDesc" field="officeIdDesc"/>
+        <JHidden cid="deviceTypeDesc" field="deviceTypeDesc"/>
+        <JErpDepartMent pos="A1:A1" cid="officeId" fieldLabel_s="officeId" field="officeId" labelWidth_n="100"
+                        allowBlank_b="false"/>
+        <JInt pos="B1:B1" cid="year" fieldLabel_s="year" field="year" minValue_n="1949" maxValue_n="2200"
+              allowBlank_b="false"/>
+        <JCombo pos="C1:C1" cid="quarter" fieldLabel_s="quarter" allowBlank_b="false"
+                comboType="scdp_fmcode"
+                codeType="CDM_QUARTER" displayDesc_b="true" field="quarter"/>
+        <JCombo pos="D1:D1" fieldLabel_s="deviceType" cid="deviceType" comboType="scdp_fmcode"
+                codeType="ASSET_CARD_DEVICETYPE" displayDesc_b="true"  field="deviceType"/>
+    </conditions>
+</commonreport>

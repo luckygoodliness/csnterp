@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="T1" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="invoiceReqNo"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--T1
+SELECT
+FAD_INVOICE.INVOICE_REQ_NO,
+SCM_CONTRACT_INVOICE.SCM_CONTRACT_ID
+FROM
+FAD_INVOICE
+LEFT JOIN SCM_CONTRACT_INVOICE
+ON FAD_INVOICE.UUID = SCM_CONTRACT_INVOICE.FAD_INVOICE_ID
+WHERE
+FAD_INVOICE.INVOICE_REQ_NO
+IN
+(
+  SELECT
+  REGEXP_SUBSTR('${invoiceReqNo}','[^|]A+',1,LEVEL) AS STR
+  FROM
+  DUAL
+  CONNECT BY LEVEL <= LENGTH('${invoiceReqNo}') - LENGTH(REPLACE('${invoiceReqNo}', '|', '')) - 1
+)]]></Query>
+</TableData>
+</TableDataMap>
+<ReportWebAttr>
+<ServerPrinter/>
+<WebPageContent>
+<ToolBars/>
+<WebPage isPage="false" isShowAsImage="false" isAutoScale="false" isTDHeavy="false"/>
+</WebPageContent>
+<Background name="ColorBackground" color="-460552"/>
+</ReportWebAttr>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[41184000,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[0,0,28656000,28656000,2743200,2743200,2743200,2743200,2743200,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="INVOICE_REQ_NO"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="0">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="SCM_CONTRACT_ID"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="0">
+<O t="SubReport">
+<SubReportAttr/>
+<packee class="com.fr.main.impl.LinkWorkBookTemplate">
+<Path>
+<![CDATA[erp/prm/MaterialReceipt_收料单_批量打印.cpt]]></Path>
+</packee>
+<KVS>
+<KV key="invoiceReqNo">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=A1]]></Attributes>
+</O>
+</KV>
+<KV key="scmContractId">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=B1]]></Attributes>
+</O>
+</KV>
+</KVS>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="0">
+<O t="SubReport">
+<SubReportAttr/>
+<packee class="com.fr.main.impl.LinkWorkBookTemplate">
+<Path>
+<![CDATA[erp/prm/MaterialReceipt_领料单_批量打印.cpt]]></Path>
+</packee>
+<KVS>
+<KV key="invoiceReqNo">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=A1]]></Attributes>
+</O>
+</KV>
+<KV key="scmContractId">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=B1]]></Attributes>
+</O>
+</KV>
+</KVS>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings pageOrder="1" headerHeight="0" footerHeight="0">
+<PaperSetting>
+<Margin top="720000" left="720000" bottom="720000" right="720000"/>
+</PaperSetting>
+<Background name="NullBackground"/>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+<Parameter>
+<Attributes name="cata"/>
+<O>
+<![CDATA[SUV]]></O>
+</Parameter>
+</ReportParameterAttr>
+<StyleList/>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="2"/>
+</WorkBook>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select uuid,case_name,isactive,remark,
+                case when case_type = '0' then '采购'
+                     when case_type = '1' then '外协'
+                     else null
+                end as case_type
+                from
+            scm_sae_case where ${conditions} and ${voidfilter} and ${selfconditions}]]>
+        </common>
+    </common_query>
+</DAO>

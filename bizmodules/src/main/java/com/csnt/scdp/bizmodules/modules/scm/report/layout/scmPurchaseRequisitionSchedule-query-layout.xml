@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonreport version="1.0">
+    <report>
+        <reporttype>L</reporttype>
+        <reporttemplate>erp/scm/ScmPurchaseRequisitionSchedule.cpt</reporttemplate>
+        <reportcache>false</reportcache>
+    </report>
+    <conditions columns="4">
+        <JHidden pos="A1:A1" cid="officeDesc"/>
+        <JHidden cid="createBy" field="createBy"/>
+        <JHidden cid="projectId" field="projectId"/>
+        <JErpDepartMent pos="A1:A1" fieldLabel_s="office" cid="office" multiSelect="true" labelWidth_n="40"
+                        field="office"/>
+        <JProject pos="B1:B1" fieldLabel_s="项目" cid="prmProjectName" valueField="projectName"
+                  allowBlank_b="true" refer_j='[{"refField":"projectId","valueField":"uuid"}]'/>
+        <JText pos="C1:C1" cid="purchaseReqNo" fieldLabel_s="申请单号" field="purchaseReqNo"/>
+        <JText pos="D1:D1" cid="spentTime" fieldLabel_s="办理时间(天)" field="spentTime"/>
+        <JText pos="A2:A2" fieldLabel_s="scmContractCode" cid="scmContractCode" field="scmContractCode"/>
+        <JCombo pos="B2:B2" fieldLabel_s="状态" allowBlank_b="true" cid="state"
+                comboType="scdp_fmcode"
+                codeType="SCM_REP_PURCHASE_REQ_STATE" displayDesc_b="true" field="state" multiSelect_b="true"/>
+        <JUserGrid pos="C2:C2" fieldLabel_s="负责人" cid="createByName"
+                   refer_j='[{"refField":"createBy","valueField":"userId"}]'/>
+    </conditions>
+</commonreport>

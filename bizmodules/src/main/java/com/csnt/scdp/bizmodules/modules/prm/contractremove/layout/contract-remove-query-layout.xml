@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>contract-c-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>t1.create_time desc</defaultSort>
+    <conditions columns="4" defaultExpand="true" labelWidth="120">
+        <JHidden cid="contractorOfficeDesc"/>
+        <JHidden cid="contractStatus"  value="REMOVE" field="t1.contract_status"/>
+        <JText pos="A1:A1" cid="projectName" fieldLabel_s="projectName" field="t1.project_name"/>
+        <JText pos="B1:B1" cid="contractName" fieldLabel_s="contractName" allowBlank_b="true" field="t1.contract_name"/>
+        <JText pos="C1:C1" cid="contractNo" fieldLabel_s="contractNo" allowBlank_b="true" field="t1.contract_no"/>
+        <JErpDepartMent pos="D1:D1" fieldLabel_s="contractorOffice" cid="contractorOffice"
+                      field="t1.contractor_office" allowBlank_b="true"/>
+        <JFromTo pos="A2:B2" subXtype="JDate" fieldLabel_s="contractSignDate" cid="contractSignDate"
+                 field="t1.contract_sign_date"/>
+        <JFromTo pos="C2:D2" subXtype="JCur" fieldLabel_s="contractSignMoney" cid="contractSignMoney"
+                 field="t1.contract_sign_money"/>
+        <JCombo pos="A3:A3" cid="countryCode" fieldLabel_s="countryCode" allowBlank_b="true"
+                comboType="fm_gis_country" field="t1.country_code"
+                displayDesc_b="true" fullInfo_b="true" cascadeField="buildRegion"/>
+        <JCombo pos="B3:B3" cid="buildRegion" fieldLabel_s="buildRegion" allowBlank_b="true" comboType="fm_gis_state"
+                field="t1.build_region"
+                displayDesc_b="true" fullInfo_b="true" filterFields="countryCode|countryCode"/>
+        <JCombo pos="C3:C3" cid="state" fieldLabel_s="state" allowBlank_b="true"
+                comboType="scdp_fmcode" field="t1.state"
+                codeType="CDM_BILL_STATE" displayDesc_b="true" fullInfo_b="false" multiSelect_b="false"/>
+        <JBolCombo pos="D3:D3" cid="isMajorProject" fieldLabel_s="isMajorProject" allowBlank_b="true"
+                field="t1.is_major_project"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="projectName" dataIndex="projectName" width_n="120"/>
+        <JTextCol text_s="projectManager" dataIndex="projectManagerName" width_n="120"/>
+        <JTextCol text_s="contractorOffice" dataIndex="contractorOfficeName" width_n="120"/>
+        <JTextCol text_s="contractName" dataIndex="contractName" width_n="120"/>
+        <JTextCol text_s="contractNo" dataIndex="contractNo" width_n="120"/>
+        <JTextCol text_s="state" dataIndex="stateDesc" width_n="120"/>
+        <JCurCol text_s="contractSignMoney" dataIndex="contractSignMoney" width_n="150"/>
+        <JDateCol text_s="contractSignDate" dataIndex="contractSignDate" width_n="150"/>
+        <JDateCol text_s="contractStartDate" dataIndex="contractStartDate" width_n="150"/>
+        <JDateCol text_s="contractEndDate" dataIndex="contractEndDate" width_n="150"/>
+        <JTextCol text_s="countryCode" dataIndex="countryName" width_n="120"/>
+        <JTextCol text_s="buildRegion" dataIndex="provinceName" width_n="120"/>
+        <!--<JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>-->
+        <!--<JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>-->
+    </results>
+</commonquery>

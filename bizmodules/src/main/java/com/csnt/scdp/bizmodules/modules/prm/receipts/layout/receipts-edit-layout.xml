@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="130,flex" col="1*1">
+    <JForm pos="A1:A1" cid="prmReceiptsDto" row="22*12" col="0.25*4" title_s="" border_n="1"  autoExpand_b="true">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JHidden cid="examDate"/>
+        <JHidden cid="prmProjectMainId"/>
+        <JHidden cid="prmContractIdDesc"/>
+        <JHidden cid="isPreProject"/>
+        <JNoneFinishedProject pos="A1:A1" cid="projectName" fieldLabel_s="projectId" allowBlank_b="false"
+                              refer_j='[{"refField":"prmProjectMainId","valueField":"uuid"},
+                             {"refField":"departmentCode","valueField":"contractorOffice"},
+                             {"refField":"customerId","valueField":"customerId"},
+                             {"refField":"payer","valueField":"customerId"},
+                             {"refField":"projectCode","valueField":"projectCode"},
+                             {"refField":"isPreProject","valueField":"isPreProject"}]'/>
+        <JText pos="B1:B1" cid="projectCode" fieldLabel_s="projectCode" readOnly_b="true" adaptable_b="false"/>
+
+        <JPContractGrid pos="C1:C1" cid="prmContractId" fieldLabel_s="prmContractId" allowBlank_b="true"
+                        valueField="uuid" descField="contractName"
+                        refer_j='[{"refField":"customerIdDesc","valueField":"customerName"},
+                        {"refField":"customerId","valueField":"customerId"}]'
+                        filterFields="prmProjectMainId|prmProjectMainId_h"/>
+
+        <JHidden cid="customerIdDesc"/>
+        <JCustomerGrid pos="D1:D1" cid="customerId" valueField="uuid" descField="customerName" adaptable_b="false"
+                       displayDesc_b="true" fieldLabel_s="customerId" allowBlank_b="true" readOnly_b="true"/>
+        <JHidden cid="payerDesc"/>
+        <JCustomer pos="A2:A2" cid="payer" valueField_s="uuid" displayField_s="customerName"
+                   displayDesc_b="true" fieldLabel_s="payer" allowBlank_b="false"/>
+        <JCur pos="B2:B2" cid="estimateMoney" fieldLabel_s="estimateMoney" allowBlank_b="false"/>
+        <JCur pos="C2:C2" cid="actualMoney" fieldLabel_s="actualMoney" allowBlank_b="true"/>
+        <JCombo pos="D2:D2" cid="moneyType" fieldLabel_s="moneyType" comboType="scdp_fmcode"
+                codeType="MONEY_TYPE" displayDesc_b="true"/>
+        <JHidden cid="prmUnknownReceiptsIdDesc"/>
+        <JUnknownReceipt pos="A3:A3" cid="prmUnknownReceiptsId" valueField="uuid" displayField_s="receiptNo"
+                         displayDesc_b="true"
+                         fieldLabel_s="prmUnknownReceiptsId" allowBlank_b="true"
+                         refer_j='[{"refField":"actualMoney","valueField":"money"},
+                                  {"refField":"estimateMoney","valueField":"money"},
+                                  {"refField":"estimateDate","valueField":"actualDate"},
+                                  {"refField":"actualDate","valueField":"actualDate"} ,
+                                  {"refField":"moneyType","valueField":"moneyType"}]'/>
+        <!--<JText pos="D2:D2" cid="prmUnknownReceiptsId" fieldLabel_s="prmUnknownReceiptsId" allowBlank_b="true"/>-->
+        <JDatetime pos="B3:B3" cid="estimateDate" fieldLabel_s="estimateDate" allowBlank_b="false"/>
+        <JDatetime pos="C3:C3" cid="actualDate" fieldLabel_s="actualDate" allowBlank_b="true"/>
+        <JCombo pos="D3:D3" cid="state" fieldLabel_s="state" allowBlank_b="true"
+                comboType="scdp_fmcode" readOnly_b="true" adaptable_b="false"
+                codeType="FAD_BILL_STATE" displayDesc_b="true" fullInfo_b="false" multiSelect_b="false"/>
+        <JHidden cid="departmentCodeDesc"/>
+        <JErpDepartMent pos="A4:A4" fieldLabel_s="departmentCode" cid="departmentCode"
+                        readOnly_b="true" adaptable_b="false"/>
+        <JCheck pos="B4:B4" fieldLabel_s="isInternal" cid="isInternal" readOnly_b="true" adaptable_b="false"/>
+        <JHidden cid="internalOfficeDesc"/>
+        <JErpDepartMent pos="C4:C4" fieldLabel_s="internalOffice" cid="internalOffice"
+                        readOnly_b="true" adaptable_b="false"/>
+        <JCur pos="D4:D4" cid="receivableBalance" fieldLabel_s="receivableBalance"  allowBlank_b="true" readOnly_b="true"/>
+        <JDatetime pos="A5:A5" cid="examDate" fieldLabel_s="examDate" allowBlank_b="true"
+                   readOnly_b="true"  adaptable_b="false"/>
+    </JForm>
+    <JTab pos="A2:A2" row="flex" col="1*1" border_n="1">
+        <JPanel pos="A1:A1" row="flex,25" col="1*1" title_s="对冲合同信息" border_n="1" >
+            <JEGrid pos="A1:A1" cid="prmReceiptsScmInvoiceDto" store="Receipts.store.PrmReceiptsScmInvoiceStore">
+                <!--<JHidden dataIndex="scmContractUuid"/>-->
+                <JHidden dataIndex="officeIdDesc"/>
+                <JQueryFieldCol text_s="officeId" dataIndex="officeId" width_n="150">
+                    <JErpDepartMent   readOnly_b="true" adaptable_b="false"/>
+                </JQueryFieldCol>
+                <JTextCol text_s="课题代号" dataIndex="projectCode" width_n="150">
+                    <JText allowBlank_b="true"  readOnly_b="true" />
+                </JTextCol>
+                <JTextCol text_s="projectName" dataIndex="projectName" width_n="150">
+                    <JText allowBlank_b="true"  readOnly_b="true" />
+                </JTextCol>
+                <JHidden dataIndex="scmContractUuidDesc"/>
+                <JQueryFieldCol text_s="contractNo" dataIndex="scmContractUuid" width_n="150" >
+                    <JSelContract  valueField="uuid" displayDesc_b="true" allowBlank_b="true" readOnly_b="true"
+                                   refer_j='[{"refField":"scmContractUuid","valueField":"uuid"},
+                        {"refField":"departmentCode","valueField":"departmentCode"},
+                        {"refField":"departmentCodeDesc","valueField":"departmentName"},
+                        {"refField":"projectCode","valueField":"projectCode"},
+                        {"refField":"projectName","valueField":"projectName"},
+                        {"refField":"needPayMoney","valueField":"scmNeedPayMoney"},
+                        {"refField":"scmContractUuidDesc","valueField":"scmContractCode"},
+                        {"refField":"needPayMoneyLock","valueField":"scmNeedPayMoneyLock"}
+                       ]'  />
+                </JQueryFieldCol>
+                <JCurCol text_s="needPayMoney" dataIndex="needPayMoney" width_n="130">
+                    <JCur allowBlank_b="true" readOnly_b="true"/>
+                </JCurCol>
+                <JCurCol text_s="needPayMoneyLock" dataIndex="needPayMoneyLock" width_n="130">
+                    <JCur allowBlank_b="true" readOnly_b="true"/>
+                </JCurCol>
+                <JCurCol text_s="hedgeMoney" dataIndex="hedgeMoney" width_n="130">
+                    <JCur allowBlank_b="true" readOnly_b="false"/>
+                </JCurCol>
+            </JEGrid>
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex,30" col="0.1*10" title_s="附件信息" border_n="1">
+            <JEGrid pos="A1:J1" cid="cdmFileRelationDto" store="Cdmfile.store.CdmFileRelationStore"
+                    withToolbar_b="false" cdmFileType="PRM_RECEIPTS">
+                <JTextCol text_s="fileType" dataIndex="fileType" width_n="100"/>
+                <JTextCol text_s="fileName" dataIndex="fileName" width_n="120"/>
+                <JTextCol text_s="fileSize" dataIndex="convertedFileSize" width_n="120"/>
+                <JTextCol text_s="remark" dataIndex="remark" width_n="200"/>
+                <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+                <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+            </JEGrid>
+            <JButton pos="A2:A2" cid="fileUpload" text_s="附件上传" iconCls="file_upload_icon" />
+            <JButton pos="B2:B2" cid="fileDownload" text_s="附件下载" iconCls="file_download_icon" />
+            <JButton pos="C2:C2" cid="filePreview" text_s="附件预览" iconCls="file_preview_icon"/>
+            <JButton pos="D2:D2" cid="fileDelete" text_s="附件删除" iconCls="delete_btn"/>
+        </JPanel>
+    </JTab>
+
+</view>

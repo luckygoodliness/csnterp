@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="PrmExamDateHistoryDto" row="23*3" col="0.25*4" title_s="" border_n="1" labelWidth_n="90">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tableName"/>
+        <JHidden cid="columnName"/>
+        <JHidden cid="dataUuid"/>
+        <JDatetime pos="A1:B1" cid="oldDate" fieldLabel_s="oldDate" allowBlank_b="false" readOnly_b="true"/>
+        <JDatetime pos="C1:D1" cid="newDate" fieldLabel_s="newDate" allowBlank_b="false"/>
+        <JTextArea pos="A2:D3" cid="remark" fieldLabel_s="remark" allowBlank_b="true"/>
+    </JForm>
+</view>

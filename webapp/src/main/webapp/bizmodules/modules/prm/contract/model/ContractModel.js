@@ -1,0 +1,5 @@
+Ext.define("Contract.model.ContractModel", {
+        extend: 'Ext.data.Model',
+        fields: ['uuid', 'operateBusinessBidInfoId', 'affiliatedInstitutions', 'countryName', 'provinceName', 'projectName', 'projectManager', 'generalEngineer', 'contractorOffice', 'contractName', 'contractNo', 'state', 'customerId', 'designerId', 'managementId', 'contractSignMoney', 'contractNowMoney', 'contractSignDate', 'contractStartDate', 'contractEndDate', 'contractDuration', 'defectsLiabilityPeriods', 'preoperation', 'countryCode', 'buildRegion', 'projectSourceType', 'taxRegion', 'taxType', 'examDate', 'successBidDate', 'projectScale', 'prmProjectMainId', 'companyCode', 'projectId', 'departmentCode', 'createBy', 'createOffice', 'createTime', 'seqNo', 'updateBy', 'updateOffice', 'updateTime', 'locTimezone', 'tblVersion', {name: 'isVoid', defaultValue: 0}, {name: 'isMajorProject', defaultValue: 0}]
+    }
+);

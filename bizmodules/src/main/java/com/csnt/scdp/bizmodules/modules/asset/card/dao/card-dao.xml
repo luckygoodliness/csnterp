@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select a.uuid,
+                            a.card_code,
+                            a.asset_code,
+                            a.asset_name,
+
+                            a.asset_type_code,
+                            (select code_desc from scdp_code c where c.code_type='FAD_PAYWAY' and c.sys_code=a.asset_type_code) asset_type_code_desc,
+                            a.device_type,
+                            (select code_desc from scdp_code c where c.code_type='ASSET_CARD_DEVICETYPE' and c.sys_code=a.device_type) device_type_desc,
+
+                            a.specification,
+                            a.model,
+                            a.storeplace,
+
+                            a.state,
+                            (select code_desc from scdp_code c where c.code_type='CDM_BILL_STATE' and c.sys_code=a.state) state_desc,
+                            a.status,
+                            (select code_desc from scdp_code c where c.code_type='ASSET_CARD_STATE' and c.sys_code=a.status) status_desc,
+
+                            a.end_user_code,
+                            a.end_user_name,
+                            a.office_id,
+                            (select o.org_name from scdp_org o where o.org_code = a.office_id) office_id_desc,
+                            a.liable_person,
+                            (select u.user_name from scdp_user u where u.user_id = a.liable_person) liable_person_desc,
+
+                            a.purchase_time,
+                            a.discard_time,
+                            a.limit_month,
+                            a.local_value,
+                            a.month_depreciation,
+                            a.net_value,
+                            a.factory_name,
+                            a.release_date,
+                            a.unit,
+                            a.identification_number,
+                            a.building_property,
+                            a.area,
+                            a.chassis_number,
+                            a.vehicle_number,
+                            a.vehicle_type,
+                            a.authorization_code,
+                            a.checked_date,
+                            a.valid_date,
+                            a.annual_check_expired_date,
+                            a.insurance_expired_date,
+                            a.accessory,
+                            a.descp,
+                            a.company_code,
+                            a.company_name,
+                            a.department_code,
+                            a.create_by,
+                            a.create_time,
+                            a.update_by,
+                            a.update_time,
+                            a.is_void,
+                            a.loc_timezone,
+                            a.tbl_version,
+                            a.source,
+                            a.seq_no,
+                            a.operation_unit,
+                            a.operator,
+                            a.operator_tel
+                            from asset_card a where ${conditions} and ${voidfilter} and ${cardNotUse}]]>
+        </common>
+    </common_query>
+    <common_query2>
+        <common>
+            <![CDATA[select a.uuid,
+                            a.card_code,
+                            a.asset_code,
+                            a.asset_name,
+
+                            a.asset_type_code,
+                            (select code_desc from scdp_code c where c.code_type='FAD_PAYWAY' and c.sys_code=a.asset_type_code) asset_type_code_desc,
+                            a.device_type,
+                            (select code_desc from scdp_code c where c.code_type='ASSET_CARD_DEVICETYPE' and c.sys_code=a.device_type) device_type_desc,
+
+                            a.specification,
+                            a.model,
+                            a.storeplace,
+
+                            a.state,
+                            (select code_desc from scdp_code c where c.code_type='CDM_BILL_STATE' and c.sys_code=a.state) state_desc,
+                            a.status,
+                            (select code_desc from scdp_code c where c.code_type='ASSET_CARD_STATE' and c.sys_code=a.status) status_desc,
+
+                            a.end_user_code,
+                            a.end_user_name,
+                            a.office_id,
+                            (select o.org_name from scdp_org o where o.org_code = a.office_id) office_id_desc,
+                            a.liable_person,
+                            (select u.user_name from scdp_user u where u.user_id = a.liable_person) liable_person_desc,
+
+                            a.purchase_time,
+                            a.discard_time,
+                            a.limit_month,
+                            a.local_value,
+                            a.month_depreciation,
+                            a.net_value,
+                            a.factory_name,
+                            a.release_date,
+                            a.unit,
+                            a.identification_number,
+                            a.building_property,
+                            a.area,
+                            a.chassis_number,
+                            a.vehicle_number,
+                            a.vehicle_type,
+                            a.authorization_code,
+                            a.checked_date,
+                            a.valid_date,
+                            a.annual_check_expired_date,
+                            a.insurance_expired_date,
+                            a.accessory,
+                            a.descp,
+                            a.company_code,
+                            a.company_name,
+                            a.department_code,
+                            a.create_by,
+                            a.create_time,
+                            a.update_by,
+                            a.update_time,
+                            a.is_void,
+                            a.loc_timezone,
+                            a.tbl_version,
+                            a.source,
+                            a.seq_no,
+                            a.operation_unit,
+                            a.operator,
+                            a.operator_tel
+                            from asset_card a where a.state='2' and a.status='I' and ${conditions} and ${voidfilter} and ${cardNotUse}]]>
+        </common>
+    </common_query2>
+    <common_query3>
+        <common>
+            <![CDATA[select a.uuid,
+                            a.card_code,
+                            a.asset_code,
+                            a.asset_name,
+
+                            a.asset_type_code,
+                            (select code_desc from scdp_code c where c.code_type='FAD_PAYWAY' and c.sys_code=a.asset_type_code) asset_type_code_desc,
+                            a.device_type,
+                            (select code_desc from scdp_code c where c.code_type='ASSET_CARD_DEVICETYPE' and c.sys_code=a.device_type) device_type_desc,
+
+                            a.specification,
+                            a.model,
+                            a.storeplace,
+
+                            a.state,
+                            (select code_desc from scdp_code c where c.code_type='CDM_BILL_STATE' and c.sys_code=a.state) state_desc,
+                            a.status,
+                            (select code_desc from scdp_code c where c.code_type='ASSET_CARD_STATE' and c.sys_code=a.status) status_desc,
+
+                            a.end_user_code,
+                            a.end_user_name,
+                            a.office_id,
+                            (select o.org_name from scdp_org o where o.org_code = a.office_id) office_id_desc,
+                            a.liable_person,
+                            (select u.user_name from scdp_user u where u.user_id = a.liable_person) liable_person_desc,
+
+                            a.purchase_time,
+                            a.discard_time,
+                            a.limit_month,
+                            a.local_value,
+                            a.month_depreciation,
+                            a.net_value,
+                            a.factory_name,
+                            a.release_date,
+                            a.unit,
+                            a.identification_number,
+                            a.building_property,
+                            a.area,
+                            a.chassis_number,
+                            a.vehicle_number,
+                            a.vehicle_type,
+                            a.authorization_code,
+                            a.checked_date,
+                            a.valid_date,
+                            a.annual_check_expired_date,
+                            a.insurance_expired_date,
+                            a.accessory,
+                            a.descp,
+                            a.company_code,
+                            a.company_name,
+                            a.department_code,
+                            a.create_by,
+                            a.create_time,
+                            a.update_by,
+                            a.update_time,
+                            a.is_void,
+                            a.loc_timezone,
+                            a.tbl_version,
+                            a.source,
+                            a.seq_no,
+                            a.operation_unit,
+                            a.operator,
+                            a.operator_tel
+                            from asset_card a where (a.state='2' and a.status='I') and (a.device_type not like 'DZYH%' or a.device_type is null) and (${conditions} and ${voidfilter} and ${cardNotUse})]]>
+        </common>
+    </common_query3>
+    <common_query_handover>
+        <common>
+            <![CDATA[select a.uuid,
+                            a.purchase_req_detail_uuid,
+                            a.purchase_req_no,
+                            a.handover_no,
+                            a.handover_date,
+                            a.card_code,
+                            a.asset_code,
+                            a.asset_name,
+
+                            a.asset_type_code,
+                            (select code_desc from scdp_code c where c.code_type='FAD_PAYWAY' and c.sys_code=a.asset_type_code) asset_type_code_desc,
+                            a.device_type,
+                            (select code_desc from scdp_code c where c.code_type='ASSET_CARD_DEVICETYPE' and c.sys_code=a.device_type) device_type_desc,
+
+                            a.specification,
+                            a.model,
+                            a.storeplace,
+
+                            a.state,
+                            (select code_desc from scdp_code c where c.code_type='CDM_BILL_STATE' and c.sys_code=a.state) state_desc,
+                            a.status,
+                            (select code_desc from scdp_code c where c.code_type='ASSET_CARD_STATE' and c.sys_code=a.status) status_desc,
+
+                            a.end_user_code,
+                            a.end_user_name,
+                            a.office_id,
+                            (select o.org_name from scdp_org o where o.org_code = a.office_id) office_id_desc,
+                            a.liable_person,
+                            (select u.user_name from scdp_user u where u.user_id = a.liable_person) liable_person_desc,
+
+                            a.purchase_time,
+                            a.discard_time,
+                            a.limit_month,
+                            a.local_value,
+                            a.month_depreciation,
+                            a.net_value,
+                            a.factory_name,
+                            a.release_date,
+                            a.unit,
+                            a.identification_number,
+                            a.building_property,
+                            a.area,
+                            a.chassis_number,
+                            a.vehicle_number,
+                            a.vehicle_type,
+                            a.authorization_code,
+                            a.checked_date,
+                            a.valid_date,
+                            a.annual_check_expired_date,
+                            a.insurance_expired_date,
+                            a.accessory,
+                            a.descp,
+                            a.company_code,
+                            a.company_name,
+                            a.department_code,
+                            a.create_by,
+                            a.create_time,
+                            a.update_by,
+                            a.update_time,
+                            a.is_void,
+                            a.loc_timezone,
+                            a.tbl_version,
+                            a.source,
+                            a.seq_no,
+                            a.operation_unit,
+                            a.operator,
+                            a.operator_tel
+                            from asset_handover a where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query_handover>
+    <common_query_prm_purchase_req_detail_grid_use>
+        <common>
+            <![CDATA[
+                    select * from vw_prm_purchase_req where ${conditions}
+                    ]]>
+        </common>
+    </common_query_prm_purchase_req_detail_grid_use>
+    <common_query_prm_purchase_req_detail>
+        <common>
+            <![CDATA[
+                    select * from vw_prm_purchase_req where ${conditions}
+                    ]]>
+        </common>
+    </common_query_prm_purchase_req_detail>
+    <common_query_transfer>
+        <common>
+            <![CDATA[
+                          select
+                          asset_transfer.*
+                          from
+                          (
+                            select
+                            t.uuid,
+                            t.card_uuid,
+                            a.card_code,
+                            a.asset_code,
+                            a.asset_name,
+
+                            a.asset_type_code,
+                            (select code_desc from scdp_code c where c.code_type='FAD_PAYWAY' and c.sys_code=a.asset_type_code) asset_type_code_desc,
+                            a.device_type,
+                            (select code_desc from scdp_code c where c.code_type='ASSET_CARD_DEVICETYPE' and c.sys_code=a.device_type) device_type_desc,
+
+                            a.specification,
+                            a.model,
+                            a.storeplace,
+
+                            t.state,
+                            (select code_desc from scdp_code c where c.code_type='CDM_BILL_STATE' and c.sys_code=t.state) state_desc,
+                            a.status,
+                            (select code_desc from scdp_code c where c.code_type='ASSET_CARD_STATE' and c.sys_code=a.status) status_desc,
+
+                            t.in_person_code end_user_code,
+                            t.in_person_name end_user_name,
+                            t.in_office_id office_id,
+                            (select o.org_name from scdp_org o where o.org_code = t.in_office_id) office_id_desc,
+                            t.in_liable_person liable_person,
+                            (select u.user_name from scdp_user u where u.user_id = t.in_liable_person) liable_person_desc,
+
+                            a.purchase_time,
+                            a.discard_time,
+                            a.limit_month,
+                            a.local_value,
+                            a.month_depreciation,
+                            a.net_value,
+                            a.factory_name,
+                            a.release_date,
+                            a.unit,
+                            a.identification_number,
+                            a.building_property,
+                            a.area,
+                            a.chassis_number,
+                            a.vehicle_number,
+                            a.vehicle_type,
+                            a.authorization_code,
+                            a.checked_date,
+                            a.valid_date,
+                            a.annual_check_expired_date,
+                            a.insurance_expired_date,
+                            a.accessory,
+                            t.remark,
+                            a.company_code,
+                            a.company_name,
+                            a.department_code,
+                            t.create_by,
+                            t.create_time,
+                            t.update_by,
+                            t.update_time,
+                            a.is_void,
+                            a.loc_timezone,
+                            a.tbl_version,
+                            a.source,
+                            a.seq_no,
+                            a.operation_unit,
+                            a.operator,
+                            a.operator_tel,
+
+                            t.ransfer_type
+                            from asset_transfer t
+                            left join asset_card a
+                            on
+                            t.card_uuid = a.uuid
+                            where
+                            t.ransfer_apply_id = (select max(t1.ransfer_apply_id) from asset_transfer t1 left join asset_card a1 on t1.card_Uuid = a1.uuid where a1.uuid = a.uuid and (t1.is_void = 0 or t1.is_void is null) and (a1.is_void = 0 or a1.is_void is null))
+                            and
+                            (t.is_void = 0 or t.is_void is null)
+                            and
+                            (a.is_void = 0 or a.is_void is null)
+                          ) asset_transfer
+                         where ${conditions}
+                            ]]>
+        </common>
+    </common_query_transfer>
+</DAO>

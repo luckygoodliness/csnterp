@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>scmebusinessuser-dao</daotype>
+        <daokey>gird_common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="A1:A1" fieldLabel_s="ebusinessName" cid="ebusinessName" field="ebusiness_name"/>
+        <JText pos="B1:B1" cid="scmSupplierId" field="scm_supplier_name"/>
+        <JText pos="C1:C1" cid="userCode" field="user_code"/>
+    </conditions>
+    <quickquery>
+        <QueryCids>ebusinessName,scmSupplierId,userCode</QueryCids>
+        <ForceQueryCids></ForceQueryCids>
+    </quickquery>
+    <results resultGridConfig="{'autoResizeColumn':false}">
+        <JTextCol text_s="用户名" dataIndex="userCode" width_n="120"/>
+        <JTextCol text_s="电商名称" dataIndex="ebusinessName" width_n="120"/>
+        <JTextCol text_s="供应商" dataIndex="scmSupplierName" width_n="120"/>
+        <JTextCol dataIndex="officeId" hidden_b="true" width_n="120"/>
+        <JTextCol text_s="部门" dataIndex="officeName" width_n="120"/>
+        <JTextCol dataIndex="password" hidden_b="true" width_n="120"/>
+        <JTextCol text_s="归口人" dataIndex="charge" width_n="120"/>
+        <JTextCol text_s="备注" dataIndex="remark" width_n="120"/>
+    </results>
+</commonquery>

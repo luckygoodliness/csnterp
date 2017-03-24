@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonreport version="1.0">
+    <report>
+        <reporttype>L</reporttype>
+        <reporttemplate>erp/jcb/支付记录查询.cpt</reporttemplate>
+        <reportcache>false</reportcache>
+    </report>
+    <conditions columns="4">
+        <JInt pos="A1:A1" fieldLabel_s="year" cid="year" allowBlank_b="true" field="year" minValue_n="1949"
+              maxValue_n="2200"/>
+        <JHidden cid="officeIdDesc"/>
+        <JErpDepartMent pos="B1:B1" fieldLabel_s="officeId" cid="officeId"
+                        field="officeId" labelWidth_n="100"/>
+        <JText pos="C1:C1" fieldLabel_s="fadSubjectCode" cid="fadSubjectCode" field="fadSubjectCode"/>
+        <JCombo pos="D1:D1" cid="state" fieldLabel_s="state" comboType="scdp_fmcode" codeType="FAD_BILL_STATE"
+                displayDesc_b="true" field="state"/>
+        <JBolCombo pos="A2:A2" cid="isProject" fieldLabel_s="isProject"  field="isProject"/>
+        <JText pos="B2:B2" fieldLabel_s="scmContractCode" cid="scmContractCode" field="scmContractCode"/>
+        <JText pos="C2:D2" fieldLabel_s="scmSupplier" cid="scmSupplier" field="scmSupplier"/>
+    </conditions>
+</commonreport>

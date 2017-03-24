@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JTab pos="A1:A1" row="flex" col="1*1" border_n="1">
+        <JPanel pos="A1:A1" row="300" col="1*1" title_s="基本信息" border_n="1">
+            <JForm pos="A1:A1" cid="scmMaterialClassDto" row="23*6" col="0.25*4" title_s="" border_n="1">
+                <JHidden cid="uuid"/>
+                <JHidden cid="tblVersion"/>
+                <JText pos="A1:A1" cid="code" fieldLabel_s="code" allowBlank_b="false"/>
+                <JText pos="B1:B1" cid="shortCode" fieldLabel_s="shortCode" allowBlank_b="true"/>
+                <JCombo pos="C1:C1" cid="isRigid" fieldLabel_s="isRigid" field="is_rigid" allowBlank_b="false"
+                        comboType="scdp_fmcode"
+                        codeType="SCM_DEFAULTPROPERTY" displayDesc_b="true"/>
+                <JCombo pos="D1:D1" cid="materialType" fieldLabel_s="materialType" field="is_rigid" allowBlank_b="false"
+                        comboType="scdp_fmcode"
+                        codeType="SCM_MATERIAL_TYPE" displayDesc_b="true"/>
+                <JCombo pos="A2:A2" cid="operativeSegments" fieldLabel_s="operativeSegments" allowBlank_b="false"
+                        comboType="scdp_fmcode"
+                        codeType="PRM_OPERATIVE_SEGMENTS" displayDesc_b="true"/>
+                <!--<JMaterialItemGrid pos="A2:A2" fieldLabel_s="itemClass" cid="itemClassName"-->
+                              <!--valueField="name"-->
+                              <!--allowBlank_b="false" refer_j='[{"refField":"itemClass","valueField":"uuid"}]'/>-->
+                <!--<JHidden cid="itemClass" fieldLabel_s="itemClass" allowBlank_b="true"/>-->
+                <JCombo pos="B2:B2" cid="classLevel" fieldLabel_s="classLevel" field="class_level" allowBlank_b="false"
+                        comboType="scdp_fmcode"
+                        codeType="SCM_MATERIAL_CLASS_LEVEL" displayDesc_b="true"/>
+
+                <JInt pos="C2:C2" cid="cycle" fieldLabel_s="cycle" allowBlank_b="true" minValue_n="0"/>
+                <JText pos="A3:D3" cid="name" fieldLabel_s="name" allowBlank_b="false"/>
+                <JTextArea pos="A4:D6" cid="remark" fieldLabel_s="remark" allowBlank_b="true" wrap_b="true"/>
+            </JForm>
+        </JPanel>
+        <JPanel pos="A1:A1" row="300" col="1*1" title_s="关键字" border_n="1">
+            <JEGrid store="Materialclass.store.ScmMaterialKeyStore" cid="scmMaterialKeyDto" pos="A1:A1"
+                    adaptable_b="true" editable_b="true" withSelMode_b="true">
+                <JTextCol text_s="keyName" width_n="200" dataIndex="keyName">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JIntCol text_s="remark" width_n="200" dataIndex="remark">
+                    <JText allowBlank_b="true"/>
+                </JIntCol>
+            </JEGrid>
+        </JPanel>
+    </JTab>
+</view>

@@ -1,0 +1,603 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="main" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="scmContractCode"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="createBy"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="purchaseReqNo"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="office"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="state"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="projectId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT T.*, MOD(ROWNUM, 2) AS FOR_COLOUR
+  FROM (SELECT R.*,
+               DECODE(R.STATE,
+                      0,
+                      '申请新增',
+                      1,
+                      '申请提交',
+                      2,
+                      '申请已审批',
+                      3,
+                      '合同谈判',
+                      4,
+                      '合同编辑',
+                      5,
+                      '合同明细导入',
+                      6,
+                      '合同审批',
+                      7,
+                      '审批通过',
+											8,
+                      '退回',
+                      NULL) AS STATE_NAME
+          FROM (SELECT ORG_NAME,
+                       DECODE(IS_PROJECT, 1, PROJECT_CODE, SUBJECT_CODE) AS FAD_SUBJECT_CODE,
+                       DECODE(IS_PROJECT, 1, PROJECT_NAME, FINANCIAL_SUBJECT) AS FAD_SUBJECT_NAME,
+                       PURCHASE_REQ_NO,
+                       SUBSTR(PURCHASE_REQ_NO, 5) AS ORDER_NO,
+                       TOTAL_MONEY,
+											 FORK_MONEY,
+                       SCM_CONTRACT_CODE,
+                       SUPPLIER_NAME,
+                       NVL2(CONTRACT_STATE, CONTRACT_STATE, STATE) AS STATE,
+                       REQ_MONEY,
+                       MAKE_DATE,
+                       USER_NAME,
+                       CREATE_TIME,
+                       EFFECTIVE_DATE,
+                       USED_DAY,
+                       SUPPLIES_DETAIL
+                  FROM (SELECT PPR.UUID,
+                               PPR.OFFICE_ID,
+                               SO.ORG_NAME,
+                               NVL(PPR.IS_PROJECT, 0) AS IS_PROJECT,
+                               PPR.PRM_PROJECT_MAIN_ID,
+                               PPM.PROJECT_CODE,
+                               PPM.PROJECT_NAME,
+                               PPR.SUBJECT_CODE,
+                               NPSS.FINANCIAL_SUBJECT,
+                               PPR.PURCHASE_REQ_NO,
+                               P.TOTAL_MONEY,
+															 O.FORK_MONEY,
+                               SC.SCM_CONTRACT_CODE,
+                               SC.SUPPLIER_NAME,
+                               PPR.STATE,
+                               --SC.CONTRACT_STATE,
+                               DECODE(O.ISFALLBACK,0,DECODE(SC.CONTRACT_STATE,
+                                      NULL,
+                                      NULL,
+                                      0,
+                                      3,
+                                      1,
+                                      4,
+                                      2,
+                                      5,
+                                      3,
+                                      6,
+                                      7),8) AS CONTRACT_STATE,
+                               FCR.REQ_MONEY,
+                               FCR.MAKE_DATE,
+                               SPR.PRINCIPAL,
+                               SU.USER_NAME,
+                               SPR.CREATE_TIME,
+                               SC.EFFECTIVE_DATE,
+                               NVL(SC.EFFECTIVE_DATE, SYSDATE) -
+                               SPR.CREATE_TIME + 1 / 3 AS USED_DAY,
+                               DECODE(INSTR(SUPPLIES_DETAIL, ';', '10'),
+                                      0,
+                                      SUPPLIES_DETAIL,
+                                      SUBSTR(SUPPLIES_DETAIL,
+                                             1,
+                                             INSTR(SUPPLIES_DETAIL, ';', '10') - 1)) AS SUPPLIES_DETAIL --主要内容
+                          FROM PRM_PURCHASE_REQ PPR
+                          LEFT JOIN (SELECT P.PRM_PURCHASE_REQ_ID,
+                                           SUM(NVL(P.AMOUNT, 0) *
+                                               NVL(P.EXPECTED_PRICE, 0)) AS TOTAL_MONEY
+                                      FROM PRM_PURCHASE_REQ_DETAIL P
+                                     WHERE P.PUUID IS NULL
+                                     GROUP BY P.PRM_PURCHASE_REQ_ID) P ON P.PRM_PURCHASE_REQ_ID =
+                                                                          PPR.UUID
+                          LEFT JOIN SCDP_ORG SO ON SO.ORG_CODE = PPR.OFFICE_ID
+                          LEFT JOIN PRM_PROJECT_MAIN PPM ON PPM.UUID =
+                                                            PPR.PRM_PROJECT_MAIN_ID
+                          LEFT JOIN NON_PROJECT_SUBJECT_SUBJECT NPSS ON NPSS.FINANCIAL_SUBJECT_CODE =
+                                                                        PPR.SUBJECT_CODE
+                          LEFT JOIN (SELECT PPRD.PRM_PURCHASE_REQ_ID,
+                                           PPRD.SCM_PURCHASE_REQ_ID,
+                                           PPRD.SCM_CONTRACT_ID,
+																					 NVL(PPRD.ISFALLBACK, 0) AS ISFALLBACK,
+                                           SUM(NVL(PPRD.AMOUNT, 0) *
+                                               NVL(PPRD.EXPECTED_PRICE, 0)) AS FORK_MONEY,
+                                           LISTAGG((PPRD.NAME), ';') WITHIN
+                                     GROUP(
+                                     ORDER BY PPRD.SEQ_NO) AS SUPPLIES_DETAIL
+                                      FROM PRM_PURCHASE_REQ_DETAIL PPRD
+                                     GROUP BY PPRD.PRM_PURCHASE_REQ_ID,
+                                              PPRD.SCM_PURCHASE_REQ_ID,
+                                              PPRD.SCM_CONTRACT_ID,
+																							NVL(PPRD.ISFALLBACK, 0)) O ON PPR.UUID =
+                                                                         O.PRM_PURCHASE_REQ_ID
+                          LEFT JOIN SCM_CONTRACT SC ON SC.UUID =
+                                                       O.SCM_CONTRACT_ID
+                          LEFT JOIN SCM_PURCHASE_REQ SPR ON SPR.UUID =
+                                                            O.SCM_PURCHASE_REQ_ID
+                          LEFT JOIN SCDP_USER SU ON SU.USER_ID = SPR.PRINCIPAL
+                          LEFT JOIN (SELECT FCR.PURCHASE_CONTRACT_ID,
+                                           FCR.MONEY AS REQ_MONEY,
+                                           DECODE(FCR.STATE,
+                                                  4,
+                                                  FCR.MAKE_DATE,
+                                                  NULL) AS MAKE_DATE
+                                      FROM (SELECT FCR.PURCHASE_CONTRACT_ID,
+                                                   FCR.MONEY,
+                                                   FCR.STATE,
+                                                   (SELECT MAX(MAKE_DATE)
+                                                      FROM FAD_CERTIFICATE FC
+                                                     WHERE FC.BUSINESS_ID =
+                                                           FCR.UUID) AS MAKE_DATE,
+                                                   ROW_NUMBER() OVER(PARTITION BY FCR.PURCHASE_CONTRACT_ID ORDER BY FCR.CREATE_TIME) AS ROW_NUM
+                                              FROM FAD_CASH_REQ FCR
+                                             WHERE FCR.REQ_TYPE = 0
+                                               AND STATE <> 3) FCR
+                                     WHERE FCR.ROW_NUM = 1) FCR ON FCR.PURCHASE_CONTRACT_ID =
+                                                                   O.SCM_CONTRACT_ID
+                        --部门（多选） 所属项目  申请单号  合同编号  负责人
+                         WHERE ('${projectId}' IS NULL OR
+                               PPR.PRM_PROJECT_MAIN_ID = '${projectId}')
+                           AND ('${createBy}' IS NULL OR
+                               SPR.PRINCIPAL = '${createBy}')
+                           AND ('${scmContractCode}' IS NULL OR
+                               SC.SCM_CONTRACT_CODE = '${scmContractCode}')
+                           AND ('${office}' IS NULL OR
+                               PPR.OFFICE_ID = '${office}')
+                           AND ('${purchaseReqNo}' IS NULL OR
+                               PPR.PURCHASE_REQ_NO = '${purchaseReqNo}')) R) R
+        --状态（多选）  办理时间
+         WHERE ('${state}' IS NULL OR
+               R.STATE IN
+               (SELECT REGEXP_SUBSTR('${state}', '[^|]A+', 1, LEVEL) AS STR
+                   FROM DUAL
+                 CONNECT BY LEVEL <= LENGTH('${state}') -
+                            LENGTH(REPLACE('${state}', '|', '')) - 1))
+         ORDER BY ORDER_NO DESC) T
+]]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="分包进度表">
+<ReportPageAttr>
+<HR F="0" T="1"/>
+<FR/>
+<HC F="0" T="3"/>
+<FC/>
+<UPFCR COLUMN="true" ROW="true"/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1219200,952500,1152000,723900,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[4533900,3276600,7962900,4648200,4038600,3581400,6705600,2857500,3456000,4876800,3924300,4752000,4752000,8953500,0,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" cs="14" s="0">
+<O>
+<![CDATA[申请单进度表]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" s="1">
+<O>
+<![CDATA[部门]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" s="1">
+<O>
+<![CDATA[项目代号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="1" s="1">
+<O>
+<![CDATA[项目名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="1" s="1">
+<O>
+<![CDATA[申请单号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="1" s="1">
+<O>
+<![CDATA[申请单金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="1" s="1">
+<O>
+<![CDATA[合同编号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="1" s="1">
+<O>
+<![CDATA[合同供应商]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="1" s="1">
+<O>
+<![CDATA[状态]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="1" s="1">
+<O>
+<![CDATA[请款金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="1" s="1">
+<O>
+<![CDATA[请款支付时间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="1" s="1">
+<O>
+<![CDATA[合同负责人]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="1" s="1">
+<O>
+<![CDATA[申请单生效时间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="1" s="1">
+<O>
+<![CDATA[合同审批时间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="1" s="1">
+<O>
+<![CDATA[合同主要内容]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="14" r="1" s="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="ORG_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="FAD_SUBJECT_CODE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="FAD_SUBJECT_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="PURCHASE_REQ_NO"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="FORK_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="SCM_CONTRACT_CODE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="SUPPLIER_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="STATE_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="REQ_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="2" s="6">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="MAKE_DATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="10" r="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="USER_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="11" r="2" s="7">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="CREATE_TIME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="12" r="2" s="7">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="EFFECTIVE_DATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="13" r="2" s="7">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="SUPPLIES_DETAIL"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="14" r="2">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="FOR_COLOUR"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[backgroundColour]]></Name>
+<Condition class="com.fr.data.condition.ObjectCondition">
+<Compare op="0">
+<O>
+<![CDATA[1]]></O>
+</Compare>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Scope val="1"/>
+<Background name="ColorBackground" color="-4144960"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting>
+<PaperSize width="74880000" height="720000000"/>
+<Margin top="144000" left="144000" bottom="144000" right="144000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="144"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="88"/>
+<Background name="ColorBackground" color="-1"/>
+<Border>
+<Top style="1" color="-16777216"/>
+<Bottom style="1" color="-16777216"/>
+<Left style="1" color="-16777216"/>
+<Right style="1" color="-16777216"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="2" imageLayout="1">
+<FRFont name="SimSun" style="0" size="64"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="64"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="64"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<FRFont name="SimSun" style="0" size="64"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="64"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

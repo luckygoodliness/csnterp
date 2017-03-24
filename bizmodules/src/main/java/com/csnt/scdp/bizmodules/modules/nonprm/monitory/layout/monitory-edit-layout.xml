@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+
+    <JTab pos="A1:A1" row="flex" col="1*1" border_n="1" cid="tab">
+        <JPanel col="0.54*1,0.01,0.45*1" pos="A1:A1" title_s="年终评估" row="80,flex" border_n="1" cid="generalTab">
+            <!--row="60,161,230"-->
+            <JForm pos="A1:C1" cid="nonBudgetMonitorYDto" row="23*4" col="0.1*10" title_s="" border_n="1">
+                <!--字符串显示-->
+                <JText  pos="C3:C3" cid="uuid"/>
+                <JDisplay pos="C1:C1" value=""/>
+                <!--<JText pos="A2:C2" cid="纯收入" fieldLabel_s="纯收入" allowBlank_b="true"/>-->
+                <!--<JDisplay pos="A2:A2" cid="" value="纯收入"/>-->
+                <JDec pos="A2:B2" cid="appliedValue" fieldLabel_s="纯收入" allowBlank_b="true"
+                      allowEdit_b="false" adaptable_b="false"/>
+                <JDec pos="C2:C2" cid="firstInstance" fieldLabel_s="" allowBlank_b="true"
+                      allowEdit_b="false" adaptable_b="false"/>
+                <JDec pos="D2:D2" cid="assignedValue" fieldLabel_s="" allowBlank_b="true"
+                      allowEdit_b="false" adaptable_b="false"/>
+                <JDec pos="E2:E2" cid="occurredValue" fieldLabel_s="" allowBlank_b="true"
+                      allowEdit_b="false" adaptable_b="false"/>
+                <JText pos="A3:B3" cid="year" fieldLabel_s="year" allowBlank_b="true"
+                       allowEdit_b="false" adaptable_b="false"/>
+                <!--<JButton pos="B3:B3" cid="btnFillData" text_s="带出数据"/>-->
+                <!--<JText pos="B3:B3" cid="uuid" fieldLabel_s="uuid" allowBlank_b="true"/>-->
+            </JForm>
+            <JFieldSet  row="flex" col="1*1" pos="A2:A2" title_s="预算收入" border_n="1" cid="">
+                <JEGrid pos="A1:A1" cid="nonBudgetMonitorYDto" store="Monitory.store.NonBudgetMonitorYStore"
+                        title_s="" withToolbar_b="false">
+                    <JTextCol text_s="subject" dataIndex="subject" width_n="110">
+                    </JTextCol>
+                    <JGroupCol text_s="前一年">
+
+                        <JDecCol text_s="lastAppliedValue" dataIndex="lastAppliedValue" width_n="80">
+                            <JDec allowBlank_b="true"/>
+                        </JDecCol>
+                        <JDecCol text_s="occurredValue" dataIndex="occurredValue" width_n="80">
+                            <JDec allowBlank_b="true"/>
+                        </JDecCol>
+                        <JTextCol text_s="completion" dataIndex="completion" width_n="80">
+                            <JDec allowBlank_b="true"/>
+                        </JTextCol>
+                    </JGroupCol>
+
+                    <JGroupCol text_s="当年">
+                        <JDecCol text_s="appliedValue" dataIndex="appliedValue" width_n="80">
+                            <JDec allowBlank_b="true"/>
+                        </JDecCol>
+                        <JDecCol text_s="firstInstance" dataIndex="firstInstance" width_n="80">
+                            <JDec allowBlank_b="true"/>
+                        </JDecCol>
+                        <JDecCol text_s="assignedValue" dataIndex="assignedValue" width_n="80">
+                            <JDec allowBlank_b="true"/>
+                        </JDecCol>
+                    </JGroupCol>
+                </JEGrid>
+            </JFieldSet>
+            <JFieldSet  row="flex" col="1*1" pos="C2:C2" title_s="预算支出" border_n="1" cid="">
+                <JEGrid pos="A1:A1" cid="nonBudgetMonitorYDto" store="Monitory.store.NonBudgetMonitorYStore"
+                        title_s="" withToolbar_b="false">
+                    <JTextCol text_s="subject" dataIndex="subject" width_n="150" />
+                    <JGroupCol text_s="前一年">
+                        <JDecCol text_s="occurredValue" dataIndex="occurredValue" width_n="100">
+                            <JDec allowBlank_b="true"/>
+                        </JDecCol>
+                    </JGroupCol>
+
+                    <JGroupCol text_s="当年">
+                        <JDecCol text_s="appliedValue" dataIndex="appliedValue" width_n="80">
+                            <JDec allowBlank_b="true"/>
+                        </JDecCol>
+                        <JDecCol text_s="firstInstance" dataIndex="firstInstance" width_n="80">
+                            <JDec allowBlank_b="true"/>
+                        </JDecCol>
+                        <JDecCol text_s="assignedValue" dataIndex="assignedValue" width_n="80">
+                            <JDec allowBlank_b="true"/>
+                        </JDecCol>
+                    </JGroupCol>
+                </JEGrid>
+            </JFieldSet>
+        </JPanel>
+    </JTab>
+
+    <!--<JTab pos="A1:A1" row="flex" col="1*1" border_n="1">-->
+        <!--<JPanel pos="A1:A1" row="60,161,230" col="1*1" title_s="年终评估" border_n="1">-->
+            <!--<JForm pos="A1:A1" cid="nonBudgetMonitorYDto" row="23*2" col="0.2*5" title_s="" border_n="1">-->
+                <!--&lt;!&ndash;字符串显示&ndash;&gt;-->
+                <!--<JDisplay  pos="C1:C1" cid="" value="2015年收支预算平衡"  />-->
+                <!--&lt;!&ndash;<JText pos="A2:C2" cid="纯收入" fieldLabel_s="纯收入" allowBlank_b="true"/>&ndash;&gt;-->
+                <!--&lt;!&ndash;<JDisplay pos="A2:A2" cid="" value="纯收入"/>&ndash;&gt;-->
+                <!--<JText pos="A2:A2" cid="appliedValue" fieldLabel_s="纯收入" allowBlank_b="true"/>-->
+                <!--<JText pos="B2:B2" cid="firstInstance" fieldLabel_s="" allowBlank_b="true"/>-->
+                <!--<JText pos="C2:C2" cid="assignedValue" fieldLabel_s="" allowBlank_b="true"/>-->
+                <!--<JText pos="D2:D2" cid="occurredValue" fieldLabel_s="" allowBlank_b="true"/>-->
+            <!--</JForm>-->
+            <!--<JEGrid pos="A2:A2" cid="nonBudgetMonitorYDto" store="Monitory.store.NonBudgetMonitorYStore" title_s="预算收入">-->
+                <!--<JTextCol text_s="计划" dataIndex="计划" width_n="120">-->
+                    <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="实际" dataIndex="实际" width_n="120">-->
+                    <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="完成率" dataIndex="完成率" width_n="120">-->
+                    <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="上报" dataIndex="上报" width_n="120">-->
+                    <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="初审" dataIndex="初审" width_n="120">-->
+                    <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="终审" dataIndex="终审" width_n="120">-->
+                    <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+            <!--</JEGrid>-->
+            <!--<JEGrid pos="A3:A3" cid="nonBudgetMonitorYDto" store="Monitory.store.NonBudgetMonitorYStore" title_s="预算支出">-->
+                <!--<JTextCol text_s="实际" dataIndex="实际" width_n="120">-->
+                    <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="上报" dataIndex="上报" width_n="120">-->
+                    <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="初审" dataIndex="初审" width_n="120">-->
+                    <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="终审" dataIndex="终审" width_n="120">-->
+                    <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+            <!--</JEGrid>-->
+        <!--</JPanel>-->
+    <!--</JTab>-->
+</view>

@@ -1,0 +1,573 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="T1" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="projectCode"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="projectName"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="subjectCode"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--T1
+SELECT
+
+--一般
+PRBASE.UUID,--UUID
+PRBASE.PROJECT_CODE,--项目代号
+PRBASE.PROJECT_NAME,--项目名称
+PRBASE.CUSTOMER_NAME,--业主名称
+SCDP_ORG.ORG_NAME,--部门名称
+PRBASE.USER_NAME,--项目经理
+TO_CHAR(PRBASE.CREATE_TIME, 'yyyy/mm/dd') CREATE_TIME,--创建时间
+PRBASE.CONTRACT_NOW_MONEY,--合同额
+BALANCE.SUBJECT_NAME,--费用名称
+NVL(BALANCE.MONEY, 0) MONEY--费用余额
+FROM
+(
+  SELECT
+         M.UUID,--UUID
+         M.PROJECT_CODE,--项目代号
+         M.PROJECT_NAME,--项目名称
+         NVL(PRM_CONTRACT.CUSTOMER_NAME, (SELECT PRM_CUSTOMER.CUSTOMER_NAME FROM PRM_CUSTOMER WHERE PRM_CUSTOMER.UUID = M.CUSTOMER_ID AND (IS_VOID = 0 OR IS_VOID IS NULL))) CUSTOMER_NAME,--业主名称
+         M.CONTRACTOR_OFFICE,--部门
+         (SELECT SCDP_USER.USER_NAME FROM SCDP_USER WHERE SCDP_USER.USER_ID = M.PROJECT_MANAGER AND (IS_VOID = 0 OR IS_VOID IS NULL)) USER_NAME,--项目经理
+         M.CREATE_TIME,--创建时间
+         NVL(CC.CONTRACT_NOW_MONEY,0) AS CONTRACT_NOW_MONEY--合同额
+    FROM PRM_PROJECT_MAIN   M,
+         PRM_PROJECT_MAIN_C C,
+         (SELECT CDC.PRM_PROJECT_MAIN_ID,SUM(C.CONTRACT_NOW_MONEY) AS CONTRACT_NOW_MONEY
+    FROM PRM_CONTRACT_DETAIL CDC, PRM_CONTRACT C
+   WHERE CDC.PRM_CONTRACT_ID = C.UUID
+   AND (CDC.IS_VOID = 0 OR CDC.IS_VOID IS NULL)
+   AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+   GROUP BY CDC.PRM_PROJECT_MAIN_ID)CC,
+         (SELECT *
+    FROM (SELECT MC.PRM_PROJECT_MAIN_ID,
+                 SUM(C.CONTRACT_SIGN_MONEY) AS CONTRACT_SIGN_MONEY,
+                 ROW_NUMBER() OVER(PARTITION BY MC.PRM_PROJECT_MAIN_ID ORDER BY  MC.CREATE_TIME ASC) AS ROW_NUM
+            FROM PRM_PROJECT_MAIN_C MC,
+                 PRM_CONTRACT_DETAIL_C CDC,
+                 PRM_CONTRACT C
+           WHERE MC.UUID = CDC.PRM_PROJECT_MAIN_C_ID
+             AND CDC.PRM_CONTRACT_ID = C.UUID
+             AND MC.STATE = '2'
+             AND MC.IS_PRE_PROJECT <> 1
+             AND (MC.IS_VOID = 0 OR MC.IS_VOID IS NULL)
+             AND (CDC.IS_VOID = 0 OR CDC.IS_VOID IS NULL)
+             AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+           GROUP BY MC.PRM_PROJECT_MAIN_ID, MC.CREATE_TIME) MMC
+   WHERE MMC.ROW_NUM = 1) PRMC,
+        (SELECT VPP.PROJECT_MAIN_ID,
+                 SUM(NVL(VPP.COST_CONTROL_MONEY, 0) -
+                     NVL(VPL.LOCKED_BUDGET, 0)) REMAIN_BUDGET
+            FROM VW_PRM_PUR_BUDGET_PLAN VPP, VW_PRM_PUR_LOCK VPL
+           WHERE VPP.PROJECT_MAIN_ID = VPL.PRM_PROJECT_MAIN_ID
+             AND VPP.PACKAGE_ID = VPL.PURCHASE_PACKAGE_ID
+             AND VPP.PACKAGE_STATE = '4'
+           GROUP BY VPP.PROJECT_MAIN_ID) PL
+           ,
+    (
+      SELECT
+      WAI_CONTRACT.PRM_PROJECT_MAIN_ID,
+      (
+        SELECT REPLACE(TO_CHAR(WM_CONCAT(PRM_CUSTOMER.CUSTOMER_NAME)),',','、') FROM PRM_CONTRACT
+        LEFT JOIN (SELECT * FROM PRM_CONTRACT_DETAIL WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PRM_CONTRACT_DETAIL ON PRM_CONTRACT.UUID = PRM_CONTRACT_DETAIL.PRM_CONTRACT_ID
+        LEFT JOIN (SELECT * FROM PRM_CUSTOMER WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PRM_CUSTOMER ON NVL(PRM_CONTRACT_DETAIL.CUSTOMER_ID, PRM_CONTRACT.CUSTOMER_ID) = PRM_CUSTOMER.UUID
+        WHERE
+        NVL(PRM_CONTRACT_DETAIL.PRM_PROJECT_MAIN_ID, PRM_CONTRACT.PRM_PROJECT_MAIN_ID) = WAI_CONTRACT.PRM_PROJECT_MAIN_ID
+        AND (PRM_CONTRACT.IS_VOID = 0 OR PRM_CONTRACT.IS_VOID IS NULL)
+      ) CUSTOMER_NAME
+      FROM
+      (
+        SELECT
+        PRM_PROJECT_MAIN_ID
+        FROM
+        (
+          SELECT
+          DISTINCT
+          NVL(PRM_CONTRACT_DETAIL.PRM_PROJECT_MAIN_ID, PRM_CONTRACT.PRM_PROJECT_MAIN_ID) PRM_PROJECT_MAIN_ID,
+          NVL(PRM_CONTRACT_DETAIL.CUSTOMER_ID, PRM_CONTRACT.CUSTOMER_ID) CUSTOMER_ID
+          FROM PRM_CONTRACT,(SELECT * FROM PRM_CONTRACT_DETAIL WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PRM_CONTRACT_DETAIL
+          WHERE
+          PRM_CONTRACT.UUID
+          =
+          PRM_CONTRACT_DETAIL.PRM_CONTRACT_ID(+)
+          AND (PRM_CONTRACT.IS_VOID = 0 OR PRM_CONTRACT.IS_VOID IS NULL)
+        ) PRM_CONTRACT
+        GROUP BY PRM_CONTRACT.PRM_PROJECT_MAIN_ID
+      ) WAI_CONTRACT
+    ) PRM_CONTRACT
+   WHERE M.UUID = C.PRM_PROJECT_MAIN_ID
+     AND M.UUID = CC.PRM_PROJECT_MAIN_ID(+)
+     AND M.UUID = PRMC.PRM_PROJECT_MAIN_ID(+)
+     AND M.UUID = PL.PROJECT_MAIN_ID(+)
+     AND M.UUID = PRM_CONTRACT.PRM_PROJECT_MAIN_ID(+)
+     AND C.DETAIL_TYPE = 'NEW'
+     AND NVL(M.STATE, '2') <> '1'
+     AND ('${officeId}' IS NULL OR M.CONTRACTOR_OFFICE = '${officeId}')
+     AND M.PROJECT_CODE LIKE '%${projectCode}%'
+     AND M.PROJECT_NAME LIKE '%${projectName}%'
+     AND (M.IS_VOID = 0 OR M.IS_VOID IS NULL)
+     AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+) PRBASE
+
+LEFT JOIN
+(
+  SELECT
+  PRM_PROJECT_MAIN_ID,
+  (BUDGET_MONEY - LOCKED_BUDGET) MONEY,
+  SUBJECT_NAME
+  FROM
+  VW_PRM_NON_PUR_INFO
+  WHERE
+  BUDGET_FIRST_TYPE = 'RUN'
+  AND
+  ('${subjectCode}' IS NULL OR SUBJECT_CODE = '${subjectCode}')
+) BALANCE
+ON PRBASE.UUID = BALANCE.PRM_PROJECT_MAIN_ID
+
+LEFT JOIN (SELECT * FROM SCDP_ORG WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) SCDP_ORG
+ON PRBASE.CONTRACTOR_OFFICE = SCDP_ORG.ORG_CODE
+
+ORDER BY
+PRBASE.CREATE_TIME ASC,
+PRBASE.PROJECT_CODE ASC]]></Query>
+</TableData>
+</TableDataMap>
+<ReportWebAttr>
+<ServerPrinter/>
+<WebPageContent>
+<ToolBars>
+<ToolBarManager>
+<Location>
+<Embed position="1"/>
+</Location>
+<ToolBar>
+<Widget class="com.fr.report.web.button.page.First">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-First')}]]></Text>
+<IconName>
+<![CDATA[first]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Previous">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-Previous')}]]></Text>
+<IconName>
+<![CDATA[previous]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.PageNavi">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Next">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-Next')}]]></Text>
+<IconName>
+<![CDATA[next]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Last">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-Last')}]]></Text>
+<IconName>
+<![CDATA[last]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.FlashPrint">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Utils-Print[Client]A')}]]></Text>
+<IconName>
+<![CDATA[flashprint]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.Print">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Print')}]]></Text>
+<IconName>
+<![CDATA[print]]></IconName>
+<PrintButtons/>
+</Widget>
+<Widget class="com.fr.report.web.button.Export">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Export')}]]></Text>
+<IconName>
+<![CDATA[export]]></IconName>
+<Buttons pdf="true" excelP="true" excelO="true" excelS="true" word="true" image="true" html="true"/>
+</Widget>
+<Widget class="com.fr.report.web.button.Email">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Email')}]]></Text>
+<IconName>
+<![CDATA[email]]></IconName>
+</Widget>
+</ToolBar>
+</ToolBarManager>
+</ToolBars>
+<WebPage isPage="true" isShowAsImage="false" isAutoScale="false" isTDHeavy="false"/>
+</WebPageContent>
+</ReportWebAttr>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR F="1" T="1"/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[720000,720000,720000,723900,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[0,1440000,3600000,7200000,7200000,5040000,2880000,3600000,3600000,5760000,3600000,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" cs="11" s="0">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=$officeIdDesc + " 已立项目余额表(单位:元)"]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" s="1">
+<O>
+<![CDATA[项目ID]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" s="1">
+<O>
+<![CDATA[序号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="1" s="1">
+<O>
+<![CDATA[项目代号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="1" s="1">
+<O>
+<![CDATA[项目名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="1" s="1">
+<O>
+<![CDATA[业主名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="1" s="1">
+<O>
+<![CDATA[部门]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="1" s="1">
+<O>
+<![CDATA[项目经理]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="1" s="1">
+<O>
+<![CDATA[创建时间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="1" s="1">
+<O>
+<![CDATA[合同额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="1" s="1">
+<O>
+<![CDATA[费用类别]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="1" s="1">
+<O>
+<![CDATA[费用余额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="UUID"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="2" s="1">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=seq()]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand leftParentDefault="false" left="C3"/>
+</C>
+<C c="2" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="PROJECT_CODE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="网络报表1">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters>
+<Parameter>
+<Attributes name="project_id"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=A3]]></Attributes>
+</O>
+</Parameter>
+</Parameters>
+<TargetFrame>
+<![CDATA[_blank]]></TargetFrame>
+<Features width="600" height="400"/>
+<ReportletName showPI="true" byPost="true">
+<![CDATA[/erp/ygb/YG009.cpt]]></ReportletName>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand dir="0"/>
+</C>
+<C c="3" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="PROJECT_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="CUSTOMER_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="ORG_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="USER_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="CREATE_TIME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="CONTRACT_NOW_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="SUBJECT_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="10" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting orientation="1">
+<PaperSize width="30240000" height="46080000"/>
+<Margin top="986400" left="720000" bottom="986400" right="720000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="96"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72" foreground="-16776961" underline="1"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

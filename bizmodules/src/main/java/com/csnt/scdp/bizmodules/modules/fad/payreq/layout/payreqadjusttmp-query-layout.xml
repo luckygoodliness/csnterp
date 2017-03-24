@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>payreq-dao</daotype>
+        <daokey>common_adjusttmp_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc,reqno desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="A1:A1" fieldLabel_s="reqno" cid="reqnoQ" field="reqno"/>
+        <JText pos="B1:B1" fieldLabel_s="createBy" cid="createByQ" field="create_by_name"/>
+        <JCombo pos="C1:C1" fieldLabel_s="state" cid="stateQ"
+                comboType="scdp_fmcode" codeType="CDM_BILL_STATE" displayDesc_b="true" field="state"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="reqno" dataIndex="reqno" width_n="120"/>
+        <JTextCol text_s="state" dataIndex="billState" width_n="120"/>
+        <JTextCol text_s="createBy" dataIndex="createByName" width_n="120"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+        <JIntCol text_s="toProcess" dataIndex="toProcess" width_n="120"/>
+        <JIntCol text_s="processing" dataIndex="processing" width_n="120"/>
+        <JIntCol text_s="processed" dataIndex="processed" width_n="120"/>
+    </results>
+</commonquery>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="gb2312"?>
+<ufinterface roottag="voucher" billtype="gl" replace="Y" receiver="9137A00" sender="ZHKJ" isexchange="Y" filename="voucher.xml" proc="add" operation="req">
+    <voucher id="24D190B8D8E8C2BBE0530C1F120A16A9">
+        <voucher_head>
+            <company>9137A00</company>
+            <voucher_type>银行凭证</voucher_type>
+            <fiscal_year>2015</fiscal_year>
+            <accounting_period>11</accounting_period>
+            <voucher_id>0</voucher_id>
+            <attachment_number>0</attachment_number>
+            <prepareddate>2015-11-18</prepareddate>
+            <enter>ZHANGJJ1</enter>
+            <cashier></cashier>
+            <signature>N</signature>
+            <checker></checker>
+            <posting_date></posting_date>
+            <posting_person></posting_person>
+            <voucher_making_system>GL</voucher_making_system>
+            <memo1></memo1>
+            <memo2></memo2>
+            <reserve1>3999999999</reserve1>
+            <reserve2>姜庙根</reserve2>
+        </voucher_head>
+        <voucher_body>
+            <entry>
+                <entry_id>1</entry_id>
+                <account_code>122102</account_code>
+                <abstract>ZZZ</abstract>
+                <settlement></settlement>
+                <document_id></document_id>
+                <document_date></document_date>
+                <currency>CNY</currency>
+                <unit_price></unit_price>
+                <exchange_rate1></exchange_rate1>
+                <exchange_rate2></exchange_rate2>
+                <debit_quantity></debit_quantity>
+                <primary_debit_amount>0</primary_debit_amount>
+                <secondary_debit_amount></secondary_debit_amount>
+                <natural_debit_currency>145320</natural_debit_currency>
+                <credit_quantity></credit_quantity>
+                <primary_credit_amount>0</primary_credit_amount>
+                <secondary_credit_amount></secondary_credit_amount>
+                <natural_credit_currency>0</natural_credit_currency>
+                <bill_type></bill_type>
+                <bill_id></bill_id>
+                <bill_date></bill_date>
+                <auxiliary_accounting>
+                    <item name="deptcode">005</item>
+                    <item name="psn_code">0004</item>
+                    <item name="JXX_JASS">JLK001000006</item>
+                </auxiliary_accounting>
+            </entry>
+            <entry>
+                <entry_id>2</entry_id>
+                <account_code>100202</account_code>
+                <abstract>ZZZ</abstract>
+                <settlement></settlement>
+                <document_id></document_id>
+                <document_date></document_date>
+                <currency>CNY</currency>
+                <unit_price></unit_price>
+                <exchange_rate1></exchange_rate1>
+                <exchange_rate2></exchange_rate2>
+                <debit_quantity></debit_quantity>
+                <primary_debit_amount>0</primary_debit_amount>
+                <secondary_debit_amount></secondary_debit_amount>
+                <natural_debit_currency>0</natural_debit_currency>
+                <credit_quantity></credit_quantity>
+                <primary_credit_amount>0</primary_credit_amount>
+                <secondary_credit_amount></secondary_credit_amount>
+                <natural_credit_currency>145320</natural_credit_currency>
+                <bill_type></bill_type>
+                <bill_id></bill_id>
+                <bill_date></bill_date>
+                <auxiliary_accounting>
+                    <item name="acc_code">137239771185</item>
+                </auxiliary_accounting>
+            </entry>
+        </voucher_body>
+    </voucher>
+</ufinterface>

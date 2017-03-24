@@ -1,0 +1,600 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="T1" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="year"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="month"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="build_region"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="affiliated_institutions"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT N.PROJECT_SERIAL_NO,
+       O.SHORT_CODE,
+       N.PROJECT_CODE,
+       N.PROJECT_NAME,
+       --C.CUSTOMER_NAME,
+       NVL(PRM_CONTRACT.CUSTOMER_NAME, (SELECT PRM_CUSTOMER.CUSTOMER_NAME FROM PRM_CUSTOMER WHERE PRM_CUSTOMER.UUID = N.CUSTOMER_ID AND (IS_VOID = 0 OR IS_VOID IS NULL))) CUSTOMER_NAME,--业主单位
+       U.USER_NAME,
+       CASE
+         WHEN N.IS_PRE_PROJECT <> L.IS_PRE_PROJECT THEN
+          NVL(N.PROJECT_MONEY, 0)
+         ELSE
+          NVL(N.PROJECT_MONEY, 0) - NVL(L.PROJECT_MONEY, 0)
+       END AS PROJECT_MONEY,
+        CASE
+         WHEN N.IS_PRE_PROJECT <> L.IS_PRE_PROJECT THEN
+          NVL(N.COST_CONTROL_MONEY, 0)
+         ELSE
+          NVL(N.COST_CONTROL_MONEY, 0) - NVL(L.COST_CONTROL_MONEY, 0)
+       END AS COST_CONTROL_MONEY,
+       CASE
+         WHEN N.IS_PRE_PROJECT <> L.IS_PRE_PROJECT THEN
+          '预立项转立项'|| DECODE(SUBSTR (N.PROJECT_CODE,8,1),'9','-内委',null)
+         WHEN L.PRM_PROJECT_MAIN_ID IS NOT NULL THEN
+          '变更'|| DECODE(SUBSTR (N.PROJECT_CODE,8,1),'9','-内委',null)
+         ELSE
+           DECODE(SUBSTR (N.PROJECT_CODE,8,1),'9','内委',null)
+       END AS REMARK       
+  FROM (SELECT PRM.PROJECT_SERIAL_NO,
+               PRM.CONTRACTOR_OFFICE,
+               PRM.PROJECT_CODE,
+               PRM.PROJECT_NAME,
+               PRM.CUSTOMER_ID,
+               PRM.PROJECT_MANAGER,
+               PRM.PROJECT_MONEY,
+               PRM.COST_CONTROL_MONEY,
+               PRM.IS_PRE_PROJECT,
+               PRM.PRM_PROJECT_MAIN_ID
+          FROM (SELECT C.PROJECT_SERIAL_NO,
+                       C.CONTRACTOR_OFFICE,
+                       C.PROJECT_CODE,
+                       C.PROJECT_NAME,
+                       C.CUSTOMER_ID,
+                       C.PROJECT_MANAGER,
+                       C.PROJECT_MONEY,
+                       C.COST_CONTROL_MONEY,
+                       C.IS_PRE_PROJECT,
+                       C.PRM_PROJECT_MAIN_ID,
+                       ROW_NUMBER() OVER(PARTITION BY C.PRM_PROJECT_MAIN_ID ORDER BY  NVL(P.END_TIME_,TO_DATE('2015-12-31', 'yyyy-mm-dd')) DESC) AS ROW_NUMBER
+                  FROM PRM_PROJECT_MAIN_C C, ACT_HI_PROCINST P
+                 WHERE C.UUID = P.BUSINESS_KEY_
+                   AND C.STATE = 2
+                   AND C.IS_PRE_PROJECT<>1
+                   AND P.END_TIME_ >=
+                       TO_DATE('${year}' || '-' || NVL(REPLACE('${month}','13',''),'1') || '-01',
+                               'yyyy-mm-dd')
+                   AND P.END_TIME_ < ADD_MONTHS(TO_DATE('${year}' || '-' ||
+                                                        NVL(REPLACE('${month}','13',''),'12') || '-01',
+                                                        'yyyy-mm-dd'),
+                                                1)
+                   AND (P.PROC_DEF_ID_ LIKE 'Prm_Main%' OR
+                       P.PROC_DEF_ID_ LIKE 'Prm_Revise%')
+                   AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+                   AND P.END_ACT_ID_ IS NOT NULL) PRM
+         WHERE PRM.ROW_NUMBER = 1) N
+  LEFT JOIN (SELECT PRM.PROJECT_SERIAL_NO,
+                    PRM.CONTRACTOR_OFFICE,
+                    PRM.PROJECT_CODE,
+                    PRM.PROJECT_NAME,
+                    PRM.CUSTOMER_ID,
+                    PRM.PROJECT_MANAGER,
+                    PRM.PROJECT_MONEY,
+                    PRM.COST_CONTROL_MONEY,
+                    PRM.IS_PRE_PROJECT,
+                    PRM.PRM_PROJECT_MAIN_ID
+               FROM (SELECT C.PROJECT_SERIAL_NO,
+                            C.CONTRACTOR_OFFICE,
+                            C.PROJECT_CODE,
+                            C.PROJECT_NAME,
+                            C.CUSTOMER_ID,
+                            C.PROJECT_MANAGER,
+                            C.PROJECT_MONEY,
+                            C.COST_CONTROL_MONEY,
+                            C.IS_PRE_PROJECT,
+                            C.PRM_PROJECT_MAIN_ID,
+                            ROW_NUMBER() OVER(PARTITION BY C.PRM_PROJECT_MAIN_ID ORDER BY  NVL(P.END_TIME_,TO_DATE('2015-12-31', 'yyyy-mm-dd')) DESC) AS ROW_NUMBER
+                       FROM PRM_PROJECT_MAIN_C C,
+                            (SELECT *
+                               FROM ACT_HI_PROCINST
+                              WHERE END_TIME_ <
+                                    TO_DATE('${year}' || '-' || NVL(REPLACE('${month}','13',''),'1') ||
+                                            '-01',
+                                            'yyyy-mm-dd')
+                                AND (PROC_DEF_ID_ LIKE 'Prm_Main%' OR
+                                    PROC_DEF_ID_ LIKE 'Prm_Revise%')
+                                AND END_ACT_ID_ IS NOT NULL) P
+                      WHERE C.UUID = P.BUSINESS_KEY_(+)
+                        AND C.STATE = 2
+                        AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+                        AND ( P.ID_ IS NOT NULL OR C.TBL_VERSION = 'old')) PRM
+              WHERE PRM.ROW_NUMBER = 1) L ON N.PRM_PROJECT_MAIN_ID =
+                                             L.PRM_PROJECT_MAIN_ID
+  LEFT JOIN (SELECT * FROM SCDP_ORG WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) O ON N.CONTRACTOR_OFFICE = O.ORG_CODE
+  LEFT JOIN (SELECT * FROM SCDP_USER WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) U ON N.PROJECT_MANAGER = U.USER_ID
+  LEFT JOIN
+  (
+    SELECT NVL(PRM_CONTRACT_DETAIL.PRM_PROJECT_MAIN_ID, PRM_CONTRACT.PRM_PROJECT_MAIN_ID) PRM_PROJECT_MAIN_ID,REPLACE(TO_CHAR(WM_CONCAT(PRM_CUSTOMER.CUSTOMER_NAME)),',','、') CUSTOMER_NAME
+    FROM
+    PRM_CONTRACT
+    LEFT JOIN
+    (SELECT * FROM PRM_CONTRACT_DETAIL WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PRM_CONTRACT_DETAIL
+    ON PRM_CONTRACT.UUID = PRM_CONTRACT_DETAIL.PRM_CONTRACT_ID
+    LEFT JOIN
+    (SELECT * FROM PRM_CUSTOMER WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PRM_CUSTOMER
+    ON NVL(PRM_CONTRACT_DETAIL.CUSTOMER_ID, PRM_CONTRACT.CUSTOMER_ID) = PRM_CUSTOMER.UUID
+    WHERE (PRM_CONTRACT.IS_VOID = 0 OR PRM_CONTRACT.IS_VOID IS NULL)
+    GROUP BY NVL(PRM_CONTRACT_DETAIL.PRM_PROJECT_MAIN_ID, PRM_CONTRACT.PRM_PROJECT_MAIN_ID)
+  ) PRM_CONTRACT
+  ON N.PRM_PROJECT_MAIN_ID = PRM_CONTRACT.PRM_PROJECT_MAIN_ID
+
+ WHERE (NVL(N.PROJECT_MONEY, 0) <> NVL(L.PROJECT_MONEY, 0) OR
+        NVL(N.IS_PRE_PROJECT,2) <> NVL(L.IS_PRE_PROJECT,2)--避免为空被过滤
+       OR NVL(N.COST_CONTROL_MONEY, 0) <> NVL(L.COST_CONTROL_MONEY, 0))
+        AND ('${officeId}' IS NULL OR O.ORG_CODE = '${officeId}')
+        
+        AND ('${build_region}' IS NULL OR
+				 (EXISTS (SELECT 1
+				             FROM PRM_CONTRACT C
+				             LEFT JOIN PRM_CONTRACT_DETAIL CD
+				               ON C.UUID = CD.PRM_CONTRACT_ID
+				              WHERE CD.PRM_PROJECT_MAIN_ID = N.PRM_PROJECT_MAIN_ID
+				              AND C.BUILD_REGION = '${build_region}')))
+                      
+			 AND ('${affiliated_institutions}' IS NULL OR
+				 (EXISTS
+				  (SELECT 1
+				      FROM PRM_CONTRACT C
+				      LEFT JOIN PRM_CONTRACT_DETAIL CD
+				        ON C.UUID = CD.PRM_CONTRACT_ID
+				       WHERE CD.PRM_PROJECT_MAIN_ID = N.PRM_PROJECT_MAIN_ID
+				       AND C.AFFILIATED_INSTITUTIONS = '${affiliated_institutions}')))
+
+ORDER BY O.SEQ_NO]]></Query>
+</TableData>
+</TableDataMap>
+<ReportWebAttr>
+<ServerPrinter/>
+<WebPageContent>
+<ToolBars>
+<ToolBarManager>
+<Location>
+<Embed position="1"/>
+</Location>
+<ToolBar>
+<Widget class="com.fr.report.web.button.page.First">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-First')}]]></Text>
+<IconName>
+<![CDATA[first]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Previous">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-Previous')}]]></Text>
+<IconName>
+<![CDATA[previous]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.PageNavi">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Next">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-Next')}]]></Text>
+<IconName>
+<![CDATA[next]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Last">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-Last')}]]></Text>
+<IconName>
+<![CDATA[last]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.FlashPrint">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Utils-Print[Client]A')}]]></Text>
+<IconName>
+<![CDATA[flashprint]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.Print">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Print')}]]></Text>
+<IconName>
+<![CDATA[print]]></IconName>
+<PrintButtons/>
+</Widget>
+<Widget class="com.fr.report.web.button.Export">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Export')}]]></Text>
+<IconName>
+<![CDATA[export]]></IconName>
+<Buttons pdf="true" excelP="true" excelO="true" excelS="true" word="true" image="true" html="true"/>
+</Widget>
+<Widget class="com.fr.report.web.button.Email">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Email')}]]></Text>
+<IconName>
+<![CDATA[email]]></IconName>
+</Widget>
+</ToolBar>
+</ToolBarManager>
+</ToolBars>
+<WebPage isPage="true" isShowAsImage="false" isAutoScale="false" isTDHeavy="false"/>
+</WebPageContent>
+</ReportWebAttr>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR F="0" T="2"/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1440000,723900,723900,723900,723900,762000,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[1028700,2552700,1638300,3124200,9144000,5600700,2667000,4343400,4191000,3505200,2362200,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" cs="11" s="0">
+<O>
+<![CDATA[项目立项、变更明细表]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="0"/>
+<CellPageAttr repeat="false" breakOnPaginate="false"/>
+<Expand/>
+</C>
+<C c="0" r="1" cs="11" s="1">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=IF(month = "13", year + "年", year + "年" + month + "月")]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellPageAttr repeat="false" breakOnPaginate="false"/>
+<Expand/>
+</C>
+<C c="0" r="2" s="2">
+<O>
+<![CDATA[序号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="2" s="2">
+<O>
+<![CDATA[立项序号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="2" s="2">
+<O>
+<![CDATA[部门]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="2" s="2">
+<O>
+<![CDATA[项目代号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="2" s="2">
+<O>
+<![CDATA[项目名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="2" s="2">
+<O>
+<![CDATA[业主单位]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="2" s="2">
+<O>
+<![CDATA[项目负责人]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="2" s="2">
+<O>
+<![CDATA[立项运行额(元)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="2" s="2">
+<O>
+<![CDATA[立项成本预算]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="2" s="2">
+<O>
+<![CDATA[立项利润]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="2" s="2">
+<O>
+<![CDATA[备注]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="3" cs="7" s="2">
+<O>
+<![CDATA[合计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="3" s="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(H5)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="3" s="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(I5)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="3" s="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(J5)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="3" s="4">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="4" s="2">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SEQ()]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand leftParentDefault="false" left="B5"/>
+</C>
+<C c="1" r="4" s="2">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="PROJECT_SERIAL_NO"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="4" s="2">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="SHORT_CODE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="4" s="2">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="PROJECT_CODE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="4" s="4">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="PROJECT_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="4" s="4">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="CUSTOMER_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="4" s="4">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="USER_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="4" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="PROJECT_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="4" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="COST_CONTROL_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="4" s="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=H5 - I5]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="4" s="4">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="REMARK"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="5" cs="10">
+<O>
+<![CDATA[说明：1、本表包含当月发生的立项、变更数据（包含内委、研发、预立项转正式立项），预立项不统计。]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="6" cs="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[="打印日期：" + NOW()]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting orientation="1">
+<Margin top="986400" left="720000" bottom="986400" right="720000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="128"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-16777216"/>
+<Bottom style="1" color="-16777216"/>
+<Left style="1" color="-16777216"/>
+<Right style="1" color="-16777216"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-16777216"/>
+<Bottom style="1" color="-16777216"/>
+<Left style="1" color="-16777216"/>
+<Right style="1" color="-16777216"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

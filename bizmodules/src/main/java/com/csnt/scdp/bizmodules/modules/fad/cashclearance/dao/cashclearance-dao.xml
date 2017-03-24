@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select t.*,
+                            (select p.project_name from prm_project_main p where p.uuid = t.prm_project_main_id) as project_Name,
+                            (select s.user_name from scdp_user s where s.user_id = t.clearance_person) as clearance_person_R,
+                            (select o.org_name from scdp_org o where o.org_code=t.office_Id) as office_name_R,
+                            (select code_desc from scdp_code sc where sc.code_type = 'FAD_BILL_STATE' and sc.sys_code=t.state) as state_name
+                       from fad_cash_clearance t where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+</DAO>

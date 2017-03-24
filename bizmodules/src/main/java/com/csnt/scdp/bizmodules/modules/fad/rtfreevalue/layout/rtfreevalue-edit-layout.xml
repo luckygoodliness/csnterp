@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="fadRtfreevalueDto" row="23*1" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <!--<JText pos="A1:A1" cid="accountNo" fieldLabel_s="accountNo" allowBlank_b="false"/>
+        <JText pos="B1:B1" cid="accountType" fieldLabel_s="accountType" allowBlank_b="false"/>-->
+        <JCombo pos="A1:A1" cid="accountNo" fieldLabel_s="accountType" field="accountNo"
+                comboType="fm_fad_rtfreevalue_account_no_out_person_org" displayDesc_b="true" allowBlank_b="false"/>
+        <JText pos="B1:B1" cid="accountInfoCode" fieldLabel_s="accountInfoCode" allowBlank_b="false"/>
+        <JText pos="C1:C1" cid="accountInfoName" fieldLabel_s="accountInfoName" allowBlank_b="false"/>
+    </JForm>
+</view>

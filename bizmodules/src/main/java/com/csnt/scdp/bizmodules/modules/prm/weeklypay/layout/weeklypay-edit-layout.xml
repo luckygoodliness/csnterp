@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="prmWeeklyReceiptDto" row="23*4" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JText pos="A1:A1" cid="prmProjectMainId" fieldLabel_s="prmProjectMainId" allowBlank_b="true"/>
+        <JText pos="B1:B1" cid="prmWeeklyId" fieldLabel_s="prmWeeklyId" allowBlank_b="true"/>
+        <JText pos="C1:C1" cid="prmPayReqId" fieldLabel_s="prmPayReqId" allowBlank_b="true"/>
+        <JText pos="D1:D1" cid="scmContractId" fieldLabel_s="scmContractId" allowBlank_b="true"/>
+        <JDec pos="A2:A2" cid="accountsPayable" fieldLabel_s="accountsPayable" allowBlank_b="true"/>
+        <JDec pos="B2:B2" cid="paidMoney" fieldLabel_s="paidMoney" allowBlank_b="true"/>
+        <JDec pos="C2:C2" cid="reqMoney" fieldLabel_s="reqMoney" allowBlank_b="true"/>
+        <JDec pos="D2:D2" cid="approveMoney" fieldLabel_s="approveMoney" allowBlank_b="true"/>
+        <JText pos="A3:A3" cid="state" fieldLabel_s="state" allowBlank_b="true"/>
+        <JText pos="B3:B3" cid="companyCode" fieldLabel_s="companyCode" allowBlank_b="true"/>
+        <JText pos="C3:C3" cid="projectId" fieldLabel_s="projectId" allowBlank_b="true"/>
+        <JText pos="D3:D3" cid="departmentCode" fieldLabel_s="departmentCode" allowBlank_b="true"/>
+        <JText pos="A4:A4" cid="createOffice" fieldLabel_s="createOffice" allowBlank_b="true"/>
+        <JText pos="B4:B4" cid="updateOffice" fieldLabel_s="updateOffice" allowBlank_b="true"/>
+    </JForm>
+</view>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="scmResponsibleProjectDto" row="23*1" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="principalDesc"/>
+        <JHidden cid="responsibleProjectDesc"/>
+        <JUserGrid pos="A1:A1" fieldLabel_s="principal" cid="principal"
+                   descField_s="userName" valueField_s="userId" allowBlank_b="false"/>
+        <JText pos="B1:B1" cid="projectCode" fieldLabel_s="projectCode" allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+        <JProject pos="C1:D1" fieldLabel_s="responsibleProject" cid="responsibleProject" descField="projectName" valueField="uuid"
+                  allowBlank_b="false"  refer_j='[{"refField":"projectCode","valueField":"projectCode"}]'
+                />
+        <JTextArea pos="A2:D4" cid="remark" fieldLabel_s="remark" allowBlank_b="true" wrap_b="true"/>
+    </JForm>
+</view>

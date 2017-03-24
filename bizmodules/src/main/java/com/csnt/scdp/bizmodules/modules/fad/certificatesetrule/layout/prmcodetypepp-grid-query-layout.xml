@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>certificatesetrule-dao</daotype>
+        <daokey>prm_code_type_pp</daokey>
+    </querysql>
+    <defaultSort>prm_code_type asc</defaultSort>
+    <conditions columns="2">
+        <JText pos="A1:A1" cid="prmCodeType" field="prm_code_type" fieldLabel_s="prmCodeType"/>
+        <JText pos="A2:A2" cid="prmCodeTypeName" field="prm_code_type_name" fieldLabel_s="prmCodeTypeName"/>
+    </conditions>
+    <quickquery>
+        <QueryCids>prm_code_type,prm_code_type_name</QueryCids>
+        <ForceQueryCids></ForceQueryCids>
+    </quickquery>
+    <results>
+        <JTextCol text_s="prmCodeType" dataIndex="prmCodeType" width_n="100"/>
+        <JTextCol text_s="prmCodeTypeName" dataIndex="prmCodeTypeName" width_n="120"/>
+    </results>
+</commonquery>

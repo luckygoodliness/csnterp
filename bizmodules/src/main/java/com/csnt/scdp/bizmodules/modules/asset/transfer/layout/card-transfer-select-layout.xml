@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="assetTransferDto" row="24*6" col="0.25*4" title_s="" border_n="1" labelWidth_n="90">
+        <JHidden cid="cardUuid"/>
+        <JUserGrid pos="A1:B1" cid="outLiablePerson" fieldLabel_s="outLiablePerson" readOnly_b="true"
+                   adaptable_b="false"/>
+        <JUserGrid pos="C1:D1" cid="inLiablePerson" fieldLabel_s="inLiablePerson" allowBlank_b="false"/>
+        <JUserGrid pos="A2:B2" cid="outPersonName" fieldLabel_s="outPersonName" readOnly_b="true" adaptable_b="false"/>
+        <JHidden cid="outOfficeIdDesc"/>
+        <JHidden cid="outPersonCode"/>
+        <JHidden cid="state"/>
+        <JErpDepartMent pos="C2:D2" fieldLabel_s="outOfficeId" cid="outOfficeId"
+                        readOnly_b="true" adaptable_b="false"/>
+        <JUserGrid pos="A3:B3" cid="inPersonName" fieldLabel_s="inPersonName" allowBlank_b="false"
+                   refer_j='[{"refField":"inOfficeId","valueField":"orgCode"},{"refField":"inPersonCode","valueField":"userId"},
+               {"refField":"inOfficeIdName","valueField":"orgName"}]'/>
+        <JHidden cid="inPersonCode"/>
+        <JHidden cid="inOfficeIdDesc"/>
+        <JErpDepartMent pos="C3:D3" fieldLabel_s="inOfficeId" cid="inOfficeId"
+                        readOnly_b="true" adaptable_b="false"/>
+        <JText pos="A4:B4" cid="operatePerson" fieldLabel_s="operatePerson" readOnly_b="true" adaptable_b="false"/>
+        <JDate pos="C4:D4" cid="applyDate" fieldLabel_s="applyDate" readOnly_b="true" adaptable_b="false"/>
+        <JTextArea pos="A5:D6" cid="remark" fieldLabel_s="remark" allowBlank_b="true"/>
+    </JForm>
+</view>

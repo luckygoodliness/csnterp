@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="scmMaterialItemDto" row="23*1,flex" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JText pos="A1:A1" cid="code" fieldLabel_s="code" allowBlank_b="true"/>
+        <JText pos="B1:C1" cid="name" fieldLabel_s="name" allowBlank_b="true"/>
+        <JCheck pos="D1:D1" fieldLabel_s="available" cid="available"/>
+        <JTextArea pos="A2:D2" cid="remark" fieldLabel_s="description" allowBlank_b="true" wrap_b="true"/>
+    </JForm>
+</view>

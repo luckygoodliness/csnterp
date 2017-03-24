@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="fadNcOrgDto" row="23*1" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JText pos="A1:A1" cid="ncOrgCode" fieldLabel_s="ncOrgCode" allowBlank_b="false"/>
+        <JText pos="B1:B1" cid="ncOrgName" fieldLabel_s="ncOrgName" allowBlank_b="false"/>
+    </JForm>
+</view>

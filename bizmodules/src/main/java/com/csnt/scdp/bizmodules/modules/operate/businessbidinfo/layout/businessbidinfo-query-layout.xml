@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>businessbidinfo-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>bbi.operate_time desc</defaultSort>
+    <conditions columns="4">
+        <JHidden cid="projectType" field="bbi.project_type"/>
+        <JCombo pos="A1:B1" cid="field" fieldLabel_s="字段显示" allowBlank_b="true" comboType="scdp_fmcode"
+                codeType="OPERATE_BUSINESS_BID_INFO_FIELD" displayDesc_b="true" multiSelect_b="true"/>
+        <JHidden cid="state" fieldLabel_s="state" field="bbi.state"/>
+        <JHidden cid="provinceName" fieldLabel_s="provinceName" field="fs.state_desc"/>
+        <JHidden cid="projectName" fieldLabel_s="projectName" field="bbi.project_name"/>
+        <JHidden cid="proprietorUnit" fieldLabel_s="proprietorUnit" field="bbi.proprietor_unit"/>
+        <JCombo pos="C1:C1" cid="bidResult_query" fieldLabel_s="bidResult" allowBlank_b="true" comboType="scdp_fmcode"
+                field="bid_result"
+                codeType="OPERATE_BID_RESULT" displayDesc_b="true" multiSelect_b="false"/>
+    </conditions>
+    <quickquery>
+        <ExpandConditions>true</ExpandConditions>
+        <QueryCids>state,provinceName,projectName,comBidNumber,bidingDocPrice,bidBond,eotm</QueryCids>
+        <ForceQueryCids>createBy</ForceQueryCids>
+    </quickquery>
+    <results resultGridConfig="{'autoResizeColumn':false}">
+        <JTextCol text_s="projectName" dataIndex="projectName" width_n="300"/>
+        <JTextCol text_s="部门" dataIndex="orgName" width_n="120" hidden_b="true"/>
+        <JTextCol text_s="state" dataIndex="cdmBillStateCombo" width_n="80"/>
+        <JTextCol text_s="customerId" dataIndex="customerIdDesc" width_n="120" hidden_b="true"/>
+        <JTextCol text_s="comBidUnit" dataIndex="comBidUnit" width_n="120" hidden_b="true"/>
+        <JTextCol text_s="comBidNumber" dataIndex="comBidNumber" width_n="120" hidden_b="true"/>
+        <JDateCol text_s="bidingDocStart" dataIndex="bidingDocStart" width_n="150" hidden_b="true"/>
+        <JDateCol text_s="bidingDocEnd" dataIndex="bidingDocEnd" width_n="150" hidden_b="true"/>
+        <JCurCol text_s="bidingDocPrice" dataIndex="bidingDocPrice" width_n="150" hidden_b="true"/>
+        <JCurCol text_s="bidBond" dataIndex="bidBond" width_n="100"/>
+        <JTextCol text_s="bidResult" dataIndex="operateBidResultCombo" width_n="120"/>
+        <JCurCol text_s="priceFixing" dataIndex="priceFixing" width_n="150"/>
+        <JTextCol text_s="countryCode" dataIndex="countryName" width_n="120"/>
+        <JTextCol text_s="buildRegion" dataIndex="provinceName" width_n="100"/>
+        <JTextCol text_s="eotm" dataIndex="eotm" width_n="120" hidden_b="true"/>
+        <JDateCol text_s="bod" dataIndex="bod" width_n="100"/>
+        <JTextCol text_s="operateBy" dataIndex="operateBy" width_n="120"/>
+        <JDateCol text_s="operateTime" dataIndex="operateTime" width_n="100"/>
+        <JTextCol text_s="createBy" dataIndex="createBy" width_n="120" hidden_b="true"/>
+        <JDateCol text_s="createTime" dataIndex="createTime" width_n="150" hidden_b="true"/>
+        <JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120" hidden_b="true"/>
+        <JDateCol text_s="updateTime" dataIndex="updateTime" width_n="150" hidden_b="true"/>
+    </results>
+</commonquery>

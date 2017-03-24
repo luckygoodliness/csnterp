@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select * from non_project_subject_subject where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+
+    <common_query_single>
+        <common>
+            <![CDATA[SELECT T.*
+                      FROM (SELECT SS.*, O.ORG_NAME, U.USER_NAME AS CREATE_BY_USER
+                              FROM NON_PROJECT_SUBJECT_SUBJECT SS
+                              LEFT JOIN SCDP_ORG O
+                                ON SS.OFFICE_ID = O.ORG_CODE
+                              LEFT JOIN SCDP_USER U
+                                ON SS.CREATE_BY = U.USER_ID) T
+                        where 1=1 and ${conditions}]]>
+        </common>
+    </common_query_single>
+
+</DAO>

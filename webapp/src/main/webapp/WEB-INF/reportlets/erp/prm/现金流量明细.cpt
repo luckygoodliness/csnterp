@@ -1,0 +1,1358 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="VW_PRM_RECEIPTS_ACTUAL_MONEY" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="year"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="month"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStart"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateOver"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--3.以我方项目收款表、我方项目费用、我方非项目费用为主体的报表(当月)
+--项目收款
+--项目收款
+--FineReport_VW_PRM_RECEIPTS_ACTUAL_MONEY
+SELECT
+NVL(SUM(NVL(PRM_RECEIPTS.ACTUAL_MONEY, 0)), 0)
+FROM
+PRM_PROJECT_MAIN
+LEFT JOIN
+(
+  SELECT * FROM PRM_RECEIPTS
+  WHERE
+  PRM_RECEIPTS.STATE IN ('2','4','8')
+  AND
+  PRM_RECEIPTS.DEPARTMENT_CODE = '${officeId}'
+  AND
+  (
+    --年
+    TO_NUMBER(TO_CHAR(PRM_RECEIPTS.ACTUAL_DATE, 'yyyy')) = TO_NUMBER('${year}')
+    AND
+    --月
+    TO_NUMBER(TO_CHAR(PRM_RECEIPTS.ACTUAL_DATE, 'mm')) = NVL(TO_NUMBER('${month}'), TO_NUMBER(TO_CHAR(PRM_RECEIPTS.ACTUAL_DATE, 'mm')))
+  )
+  AND
+  NVL(PRM_RECEIPTS.MONEY_TYPE, ' ') NOT IN ('TAX','HEDGE')
+  AND
+  NVL(PRM_RECEIPTS.IS_INTERNAL, 0) NOT IN (1)
+  AND (IS_VOID = 0 OR IS_VOID IS NULL)
+) PRM_RECEIPTS
+ON PRM_PROJECT_MAIN.UUID = PRM_RECEIPTS.PRM_PROJECT_MAIN_ID
+WHERE
+PRM_RECEIPTS.PRM_PROJECT_MAIN_ID IS NOT NULL
+AND (PRM_PROJECT_MAIN.IS_VOID = 0 OR PRM_PROJECT_MAIN.IS_VOID IS NULL)]]></Query>
+</TableData>
+<TableData name="VW_FAD_CASH_REQ_MONEY_REQ_TYPE_ALL_BUT_PROJECT_ID_WAS_NOT_NULL" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="year"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="month"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStart"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateOver"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--项目费用、保证金借款
+--项目费用
+--FineReport_VW_FAD_CASH_REQ_MONEY_REQ_TYPE_ALL_BUT_PROJECT_ID_WAS_NOT_NULL
+SELECT
+NVL(SUM(VW_BUDGET_DETAIL48.MONEY), 0)
+FROM
+(
+  SELECT
+  VW_BUDGET_DETAIL48.SUBJECT_NAME,
+  PRM_PROJECT_MAIN.CONTRACTOR_OFFICE,
+  SUM(VW_BUDGET_DETAIL48.MONEY) MONEY
+  FROM
+  (
+   SELECT 
+   NVL(NVL(FAD_CASH_REQ_INVOICE.FAD_INVOICE_ID, SCM_CONTRACT_INVOICE.FAD_INVOICE_ID), VW_BUDGET_DETAIL48.UUID) UUID,
+   VW_BUDGET_DETAIL48.CERTIFICATE_CREATE_TIME,
+   VW_BUDGET_DETAIL48.PROJECT_ID,
+   VW_BUDGET_DETAIL48.SUBJECT_NAME,
+   NVL(VW_BUDGET_DETAIL48.MONEY, 0) MONEY
+   FROM
+   VW_BUDGET_DETAIL48
+   LEFT JOIN (SELECT * FROM FAD_CASH_REQ_INVOICE WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) FAD_CASH_REQ_INVOICE
+   ON VW_BUDGET_DETAIL48.UUID = FAD_CASH_REQ_INVOICE.UUID
+   LEFT JOIN (SELECT * FROM SCM_CONTRACT_INVOICE WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) SCM_CONTRACT_INVOICE
+   ON VW_BUDGET_DETAIL48.UUID = SCM_CONTRACT_INVOICE.UUID
+   WHERE
+   NVL(VW_BUDGET_DETAIL48.IS_PROJECT, 0) = 1
+   AND
+   VW_BUDGET_DETAIL48.PROJECT_ID IS NOT NULL
+  ) VW_BUDGET_DETAIL48
+  LEFT JOIN (SELECT * FROM PRM_PROJECT_MAIN WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PRM_PROJECT_MAIN
+  ON VW_BUDGET_DETAIL48.PROJECT_ID = PRM_PROJECT_MAIN.UUID
+  WHERE
+  PRM_PROJECT_MAIN.CONTRACTOR_OFFICE = '${officeId}'
+  AND
+  (
+    --年
+    TO_NUMBER(TO_CHAR(VW_BUDGET_DETAIL48.CERTIFICATE_CREATE_TIME, 'yyyy')) = TO_NUMBER('${year}')
+    AND
+    --月
+    TO_NUMBER(TO_CHAR(VW_BUDGET_DETAIL48.CERTIFICATE_CREATE_TIME, 'mm')) = NVL(TO_NUMBER('${month}'), TO_NUMBER(TO_CHAR(VW_BUDGET_DETAIL48.CERTIFICATE_CREATE_TIME, 'mm')))
+  )
+  GROUP BY
+  VW_BUDGET_DETAIL48.SUBJECT_NAME,
+  PRM_PROJECT_MAIN.CONTRACTOR_OFFICE
+) VW_BUDGET_DETAIL48]]></Query>
+</TableData>
+<TableData name="VW_FAD_CASH_REQ_MONEY_REQ_TYPE_3" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="year"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="month"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStart"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateOver"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--保证金借款
+--FineReport_VW_FAD_CASH_REQ_MONEY_REQ_TYPE_3
+SELECT
+NVL(SUM(NVL(FAD_CASH_REQ.MONEY, 0) - NVL(FAD_CASH_REQ_INVOICE.SUM_CLEARANCE_MONEY, 0)), 0)
+FROM
+FAD_CASH_REQ
+LEFT JOIN (SELECT FAD_CASH_REQ_ID,SUM(NVL(CLEARANCE_MONEY, 0)) SUM_CLEARANCE_MONEY FROM FAD_CASH_REQ_INVOICE WHERE FAD_INVOICE_ID IN (SELECT UUID FROM FAD_CASH_CLEARANCE WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) AND (IS_VOID = 0 OR IS_VOID IS NULL) GROUP BY FAD_CASH_REQ_ID) FAD_CASH_REQ_INVOICE
+ON FAD_CASH_REQ.UUID = FAD_CASH_REQ_INVOICE.FAD_CASH_REQ_ID
+WHERE
+FAD_CASH_REQ.STATE IN ('4')
+AND
+REQ_TYPE = '3'
+AND
+FAD_CASH_REQ.OFFICE_ID = '${officeId}'
+AND
+(
+  --年
+  TO_NUMBER(TO_CHAR(FAD_CASH_REQ.CERTIFICATE_CREATE_TIME, 'yyyy')) = TO_NUMBER('${year}')
+  AND
+  --月
+  TO_NUMBER(TO_CHAR(FAD_CASH_REQ.CERTIFICATE_CREATE_TIME, 'mm')) = NVL(TO_NUMBER('${month}'), TO_NUMBER(TO_CHAR(FAD_CASH_REQ.CERTIFICATE_CREATE_TIME, 'mm')))
+)
+AND (IS_VOID = 0 OR IS_VOID IS NULL)]]></Query>
+</TableData>
+<TableData name="VW_FAD_CASH_REQ_MONEY_REQ_TYPE_ALL_BUT_PROJECT_ID_WAS_NULL" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="year"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="month"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStart"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateOver"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--人工费用、非项目费用、其他分摊费用
+--非项目费用
+--FineReport_VW_FAD_CASH_REQ_MONEY_REQ_TYPE_ALL_BUT_PROJECT_ID_WAS_NULL
+SELECT
+NVL(SUM(VW_BUDGET_DETAIL48.MONEY), 0)
+FROM
+(
+  SELECT
+  VW_BUDGET_DETAIL48.SUBJECT_NAME,
+  NON_PROJECT_BUDGET_H.OFFICE_ID,
+  SUM(VW_BUDGET_DETAIL48.MONEY) MONEY
+  FROM 
+  (
+   SELECT 
+   NVL(NVL(FAD_CASH_REQ_INVOICE.FAD_INVOICE_ID, SCM_CONTRACT_INVOICE.FAD_INVOICE_ID), VW_BUDGET_DETAIL48.UUID) UUID,
+   VW_BUDGET_DETAIL48.CERTIFICATE_CREATE_TIME,
+   VW_BUDGET_DETAIL48.BUDGET_C_UUID,
+   VW_BUDGET_DETAIL48.SUBJECT_NAME,
+   NVL(VW_BUDGET_DETAIL48.MONEY, 0) MONEY
+   FROM
+   VW_BUDGET_DETAIL48
+   LEFT JOIN (SELECT * FROM FAD_CASH_REQ_INVOICE WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) FAD_CASH_REQ_INVOICE
+   ON VW_BUDGET_DETAIL48.UUID = FAD_CASH_REQ_INVOICE.UUID
+   LEFT JOIN (SELECT * FROM SCM_CONTRACT_INVOICE WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) SCM_CONTRACT_INVOICE
+   ON VW_BUDGET_DETAIL48.UUID = SCM_CONTRACT_INVOICE.UUID
+   WHERE
+   NVL(VW_BUDGET_DETAIL48.IS_PROJECT, 0) != 1
+   AND
+   VW_BUDGET_DETAIL48.BUDGET_C_UUID IS NOT NULL
+  ) VW_BUDGET_DETAIL48
+  LEFT JOIN (SELECT * FROM NON_PROJECT_BUDGET_C WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) NON_PROJECT_BUDGET_C
+  ON VW_BUDGET_DETAIL48.BUDGET_C_UUID = NON_PROJECT_BUDGET_C.UUID
+  LEFT JOIN (SELECT * FROM NON_PROJECT_BUDGET_H WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) NON_PROJECT_BUDGET_H
+  ON NON_PROJECT_BUDGET_C.HID = NON_PROJECT_BUDGET_H.UUID
+  WHERE
+  NON_PROJECT_BUDGET_H.OFFICE_ID = '${officeId}'
+  AND
+  (
+    --年
+    TO_NUMBER(TO_CHAR(VW_BUDGET_DETAIL48.CERTIFICATE_CREATE_TIME, 'yyyy')) = TO_NUMBER('${year}')
+    AND
+    --月
+    TO_NUMBER(TO_CHAR(VW_BUDGET_DETAIL48.CERTIFICATE_CREATE_TIME, 'mm')) = NVL(TO_NUMBER('${month}'), TO_NUMBER(TO_CHAR(VW_BUDGET_DETAIL48.CERTIFICATE_CREATE_TIME, 'mm')))
+  )
+  GROUP BY
+  VW_BUDGET_DETAIL48.SUBJECT_NAME,
+  NON_PROJECT_BUDGET_H.OFFICE_ID
+) VW_BUDGET_DETAIL48]]></Query>
+</TableData>
+<TableData name="VW_PRM_RECEIPTS_ACTUAL_MONEY_CUMULATIVE" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="year"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="month"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStart"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateOver"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--3.以我方项目收款表、我方项目费用、我方非项目费用为主体的报表(累计)
+--项目收款
+--项目收款
+--FineReport_VW_PRM_RECEIPTS_ACTUAL_MONEY_CUMULATIVE
+SELECT
+NVL(SUM(NVL(PRM_RECEIPTS.ACTUAL_MONEY, 0)), 0)
+FROM
+PRM_PROJECT_MAIN
+LEFT JOIN
+(
+  SELECT * FROM PRM_RECEIPTS
+  WHERE
+  PRM_RECEIPTS.STATE IN ('2','4','8')
+  AND
+  PRM_RECEIPTS.DEPARTMENT_CODE = '${officeId}'
+  AND
+  (
+    --年
+    TO_NUMBER(TO_CHAR(PRM_RECEIPTS.ACTUAL_DATE, 'yyyy')) = TO_NUMBER('${year}')
+    AND
+    --月
+    TO_NUMBER(TO_CHAR(PRM_RECEIPTS.ACTUAL_DATE, 'mm')) <= NVL(TO_NUMBER('${month}'), TO_NUMBER(TO_CHAR(PRM_RECEIPTS.ACTUAL_DATE, 'mm')))
+  )
+  AND
+  NVL(PRM_RECEIPTS.MONEY_TYPE, ' ') NOT IN ('TAX','HEDGE')
+  AND
+  NVL(PRM_RECEIPTS.IS_INTERNAL, 0) NOT IN (1)
+  AND (IS_VOID = 0 OR IS_VOID IS NULL)
+) PRM_RECEIPTS
+ON PRM_PROJECT_MAIN.UUID = PRM_RECEIPTS.PRM_PROJECT_MAIN_ID
+WHERE
+PRM_RECEIPTS.PRM_PROJECT_MAIN_ID IS NOT NULL
+AND (PRM_PROJECT_MAIN.IS_VOID = 0 OR PRM_PROJECT_MAIN.IS_VOID IS NULL)]]></Query>
+</TableData>
+<TableData name="VW_FAD_CASH_REQ_MONEY_REQ_TYPE_ALL_BUT_PROJECT_ID_WAS_NOT_NULL_CUMULATIVE" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="year"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="month"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStart"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateOver"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--项目费用、保证金借款
+--项目费用
+--FineReport_VW_FAD_CASH_REQ_MONEY_REQ_TYPE_ALL_BUT_PROJECT_ID_WAS_NOT_NULL_CUMULATIVE
+SELECT
+NVL(SUM(VW_BUDGET_DETAIL48.MONEY), 0)
+FROM
+(
+  SELECT
+  VW_BUDGET_DETAIL48.SUBJECT_NAME,
+  PRM_PROJECT_MAIN.CONTRACTOR_OFFICE,
+  SUM(VW_BUDGET_DETAIL48.MONEY) MONEY
+  FROM 
+  (
+   SELECT 
+   NVL(NVL(FAD_CASH_REQ_INVOICE.FAD_INVOICE_ID, SCM_CONTRACT_INVOICE.FAD_INVOICE_ID), VW_BUDGET_DETAIL48.UUID) UUID,
+   VW_BUDGET_DETAIL48.CERTIFICATE_CREATE_TIME,
+   VW_BUDGET_DETAIL48.PROJECT_ID,
+   VW_BUDGET_DETAIL48.SUBJECT_NAME,
+   NVL(VW_BUDGET_DETAIL48.MONEY, 0) MONEY
+   FROM
+   VW_BUDGET_DETAIL48
+   LEFT JOIN (SELECT * FROM FAD_CASH_REQ_INVOICE WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) FAD_CASH_REQ_INVOICE
+   ON VW_BUDGET_DETAIL48.UUID = FAD_CASH_REQ_INVOICE.UUID
+   LEFT JOIN (SELECT * FROM SCM_CONTRACT_INVOICE WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) SCM_CONTRACT_INVOICE
+   ON VW_BUDGET_DETAIL48.UUID = SCM_CONTRACT_INVOICE.UUID
+   WHERE
+   NVL(VW_BUDGET_DETAIL48.IS_PROJECT, 0) = 1
+   AND
+   VW_BUDGET_DETAIL48.PROJECT_ID IS NOT NULL
+  ) VW_BUDGET_DETAIL48
+  LEFT JOIN (SELECT * FROM PRM_PROJECT_MAIN WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PRM_PROJECT_MAIN
+  ON VW_BUDGET_DETAIL48.PROJECT_ID = PRM_PROJECT_MAIN.UUID
+  WHERE
+  PRM_PROJECT_MAIN.CONTRACTOR_OFFICE = '${officeId}'
+  AND
+  (
+    --年
+    TO_NUMBER(TO_CHAR(VW_BUDGET_DETAIL48.CERTIFICATE_CREATE_TIME, 'yyyy')) = TO_NUMBER('${year}')
+    AND
+    --月
+    TO_NUMBER(TO_CHAR(VW_BUDGET_DETAIL48.CERTIFICATE_CREATE_TIME, 'mm')) <= NVL(TO_NUMBER('${month}'), TO_NUMBER(TO_CHAR(VW_BUDGET_DETAIL48.CERTIFICATE_CREATE_TIME, 'mm')))
+  )
+  GROUP BY
+  VW_BUDGET_DETAIL48.SUBJECT_NAME,
+  PRM_PROJECT_MAIN.CONTRACTOR_OFFICE
+) VW_BUDGET_DETAIL48]]></Query>
+</TableData>
+<TableData name="VW_FAD_CASH_REQ_MONEY_REQ_TYPE_3_CUMULATIVE" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="year"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="month"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStart"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateOver"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--保证金借款
+--FineReport_VW_FAD_CASH_REQ_MONEY_REQ_TYPE_3_CUMULATIVE
+SELECT
+NVL(SUM(NVL(FAD_CASH_REQ.MONEY, 0) - NVL(FAD_CASH_REQ_INVOICE.SUM_CLEARANCE_MONEY, 0)), 0)
+FROM
+FAD_CASH_REQ
+LEFT JOIN (SELECT FAD_CASH_REQ_ID,SUM(NVL(CLEARANCE_MONEY, 0)) SUM_CLEARANCE_MONEY FROM FAD_CASH_REQ_INVOICE WHERE FAD_INVOICE_ID IN (SELECT UUID FROM FAD_CASH_CLEARANCE WHERE (IS_VOID = 0 OR IS_VOID IS NULL))  AND (IS_VOID = 0 OR IS_VOID IS NULL) GROUP BY FAD_CASH_REQ_ID) FAD_CASH_REQ_INVOICE
+ON FAD_CASH_REQ.UUID = FAD_CASH_REQ_INVOICE.FAD_CASH_REQ_ID
+WHERE
+FAD_CASH_REQ.STATE IN ('4')
+AND
+REQ_TYPE = '3'
+AND
+FAD_CASH_REQ.OFFICE_ID = '${officeId}'
+AND
+(
+  --年
+  TO_NUMBER(TO_CHAR(FAD_CASH_REQ.CERTIFICATE_CREATE_TIME, 'yyyy')) = TO_NUMBER('${year}')
+  AND
+  --月
+  TO_NUMBER(TO_CHAR(FAD_CASH_REQ.CERTIFICATE_CREATE_TIME, 'mm')) <= NVL(TO_NUMBER('${month}'), TO_NUMBER(TO_CHAR(FAD_CASH_REQ.CERTIFICATE_CREATE_TIME, 'mm')))
+)
+AND (IS_VOID = 0 OR IS_VOID IS NULL)]]></Query>
+</TableData>
+<TableData name="VW_FAD_CASH_REQ_MONEY_REQ_TYPE_ALL_BUT_PROJECT_ID_WAS_NULL_CUMULATIVE" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="year"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="month"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStart"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateOver"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--人工费用、非项目费用、其他分摊费用
+--非项目费用
+--FineReport_VW_FAD_CASH_REQ_MONEY_REQ_TYPE_ALL_BUT_PROJECT_ID_WAS_NULL_CUMULATIVE
+SELECT
+NVL(SUM(VW_BUDGET_DETAIL48.MONEY), 0)
+FROM
+(
+  SELECT
+  VW_BUDGET_DETAIL48.SUBJECT_NAME,
+  NON_PROJECT_BUDGET_H.OFFICE_ID,
+  SUM(VW_BUDGET_DETAIL48.MONEY) MONEY
+  FROM 
+  (
+   SELECT 
+   NVL(NVL(FAD_CASH_REQ_INVOICE.FAD_INVOICE_ID, SCM_CONTRACT_INVOICE.FAD_INVOICE_ID), VW_BUDGET_DETAIL48.UUID) UUID,
+   VW_BUDGET_DETAIL48.CERTIFICATE_CREATE_TIME,
+   VW_BUDGET_DETAIL48.BUDGET_C_UUID,
+   VW_BUDGET_DETAIL48.SUBJECT_NAME,
+   NVL(VW_BUDGET_DETAIL48.MONEY, 0) MONEY
+   FROM
+   VW_BUDGET_DETAIL48
+   LEFT JOIN (SELECT * FROM FAD_CASH_REQ_INVOICE WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) FAD_CASH_REQ_INVOICE
+   ON VW_BUDGET_DETAIL48.UUID = FAD_CASH_REQ_INVOICE.UUID
+   LEFT JOIN (SELECT * FROM SCM_CONTRACT_INVOICE WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) SCM_CONTRACT_INVOICE
+   ON VW_BUDGET_DETAIL48.UUID = SCM_CONTRACT_INVOICE.UUID
+   WHERE
+   NVL(VW_BUDGET_DETAIL48.IS_PROJECT, 0) != 1
+   AND
+   VW_BUDGET_DETAIL48.BUDGET_C_UUID IS NOT NULL
+  ) VW_BUDGET_DETAIL48
+  LEFT JOIN (SELECT * FROM NON_PROJECT_BUDGET_C WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) NON_PROJECT_BUDGET_C
+  ON VW_BUDGET_DETAIL48.BUDGET_C_UUID = NON_PROJECT_BUDGET_C.UUID
+  LEFT JOIN (SELECT * FROM NON_PROJECT_BUDGET_H WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) NON_PROJECT_BUDGET_H
+  ON NON_PROJECT_BUDGET_C.HID = NON_PROJECT_BUDGET_H.UUID
+  WHERE
+  NON_PROJECT_BUDGET_H.OFFICE_ID = '${officeId}'
+  AND
+  (
+    --年
+    TO_NUMBER(TO_CHAR(VW_BUDGET_DETAIL48.CERTIFICATE_CREATE_TIME, 'yyyy')) = TO_NUMBER('${year}')
+    AND
+    --月
+    TO_NUMBER(TO_CHAR(VW_BUDGET_DETAIL48.CERTIFICATE_CREATE_TIME, 'mm')) <= NVL(TO_NUMBER('${month}'), TO_NUMBER(TO_CHAR(VW_BUDGET_DETAIL48.CERTIFICATE_CREATE_TIME, 'mm')))
+  )
+  GROUP BY
+  VW_BUDGET_DETAIL48.SUBJECT_NAME,
+  NON_PROJECT_BUDGET_H.OFFICE_ID
+) VW_BUDGET_DETAIL48]]></Query>
+</TableData>
+<TableData name="MONITOR_LABOR_COST" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="year"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="month"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--人工费用
+--FineReport_MONITOR_LABOR_COST
+SELECT
+NVL(SUM(NVL(MONEY, 0)), 0)
+FROM
+MONITOR_LABOR_COST
+WHERE
+OFFICE_ID = '${officeId}'
+AND
+(
+  --年
+  YEAR = TO_NUMBER('${year}')
+  AND
+  --月
+  MONTH = NVL(TO_NUMBER('${month}'), MONTH)
+)
+AND (IS_VOID = 0 OR IS_VOID IS NULL)]]></Query>
+</TableData>
+<TableData name="MONITOR_OTHER_SHARE" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="year"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="month"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--分摊费用
+--FineReport_MONITOR_OTHER_SHARE
+SELECT
+NVL(SUM(NVL(MONEY, 0)), 0)
+FROM
+MONITOR_OTHER_SHARE
+WHERE
+OFFICE_ID = '${officeId}'
+AND
+(
+  --年
+  YEAR = TO_NUMBER('${year}')
+  AND
+  --月
+  MONTH = NVL(TO_NUMBER('${month}'), MONTH)
+)
+AND (IS_VOID = 0 OR IS_VOID IS NULL)]]></Query>
+</TableData>
+<TableData name="MONITOR_LABOR_COST_CUMULATIVE" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="year"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="month"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--人工费用
+--FineReport_MONITOR_LABOR_COST_CUMULATIVE
+SELECT
+NVL(SUM(NVL(MONEY, 0)), 0)
+FROM
+MONITOR_LABOR_COST
+WHERE
+OFFICE_ID = '${officeId}'
+AND
+(
+  --年
+  YEAR = TO_NUMBER('${year}')
+  AND
+  --月
+  MONTH <= NVL(TO_NUMBER('${month}'), MONTH)
+)
+AND (IS_VOID = 0 OR IS_VOID IS NULL)]]></Query>
+</TableData>
+<TableData name="MONITOR_OTHER_SHARE_CUMULATIVE" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="year"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="month"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--分摊费用
+--FineReport_MONITOR_OTHER_SHARE_CUMULATIVE
+SELECT
+NVL(SUM(NVL(MONEY, 0)), 0)
+FROM
+MONITOR_OTHER_SHARE
+WHERE
+OFFICE_ID = '${officeId}'
+AND
+(
+  --年
+  YEAR = TO_NUMBER('${year}')
+  AND
+  --月
+  MONTH <= NVL(TO_NUMBER('${month}'), MONTH)
+)
+AND (IS_VOID = 0 OR IS_VOID IS NULL)]]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1143000,723900,723900,864000,864000,864000,864000,864000,864000,864000,864000,864000,864000,864000,864000,864000,864000,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[1440000,14400000,5760000,5760000,2743200,2743200,2743200,2743200,2743200,2743200,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" cs="4" s="0">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=$officeIdDesc + " 现金流量明细"]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" cs="4" s="1">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=$year + "-" + $month]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="2" s="1">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="2">
+<O>
+<![CDATA[单位:元]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="2">
+<O>
+<![CDATA[单位:元]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="3" s="2">
+<O>
+<![CDATA[序号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="3" s="2">
+<O>
+<![CDATA[现金流项目]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="3" s="2">
+<O>
+<![CDATA[当月]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="3" s="2">
+<O>
+<![CDATA[累计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="4" s="2">
+<O>
+<![CDATA[一]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="4" s="3">
+<O>
+<![CDATA[项目收款]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="4" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(C6)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="4" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(D6)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="5" s="5">
+<O t="I">
+<![CDATA[1]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="5" s="5">
+<O>
+<![CDATA[项目收款]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="5" s="6">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_RECEIPTS_ACTUAL_MONEY" columnName="NVL(SUM(NVL(PRM_RECEIPTS.ACTUAL_MONEY,0)),0)"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="5" s="6">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_RECEIPTS_ACTUAL_MONEY_CUMULATIVE" columnName="NVL(SUM(NVL(PRM_RECEIPTS.ACTUAL_MONEY,0)),0)"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="6" s="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="6" s="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="6" s="8">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="6" s="8">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="7" s="2">
+<O>
+<![CDATA[二]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="7" s="3">
+<O>
+<![CDATA[项目费用支出、保证金借款支出]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="7" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(C9:C10)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="7" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(D9:D10)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="8" s="5">
+<O t="I">
+<![CDATA[1]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="8" s="5">
+<O>
+<![CDATA[项目费用支出]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="8" s="6">
+<O t="DSColumn">
+<Attributes dsName="VW_FAD_CASH_REQ_MONEY_REQ_TYPE_ALL_BUT_PROJECT_ID_WAS_NOT_NULL" columnName="NVL(SUM(VW_BUDGET_DETAIL48.MONEY),0)"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="8" s="6">
+<O t="DSColumn">
+<Attributes dsName="VW_FAD_CASH_REQ_MONEY_REQ_TYPE_ALL_BUT_PROJECT_ID_WAS_NOT_NULL_CUMULATIVE" columnName="NVL(SUM(VW_BUDGET_DETAIL48.MONEY),0)"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="9" s="5">
+<O t="I">
+<![CDATA[2]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="9" s="5">
+<O>
+<![CDATA[保证金借款支出]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="9" s="6">
+<O t="DSColumn">
+<Attributes dsName="VW_FAD_CASH_REQ_MONEY_REQ_TYPE_3" columnName="NVL(SUM(NVL(FAD_CASH_REQ.MONEY,0)-NVL(FAD_CASH_REQ_INVOICE.SUM_CLEARANCE_MONEY,0)),0)"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="9" s="6">
+<O t="DSColumn">
+<Attributes dsName="VW_FAD_CASH_REQ_MONEY_REQ_TYPE_3_CUMULATIVE" columnName="NVL(SUM(NVL(FAD_CASH_REQ.MONEY,0)-NVL(FAD_CASH_REQ_INVOICE.SUM_CLEARANCE_MONEY,0)),0)"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="10" s="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="10" s="2">
+<O>
+<![CDATA[项目现金流盈亏]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="10" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=C5 - C8]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="10" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D5 - D8]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="11" s="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="11" s="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="11" s="8">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="11" s="8">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="12" s="2">
+<O>
+<![CDATA[三]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="12" s="3">
+<O>
+<![CDATA[人工费用支出、非项目费用支出、其他分摊费用支出]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="12" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(C14:C16)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="12" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(D14:D16)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="13" s="5">
+<O t="I">
+<![CDATA[1]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="13" s="5">
+<O>
+<![CDATA[人工费用支出]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="13" s="6">
+<O t="DSColumn">
+<Attributes dsName="MONITOR_LABOR_COST" columnName="NVL(SUM(NVL(MONEY,0)),0)"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="13" s="6">
+<O t="DSColumn">
+<Attributes dsName="MONITOR_LABOR_COST_CUMULATIVE" columnName="NVL(SUM(NVL(MONEY,0)),0)"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="14" s="5">
+<O t="I">
+<![CDATA[2]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="14" s="5">
+<O>
+<![CDATA[非项目费用支出]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="14" s="6">
+<O t="DSColumn">
+<Attributes dsName="VW_FAD_CASH_REQ_MONEY_REQ_TYPE_ALL_BUT_PROJECT_ID_WAS_NULL" columnName="NVL(SUM(VW_BUDGET_DETAIL48.MONEY),0)"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="14" s="6">
+<O t="DSColumn">
+<Attributes dsName="VW_FAD_CASH_REQ_MONEY_REQ_TYPE_ALL_BUT_PROJECT_ID_WAS_NULL_CUMULATIVE" columnName="NVL(SUM(VW_BUDGET_DETAIL48.MONEY),0)"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="15" s="5">
+<O t="I">
+<![CDATA[3]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="15" s="5">
+<O>
+<![CDATA[其他分摊费用支出]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="15" s="6">
+<O t="DSColumn">
+<Attributes dsName="MONITOR_OTHER_SHARE" columnName="NVL(SUM(NVL(MONEY,0)),0)"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="15" s="6">
+<O t="DSColumn">
+<Attributes dsName="MONITOR_OTHER_SHARE_CUMULATIVE" columnName="NVL(SUM(NVL(MONEY,0)),0)"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="16" s="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="16" s="2">
+<O>
+<![CDATA[部门现金流盈亏]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="16" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=C11 - C13]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="16" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D11 - D13]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting>
+<Margin top="986400" left="1440000" bottom="986400" right="1440000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="96"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="宋体" style="1" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="宋体" style="1" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="宋体" style="1" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="宋体" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="宋体" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="宋体" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<FRFont name="宋体" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select * from non_project_income_mon where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+</DAO>

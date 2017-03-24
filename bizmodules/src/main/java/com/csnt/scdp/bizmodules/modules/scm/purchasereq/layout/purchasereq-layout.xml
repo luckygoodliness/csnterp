@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <!--<JTab col="1*1" pos="A1:A1" title_s="" row="flex" border_n="0" cid="tabpanel">-->
+    <!--<JPanel col="1*1" pos="A1:A1" title_s="" row="flex" border_n="0">-->
+    <JPanel col="1*1" pos="A1:A1" title_s="" row="32,flex" border_n="0">
+        <JFieldSet pos="A1:A1" col="1*1" row="flex" border_n="1" title_s="">
+            <JForm col="0.2*2,0.15*2,0.1,0.06,0.06,0.08" pos="A1:A1" title_s="" row="23" border_n="0"
+                   cid="queryForm"
+                   labelWidth_n="60">
+                <JHidden pos="A1:A1" cid="prmProjectMainIdDesc"/>
+                <JHidden pos="A1:A1" cid="officeIdDesc"/>
+                <JNoneFinishedProject pos="A1:A1" cid="prmProjectMainId" fieldLabel_s="projectName"
+                                      allowBlank_b="true"
+                                      displayDesc_b="true" valueField="uuid" descField="projectName"/>
+                <JText pos="B1:B1" cid="purchaseReqNo" fieldLabel_s="purchaseReqNo" allowBlank_b="true"/>
+                <JErpDepartMent pos="C1:C1" fieldLabel_s="officeId" cid="officeId" multiSelect="true"
+                                labelWidth_n="40"/>
+                <JCombo pos="D1:D1" cid="state" fieldLabel_s="state" allowBlank_b="true" comboType="scdp_fmcode"
+                        codeType="SCM_PURCHASE_REQ_STATE" displayDesc_b="true"/>
+                <JButton text_s="searchBtn" cid="searchBtn" pos="F1:F1" iconCls="query_btn"></JButton>
+                <JButton text_s="resetBtn" cid="resetBtn" pos="G1:G1" iconCls="reset_btn"></JButton>
+                <JCheck cid="showAll" pos="H1:H1" fieldLabel_s="showAll" labelWidth_n="70"></JCheck>
+                <!--<JFieldSet col="0.1,0.1,0.58,0.1,0.01,0.1,0.01" pos="A3:D3" row="flex" border_n="0">-->
+                <!--<JButton text_s="searchBtn" cid="searchBtn" pos="A1:A1" iconCls="query_btn"></JButton>-->
+                <!--<JButton text_s="resetBtn" cid="resetBtn" pos="B1:B1" iconCls="reset_btn"></JButton>-->
+                <!--<JCheck cid="showAll" pos="D1:D1" fieldLabel_s="showAll" labelWidth_n="70"></JCheck>-->
+                <!--<JButton text_s="addToContract" cid="addToContract" pos="F1:F1" iconCls="ok_btn"></JButton>-->
+                <!--</JFieldSet>-->
+            </JForm>
+        </JFieldSet>
+        <JFieldSet pos="A2:A2" col="0.35,0.65" row="flex*0.5,30,flex*0.5" border_n="1" title_s="">
+            <!--<JFieldSet pos="A1:C1" col="flex" row="flex" border_n="1" title_s="">-->
+            <JEGrid store="Purchasereq.store.ScmPurchaseReqStore" cid="scmPurchaseReqDto"
+                    pos="A1:A3" withToolbar_b="false">
+
+                <JHidden cid="prmProjectMainId"/>
+                <JHidden cid="officeId"/>
+                <JHidden cid="subPackageNo"/>
+                <JHidden cid="isProject"/>
+                <JHidden cid="stampCount"/>
+                <JTextCol text_s="fadSubjectCode" dataIndex="fadSubjectCode" width_n="100"/>
+
+                <JTextCol text_s="项目/费用名称" dataIndex="projectName" width_n="150"/>
+                <!--<JTextCol text_s="financialSubject" dataIndex="financialSubject" width_n="120"/>-->
+                <JTextCol text_s="officeId" dataIndex="orgName" width_n="90"/>
+                <JTextCol text_s="withAttach" dataIndex="withAttach" width_n="40" align="center"/>
+                <JTextCol text_s="purchaseReqNo" dataIndex="purchaseReqNo" width_n="180"/>
+                <JActionCol cid="changePrincipal" text_s="changePrincipal" width_n="60"/>
+            </JEGrid>
+            <!--</JFieldSet>-->
+            <!--<JFieldSet pos="A2:A2" col="1*1" row="flex" border_n="1" title_s="">-->
+            <JEGrid store="Prmpurchasereq.store.PrmPurchaseReqDetailStore" cid="prmPurchaseReqDetailDto"
+                    pos="B1:B1" withToolbar_b="false" bcid="scmPurchaseReqDto.bind" withSelMode="true"
+                    isBind_b="true">
+                <JHidden cid="stampProjectUuid"/>
+                <JHidden cid="isStamp"/>
+                <JHidden cid="scmContractId"/>
+                <JHidden cid="prmBudgetType"/>
+
+                <JTextCol text_s="withAttach" dataIndex="withAttach" width_n="40" align="center"/>
+                <JTextCol text_s="name" dataIndex="name" width_n="110"/>
+                <JTextCol text_s="model" dataIndex="model" width_n="120"/>
+                <JDecCol text_s="amount" dataIndex="amount" width_n="100" format="0.000"/>
+                <JDecCol text_s="handleAmount" dataIndex="handleAmount" width_n="100" format="0.000">
+                    <JDec allowBlank_b="true" decimalPrecision="3"/>
+                </JDecCol>
+
+                <JTextCol text_s="budgetPrice" dataIndex="budgetPrice" width_n="100"/>
+                <JTextCol text_s="expectedPrice" dataIndex="expectedPrice" width_n="100"/>
+                <JTextCol text_s="factory" dataIndex="factory" width_n="100"/>
+                <JTextCol text_s="supplierId" dataIndex="supplierId" width_n="120"/>
+                <JComboCol text_s="supplierProperty" dataIndex="supplierProperty" width_n="120">
+                    <JCombo cid="supplierProperty" allowBlank_b="true"
+                            comboType="scdp_fmcode" readOnly_b="true" adaptable_b="false"
+                            codeType="PRM_SUPPLIER_PROPERTY" displayDesc_b="true"/>
+                </JComboCol>
+                <JDatetimeCol text_s="arriveDate" dataIndex="arriveDate" width_n="120"/>
+                <JTextCol text_s="packageName" dataIndex="packageName" width_n="120"/>
+                <JTextCol text_s="packageNo" dataIndex="packageNo" width_n="120"/>
+                <JRCheckCol text_s="isfallback" dataIndex="isfallback" width_n="60"/>
+                <JTextCol text_s="fallbackReason" dataIndex="fallbackReason" width_n="200"/>
+                <JTextCol text_s="scmContractCode" dataIndex="scmContractCode" width_n="120"/>
+                <JActionCol cid="changePackage" text_s="changePackage" width_n="60"/>
+                <JTextCol text_s="projectCode" dataIndex="projectCode" width_n="100"/>
+            </JEGrid>
+            <!--</JFieldSet>-->
+            <!--<JFieldSet pos="B1:B1" col="1*1" row="flex,32*1" border_n="0">-->
+
+            <JFieldSet pos="B2:B2" col="0.13*4,0.05,0.13*2,0.05,0.12" row="28" border_n="0">
+                <JButton pos="A1:A1" text_s="addQuotation" cid="addQuotation" iconCls="grid_row_add"
+                         border_n="1"></JButton>
+                <JButton text_s="addToContract" cid="addToContract" pos="B1:B1" iconCls="ok_btn"></JButton>
+                <JButton pos="C1:C1" text_s="exportQuotation" cid="exportQuotation" iconCls="export_btn"
+                         border_n="1"></JButton>
+                <JButton pos="D1:D1" text_s="pushQuotation" cid="pushQuotation" iconCls="two_up_arrow_btn"
+                         border_n="1"></JButton>
+                <JButton pos="F1:F1" text_s="showQuotation" cid="showQuotation" iconCls="file_preview_icon"
+                         border_n="1"></JButton>
+                <JButton pos="G1:G1" text_s="gotoContract" cid="gotoContract" iconCls="modify_btn"
+                         border_n="1"></JButton>
+                <JButton pos="I1:I1" text_s="rollBack" cid="reject" iconCls="erp-return-back"
+                         border_n="1"></JButton>
+            </JFieldSet>
+            <JTab pos="B3:B3" cid="quotationTab" row="flex" col="1*1" border_n="1">
+                <!--<JPanel pos="A1:A1" cid="firstTabPanel" title_s="报价单" row="flex" col="1*1" closable_b="true">-->
+                <!--</JPanel>-->
+            </JTab>
+            <!--</JFieldSet>-->
+
+        </JFieldSet>
+    </JPanel>
+    <!--</JPanel>-->
+</view>

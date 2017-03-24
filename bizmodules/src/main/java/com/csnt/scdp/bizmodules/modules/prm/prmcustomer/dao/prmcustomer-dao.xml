@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select pc.UUID,
+                            pc.CUSTOMER_CODE,
+                            pc.CUSTOMER_NAME,
+                            pc.CUSTOMER_NATION,
+                            pc.CUSTOMER_PROVINCE,
+                            pc.CUSTOMER_ADDRESS,
+                            pc.CUSTOMER_POSTALCODE,
+                            pc.CUSTOMER_TEL,
+                            pc.CUSTOMER_LINK,
+                            pc.COMPANY_CODE,
+                            pc.PROJECT_ID,
+                            pc.DEPARTMENT_CODE,
+                            pc.CREATE_BY,
+                            pc.CREATE_TIME,
+                            pc.UPDATE_BY,
+                            pc.UPDATE_TIME,
+                            pc.LOC_TIMEZONE,
+                            pc.TBL_VERSION,
+                            pc.IS_VOID,
+                            pc.SEQ_NO,
+                            pc.NC_CODE,
+                            pc.TAX_NO,
+                            (SELECT COUNTRY_DESC
+               FROM FM_COUNTRY A
+               WHERE A.COUNTRY_CODE=pc.CUSTOMER_NATION) AS COUNTRY_NAME,
+          (SELECT STATE_DESC
+               FROM FM_STATE A
+               WHERE A.STATE_CODE=pc.CUSTOMER_PROVINCE) AS PROVINCE_NAME
+                    from prm_customer pc
+                   where (pc.is_void is null or pc.is_void=0) and ${conditions} ]]>
+        </common>
+    </common_query>
+    <common_query_bank>
+        <common>
+            <![CDATA[select *
+                    from prm_customer_bank pcb where ${conditions} and prm_customer_id= '${prmCustomerId}'
+                     ]]>
+        </common>
+    </common_query_bank>
+</DAO>

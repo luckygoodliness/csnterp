@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="VW_PRM_BILLING_MONEY" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="year"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="month"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="build_region"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="affiliated_institutions"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--2.以我方项目表、我方发票表为主体的报表
+--FineReport_VW_PRM_BILLING_MONEY
+SELECT
+ROW_NUMBER() OVER(ORDER BY (SELECT MAX(INVOICE_DATE) FROM PRM_BILLING WHERE PRM_BILLING.PRM_PROJECT_MAIN_ID = PRM_PROJECT_MAIN.UUID AND (IS_VOID = 0 OR IS_VOID IS NULL)) DESC) ROW_NUMBER, --序号
+PRM_PROJECT_MAIN.PROJECT_CODE,--项目代号
+PRM_PROJECT_MAIN.PROJECT_NAME,--项目名称
+(SELECT SCDP_ORG.ORG_NAME FROM SCDP_ORG WHERE SCDP_ORG.ORG_CODE = PRM_PROJECT_MAIN.CONTRACTOR_OFFICE AND (IS_VOID = 0 OR IS_VOID IS NULL)) AS ORG_NAME,--申请部门
+(SELECT SCDP_USER.USER_NAME FROM SCDP_USER WHERE SCDP_USER.USER_ID = PRM_PROJECT_MAIN.PROJECT_MANAGER AND (IS_VOID = 0 OR IS_VOID IS NULL)) USER_NAME,--项目负责人
+NVL(PRM_CONTRACT.CUSTOMER_NAME, (SELECT PRM_CUSTOMER.CUSTOMER_NAME FROM PRM_CUSTOMER WHERE PRM_CUSTOMER.UUID = PRM_PROJECT_MAIN.CUSTOMER_ID AND (IS_VOID = 0 OR IS_VOID IS NULL))) CUSTOMER_NAME,--客户名称
+INVOICE_MONEY_NO_DATE,--开票额发票号开票日期
+NVL(PRM_BILLING.SUM_INVOICE_MONEY, 0) SUM_INVOICE_MONEY,--开票额合计
+NVL(PRM_RECEIPTS.SUM_ACTUAL_MONEY, 0) SUM_ACTUAL_MONEY,--已收款额合计
+NVL(PRM_BILLING.SUM_INVOICE_MONEY, 0) - NVL(PRM_RECEIPTS.SUM_ACTUAL_MONEY, 0) AMOUNT_RECEIVABLE--待收款金额
+FROM
+PRM_PROJECT_MAIN
+
+LEFT JOIN
+(
+     SELECT
+     PRM_PROJECT_MAIN_ID,
+     SUM(NVL(ACTUAL_MONEY, 0)) SUM_ACTUAL_MONEY
+     FROM PRM_RECEIPTS
+     WHERE STATE IN ('2','4','8')
+     AND (IS_VOID = 0 OR IS_VOID IS NULL)
+     GROUP BY PRM_PROJECT_MAIN_ID
+) PRM_RECEIPTS
+ON PRM_PROJECT_MAIN.UUID = PRM_RECEIPTS.PRM_PROJECT_MAIN_ID
+
+LEFT JOIN
+(
+     SELECT
+     PRM_PROJECT_MAIN_ID,
+     REPLACE
+     (
+       ZH_CONCAT
+       (
+         CASE WHEN INVOICE_NO IS NOT NULL THEN '发票号:[' || INVOICE_NO || ']A' ELSE '发票号:[财务未填]A' END
+         || '\n' ||
+         CASE WHEN INVOICE_DATE IS NOT NULL THEN '开票日期:[' || TO_CHAR(INVOICE_DATE, 'yyyy/mm/dd') || ']A' ELSE '开票日期:[财务未填]A' END
+         || '\n' || 
+         '开票金额:[' || TO_CHAR(NVL(INVOICE_MONEY, 0)) || '元]A'
+       ),
+       ',',
+       '\n\n'
+     )
+     INVOICE_MONEY_NO_DATE,--开票额发票号开票日期
+     SUM(NVL(INVOICE_MONEY, 0)) SUM_INVOICE_MONEY,--开票小计
+     MAX(INVOICE_DATE) INVOICE_DATE--开票日期
+     FROM
+     (SELECT * FROM PRM_BILLING WHERE (IS_VOID = 0 OR IS_VOID IS NULL) ORDER BY PRM_PROJECT_MAIN_ID ASC,INVOICE_DATE DESC) PRM_BILLING
+     WHERE
+     ('${officeId}' IS NULL OR REQ_OFFICE = '${officeId}')
+     AND
+     INVOICE_TYPE <> '3'
+     AND
+     STATE IN ('2','4','8')
+     AND
+     (
+         INVOICE_DATE < ADD_MONTHS(TO_DATE('${year}' || '${month}','YYYYMM'),1)
+     )
+     GROUP BY PRM_PROJECT_MAIN_ID
+) PRM_BILLING
+ON PRM_PROJECT_MAIN.UUID = PRM_BILLING.PRM_PROJECT_MAIN_ID
+
+LEFT JOIN
+(
+  SELECT NVL(PRM_CONTRACT_DETAIL.PRM_PROJECT_MAIN_ID, PRM_CONTRACT.PRM_PROJECT_MAIN_ID) PRM_PROJECT_MAIN_ID,REPLACE(TO_CHAR(WM_CONCAT(PRM_CUSTOMER.CUSTOMER_NAME)),',','、') CUSTOMER_NAME
+  FROM
+  PRM_CONTRACT
+  LEFT JOIN
+  (SELECT * FROM PRM_CONTRACT_DETAIL WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PRM_CONTRACT_DETAIL
+  ON PRM_CONTRACT.UUID = PRM_CONTRACT_DETAIL.PRM_CONTRACT_ID
+  LEFT JOIN
+  (SELECT * FROM PRM_CUSTOMER WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PRM_CUSTOMER
+  ON NVL(PRM_CONTRACT_DETAIL.CUSTOMER_ID, PRM_CONTRACT.CUSTOMER_ID) = PRM_CUSTOMER.UUID
+  WHERE (PRM_CONTRACT.IS_VOID = 0 OR PRM_CONTRACT.IS_VOID IS NULL)
+  GROUP BY NVL(PRM_CONTRACT_DETAIL.PRM_PROJECT_MAIN_ID, PRM_CONTRACT.PRM_PROJECT_MAIN_ID)
+) PRM_CONTRACT
+ON PRM_PROJECT_MAIN.UUID = PRM_CONTRACT.PRM_PROJECT_MAIN_ID
+
+WHERE
+ ('${officeId}' IS NULL OR PRM_PROJECT_MAIN.CONTRACTOR_OFFICE = '${officeId}')
+AND
+PRM_BILLING.PRM_PROJECT_MAIN_ID IS NOT NULL
+AND
+NVL(PRM_BILLING.SUM_INVOICE_MONEY, 0) > NVL(PRM_RECEIPTS.SUM_ACTUAL_MONEY, 0)--开票必须大于收款才取
+AND (PRM_PROJECT_MAIN.IS_VOID = 0 OR PRM_PROJECT_MAIN.IS_VOID IS NULL)
+
+AND ('${build_region}' IS NULL OR
+  (EXISTS
+  (SELECT 1
+   FROM PRM_CONTRACT C
+   LEFT JOIN PRM_CONTRACT_DETAIL CD ON C.UUID = CD.PRM_CONTRACT_ID
+   WHERE CD.PRM_PROJECT_MAIN_ID = PRM_PROJECT_MAIN.UUID
+   AND C.BUILD_REGION = '${build_region}')))
+                    
+AND ('${affiliated_institutions}' IS NULL OR
+   (EXISTS
+   (SELECT 1
+    FROM PRM_CONTRACT C
+    LEFT JOIN PRM_CONTRACT_DETAIL CD ON C.UUID = CD.PRM_CONTRACT_ID
+    WHERE CD.PRM_PROJECT_MAIN_ID = PRM_PROJECT_MAIN.UUID
+    AND C.AFFILIATED_INSTITUTIONS = '${affiliated_institutions}')))]]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR F="1" T="1"/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[723900,723900,720000,723900,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[1440000,3600000,7200000,5040000,2880000,7200000,6480000,3600000,3600000,2743200,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" cs="9" s="0">
+<O>
+<![CDATA[已开票未收款明细表(单位:元)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" s="1">
+<O>
+<![CDATA[序号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" s="1">
+<O>
+<![CDATA[项目代号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="1" s="1">
+<O>
+<![CDATA[项目名称]]></O>
+<PrivilegeControl/>
+</C>
+<C c="3" r="1" s="1">
+<O>
+<![CDATA[申请部门]]></O>
+<PrivilegeControl/>
+</C>
+<C c="4" r="1" s="1">
+<O>
+<![CDATA[项目负责人]]></O>
+<PrivilegeControl/>
+</C>
+<C c="5" r="1" s="1">
+<O>
+<![CDATA[客户名称]]></O>
+<PrivilegeControl/>
+</C>
+<C c="6" r="1" s="1">
+<O>
+<![CDATA[开票]]></O>
+<PrivilegeControl/>
+</C>
+<C c="7" r="1" s="1">
+<O>
+<![CDATA[开票小计]]></O>
+<PrivilegeControl/>
+</C>
+<C c="8" r="1" s="1">
+<O>
+<![CDATA[待收款金额]]></O>
+<PrivilegeControl/>
+</C>
+<C c="0" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_BILLING_MONEY" columnName="ROW_NUMBER"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_BILLING_MONEY" columnName="PROJECT_CODE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_BILLING_MONEY" columnName="PROJECT_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_BILLING_MONEY" columnName="ORG_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_BILLING_MONEY" columnName="USER_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_BILLING_MONEY" columnName="CUSTOMER_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_BILLING_MONEY" columnName="INVOICE_MONEY_NO_DATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_BILLING_MONEY" columnName="SUM_INVOICE_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_BILLING_MONEY" columnName="AMOUNT_RECEIVABLE"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting orientation="1">
+<Margin top="986400" left="720000" bottom="986400" right="720000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="96"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

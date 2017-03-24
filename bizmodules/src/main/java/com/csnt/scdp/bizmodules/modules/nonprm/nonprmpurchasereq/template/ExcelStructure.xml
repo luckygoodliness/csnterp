@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<excel>
+    <entity name="非项目采购申请导入模板" code="PrmPurchaseReqDetail">
+        <column name="序号" code="materialNumber" type="String"/>
+        <column name="设备材料名称" code="name" type="String"/>
+        <column name="规格型号" code="model" type="String"/>
+        <column name="数量" code="amount" type="BigDecimal"/>
+        <column name="单价（元）" code="expectedPrice" type="BigDecimal"/>
+        <column name="单位" code="unit" type="String"/>
+        <column name="供应商" code="supplierId" type="String"/>
+        <column name="小计（元）"/>
+    </entity>
+</excel>

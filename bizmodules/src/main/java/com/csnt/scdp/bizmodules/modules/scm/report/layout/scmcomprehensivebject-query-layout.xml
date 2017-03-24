@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonreport version="1.0">
+    <report>
+        <reporttype>L</reporttype>
+        <reporttemplate>erp/scm/ScmComprehensiveObject.cpt</reporttemplate>
+        <!--<reporttemplate>http://localhost:8075/WebReport/ReportServer?reportlet=ScmComprehensiveObject.cpt</reporttemplate>-->
+        <reportcache>false</reportcache>
+    </report>
+    <conditions columns="4">
+        <JHidden cid="materialType" field="materialType"/>
+        <JCombo pos="A1:A1" cid="curYear" fieldLabel_s="年度" displayDesc_b="true" comboType="scdp_fmcode"
+                codeType="CDM_YEAR" allowBlank_b="false" labelWidth_n="120" field="curYear"/>
+        <JHidden cid="supplierId" field="supplierId"/>
+        <JSupplierGrid pos="B1:B1" fieldLabel_s="supplierName" cid="supplierName"
+                       refer_j='[{"refField":"supplierId","valueField":"uuid"}]'/>
+        <JCombo pos="C1:C1" cid="evaluation" fieldLabel_s="打分综合评价" comboType="scdp_fmcode" codeType="SCM_EVALUATION"
+                displayDesc_b="true" field="evaluation"/>
+    </conditions>
+</commonreport>

@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[SELECT   OKPI.UUID,
+                              OKPI.COMPANY_CODE,
+                              OKPI.PROJECT_ID,
+                              OKPI.DEPARTMENT_CODE,
+                              OKPI.CREATE_BY,
+                              OKPI.CREATE_TIME,
+                              OKPI.UPDATE_BY,
+                              OKPI.UPDATE_TIME,
+                              OKPI.LOC_TIMEZONE,
+                              OKPI.TBL_VERSION,
+                              OKPI.IS_VOID,
+                              OKPI.PERIOD,
+                              OKPI.RECORD_DATE,
+                              OKPI.PROJECT_NAME,
+                              OKPI.IS_KEY,
+                              OKPI.PROPRIETOR_UNIT,
+                              OKPI.DECISION_MAKER,
+                              OKPI.PROJECT_PROFILE,
+                              OKPI.BID_TIME,
+                              OKPI.SIGNED_TIME,
+                              OKPI.COMPETITOR,
+                              OKPI.PROJECT_OC,
+                              OKPI.QUESTIONS,
+                              OKPI.PLANNED_CA,
+                              OKPI.OPERATION_STATE,
+                              OKPI.OPERATION_SUMMARY,
+                              OKPI.CONTRACT_STATUS,
+                              OKPI.REMARK,
+                              OKPI.IS_WIN,
+                              OKPI.COM_BID_UNIT,
+                              OKPI.COM_BID_NUMBER,
+                              OKPI.BIDING_DOC_START,
+                              OKPI.BIDING_DOC_END,
+                              OKPI.BIDING_DOC_PRICE,
+                              OKPI.BID_BOND,
+                              OKPI.EOTM,
+                              OKPI.BOD,
+                              OKPI.SEQ_NO,
+                              OKPI.OFFICE_ID,
+                              O.ORG_NAME,
+                            (SELECT CODE_DESC
+                             FROM SCDP_CODE A
+                             WHERE A.CODE_TYPE = 'OPERATE_STATE'
+                               AND A.SYS_CODE =OKPI.OPERATION_STATE) AS OPERATE_STATE_COMBO,
+                               NVL((SELECT PC.CUSTOMER_NAME FROM PRM_CUSTOMER PC WHERE PC.UUID=OKPI.PROPRIETOR_UNIT),OKPI.PROPRIETOR_UNIT) AS PROPRIETOR_UNIT_DESC,
+                                  (SELECT PPM.PROJECT_NAME
+                                          FROM PRM_PROJECT_MAIN PPM
+                                         LEFT JOIN PRM_CONTRACT PC
+                                         ON PPM.PRM_CONTRACT_ID = PC.UUID
+                                  WHERE PPM.UUID = OKPI.PROJECT_NAME) AS PROJECT_SHOW_NAME,
+                                  /*(SELECT PPM.PROJECT_MONEY
+                                          FROM PRM_PROJECT_MAIN PPM
+                                         LEFT JOIN PRM_CONTRACT PC
+                                         ON PPM.PRM_CONTRACT_ID = PC.UUID
+                                  WHERE PPM.UUID = OKPI.PROJECT_NAME) AS*/ OKPI.PROJECT_MONEY
+                     FROM OPERATE_KEY_PROJECTS_INFO OKPI
+                     LEFT JOIN SCDP_ORG O
+                     ON OKPI.OFFICE_ID=O.ORG_CODE
+                     where 1=1 and ${conditions} ]]>
+        </common>
+    </common_query>
+
+    <fm_operate_business_bid_info>
+        <common>
+            <![CDATA[
+                SELECT    PI.PROJECT_NAME,
+                          PI.UUID,
+                          PI.COMPANY_CODE,
+                          PI.PROJECT_ID,
+                          PI.DEPARTMENT_CODE,
+                          PI.CREATE_BY,
+                          PI.CREATE_TIME,
+                          PI.UPDATE_BY,
+                          PI.UPDATE_TIME,
+                          PI.LOC_TIMEZONE,
+                          PI.TBL_VERSION,
+                          PI.IS_VOID,
+                          PI.PERIOD,
+                          PI.RECORD_DATE,
+                          PI.IS_KEY,
+                          PI.PROPRIETOR_UNIT,
+                          NVL((SELECT A.CUSTOMER_NAME FROM PRM_CUSTOMER A WHERE A.UUID=PI.PROPRIETOR_UNIT),PI.PROPRIETOR_UNIT) AS PROPRIETOR_UNIT_DESC,
+                          PI.DECISION_MAKER,
+                          PI.PROJECT_PROFILE,
+                          PI.BID_TIME,
+                          PI.SIGNED_TIME,
+                          PI.COMPETITOR,
+                          PI.PROJECT_OC,
+                          PI.QUESTIONS,
+                          PI.PLANNED_CA,
+                          PI.OPERATION_STATE,
+                          PI.OPERATION_SUMMARY,
+                          PI.CONTRACT_STATUS,
+                          PI.REMARK,
+                          PI.IS_WIN,
+                          PI.COM_BID_UNIT,
+                          PI.COM_BID_NUMBER,
+                          PI.BIDING_DOC_START,
+                          PI.BIDING_DOC_END,
+                          PI.BIDING_DOC_PRICE,
+                          PI.BID_BOND,
+                          PI.EOTM,
+                          PI.BOD,
+                          PI.SEQ_NO,
+                          PI.OFFICE_ID
+                FROM OPERATE_KEY_PROJECTS_INFO PI
+                WHERE 1=1 AND ${conditions}
+             ]]>
+        </common>
+    </fm_operate_business_bid_info>
+    <!--<common_query>-->
+    <!--<common>-->
+    <!--<![CDATA[SELECT   OKPI.UUID,-->
+    <!--OKPI.COMPANY_CODE,-->
+    <!--OKPI.PROJECT_ID,-->
+    <!--OKPI.DEPARTMENT_CODE,-->
+    <!--OKPI.CREATE_BY,-->
+    <!--OKPI.CREATE_TIME,-->
+    <!--OKPI.UPDATE_BY,-->
+    <!--OKPI.UPDATE_TIME,-->
+    <!--OKPI.LOC_TIMEZONE,-->
+    <!--OKPI.TBL_VERSION,-->
+    <!--OKPI.IS_VOID,-->
+    <!--OKPI.PERIOD,-->
+    <!--OKPI.RECORD_DATE,-->
+    <!--OKPI.PROJECT_NAME,-->
+    <!--OKPI.IS_KEY,-->
+    <!--OKPI.PROPRIETOR_UNIT,-->
+    <!--OKPI.DECISION_MAKER,-->
+    <!--OKPI.PROJECT_PROFILE,-->
+    <!--OKPI.BID_TIME,-->
+    <!--OKPI.SIGNED_TIME,-->
+    <!--OKPI.COMPETITOR,-->
+    <!--OKPI.PROJECT_OC,-->
+    <!--OKPI.QUESTIONS,-->
+    <!--OKPI.PLANNED_CA,-->
+    <!--OKPI.OPERATION_STATE,-->
+    <!--OKPI.OPERATION_SUMMARY,-->
+    <!--OKPI.CONTRACT_STATUS,-->
+    <!--OKPI.REMARK,-->
+    <!--OKPI.IS_WIN,-->
+    <!--OKPI.COM_BID_UNIT,-->
+    <!--OKPI.COM_BID_NUMBER,-->
+    <!--OKPI.BIDING_DOC_START,-->
+    <!--OKPI.BIDING_DOC_END,-->
+    <!--OKPI.BIDING_DOC_PRICE,-->
+    <!--OKPI.BID_BOND,-->
+    <!--OKPI.EOTM,-->
+    <!--OKPI.BOD,-->
+    <!--OKPI.SEQ_NO,-->
+    <!--OKPI.FID,-->
+    <!--OKPI.OFFICE_ID,-->
+    <!--O.ORG_NAME,-->
+    <!--(SELECT PPM.PROJECT_MONEY-->
+    <!--FROM OPERATE_BUSINESS_BID_INFO OBBI-->
+    <!--LEFT JOIN PRM_CONTRACT PC-->
+    <!--ON OBBI.UUID =PC.OPERATE_BUSINESS_BID_INFO_ID-->
+    <!--LEFT JOIN PRM_PROJECT_MAIN PPM-->
+    <!--ON PC.UUID =PPM.PRM_CONTRACT_ID-->
+    <!--WHERE OBBI.UUID = OKPI.FID) AS PROJECT_MONEY,-->
+    <!--(SELECT CODE_DESC-->
+    <!--FROM SCDP_CODE A-->
+    <!--WHERE A.CODE_TYPE = 'OPERATE_STATE'-->
+    <!--AND A.SYS_CODE =OKPI.OPERATION_STATE) AS OPERATE_STATE_COMBO,-->
+    <!--(SELECT PC.CUSTOMER_NAME FROM PRM_CUSTOMER PC WHERE  PC.UUID=OKPI.PROPRIETOR_UNIT) AS PROPRIETOR_UNIT_DESC,-->
+    <!--(SELECT PPM.PROJECT_NAME-->
+    <!--FROM PRM_PROJECT_MAIN PPM-->
+    <!--LEFT JOIN PRM_CONTRACT PC-->
+    <!--ON PPM.PRM_CONTRACT_ID = PC.UUID-->
+    <!--WHERE PPM.UUID = OKPI.PROJECT_NAME) AS PROJECT_SHOW_NAME-->
+    <!--FROM OPERATE_KEY_PROJECTS_INFO OKPI-->
+    <!--LEFT JOIN SCDP_ORG O-->
+    <!--ON OKPI.OFFICE_ID=O.ORG_CODE-->
+    <!--where 1=1 and ${conditions} ]]>-->
+    <!--</common>-->
+    <!--</common_query>-->
+</DAO>

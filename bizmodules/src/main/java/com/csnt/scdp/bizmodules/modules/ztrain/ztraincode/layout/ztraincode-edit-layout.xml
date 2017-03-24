@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JTab pos="A1:A1" row="flex" col="1*1" border_n="1">
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="cardInfo" border_n="1">
+            <JForm pos="A1:A1" cid="testTableDto" row="23*2" col="0.25*4" title_s="" border_n="1">
+                <JHidden cid="uuid"/>
+                <JHidden cid="tblVersion"/>
+                <JText pos="A1:A1" cid="code" fieldLabel_s="code" allowBlank_b="true"/>
+                <JText pos="B1:B1" cid="name" fieldLabel_s="name" allowBlank_b="true"/>
+                <JText pos="C1:C1" cid="age" fieldLabel_s="age" allowBlank_b="true"/>
+                <JDec pos="A2:A2" cid="age" fieldLabel_s="age" allowBlank_b="true"/>
+                <!--<JCheck pos="B2:B2" fieldLabel_s="state" cid="state"/>-->
+                <JText pos="C2:C2" cid="companyCode" fieldLabel_s="companyCode" allowBlank_b="true"/>
+                <JText pos="D2:D2" cid="projectCode" fieldLabel_s="projectCode" allowBlank_b="true"/>
+                <!--<JText pos="D2:D2" cid="projectId" fieldLabel_s="projectId" allowBlank_b="true"/>-->
+                <JText pos="A3:A3" cid="departmentCode" fieldLabel_s="departmentCode" allowBlank_b="true"/>
+                <JInt pos="B3:B3" cid="seqNo" fieldLabel_s="seqNo" allowBlank_b="true"/>
+                <JCombo pos="D1:D1" cid="state" fieldLabel_s="state" allowBlank_b="true"
+                        comboType="scdp_fmcode" codeType="CDM_BILL_STATE" displayDesc_b="true" fullInfo_b="false"
+                        multiSelect_b="false" />
+                <JCombo pos="D3:D3" cid="projectId" fieldLabel_s="projectId" allowBlank_b="true"
+                        comboType="fm_prm_project_main"
+                        displayDesc_b="true" fullInfo_b="true" cascadeField="buildRegion"/>
+                <JCustomerGrid pos="B2:B2" cid="name" fieldLabel_s="uuid控件名"
+                               descField="customerName" displayDesc_b="true"
+                               allowBlank_b="false" forceValidate_b="false"/>
+            </JForm>
+        </JPanel>
+        <!--附件信息-->
+        <JPanel pos="A1:J1" row="flex" col="0.1*10" title_s="附件信息" border_n="1">
+            <JEGrid pos="A1:A1" cid="testTableContentDto" store="Ztraincode.store.TestTableContentStore">
+                <JTextCol text_s="bankcardNo" dataIndex="bankcardNo" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="bankName" dataIndex="bankName" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="projectId" dataIndex="projectId" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+            </JEGrid>
+        </JPanel>
+    </JTab>
+</view>

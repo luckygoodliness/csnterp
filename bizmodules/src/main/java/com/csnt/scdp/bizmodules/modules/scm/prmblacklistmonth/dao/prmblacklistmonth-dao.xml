@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select pbm.*,
+            (select a.project_name  from (select ppm.*,pc.contract_name
+                                                                from prm_project_main ppm
+                                                                 left join PRM_CONTRACT  pc
+                                                               on ppm.prm_contract_id = pc.uuid ) a
+                                where a.uuid=pbm.prm_project_main_id) as PROJECT_NAME,
+            (SELECT A.USER_NAME FROM SCDP_USER A WHERE A.user_id = pbm.complainant) AS COMPLAINANT_NAME,
+            (select s.complete_name from SCM_SUPPLIER s where s.uuid= pbm.scm_supplier_id) as SCM_SUPPLIER_NAME
+             from prm_blacklist_month pbm
+             where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+
+    <common_query_current_blacklist>
+        <common>
+            <![CDATA[select distinct t.scm_supplier_id
+                        from   prm_blacklist_month t
+                        where  sysdate between t.month_from and t.month_to]]>
+        </common>
+    </common_query_current_blacklist>
+</DAO>

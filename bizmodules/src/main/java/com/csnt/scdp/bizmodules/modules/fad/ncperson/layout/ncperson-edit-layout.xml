@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="fadNcPersonDto" row="23*1" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JText pos="A1:A1" cid="ncPersonCode" fieldLabel_s="ncPersonCode" allowBlank_b="false"/>
+        <JText pos="B1:B1" cid="ncPersonName" fieldLabel_s="ncPersonName" allowBlank_b="false"/>
+        <!--<JText pos="C1:C1" cid="ncOrgCode" fieldLabel_s="ncOrgCode" allowBlank_b="false"/>
+        <JText pos="D1:D1" cid="ncOrgName" fieldLabel_s="ncOrgName" allowBlank_b="false"/>-->
+        <JNcOrg pos="C1:C1" cid="ncOrgName" fieldLabel_s="ncOrgName" allowBlank_b="false"
+                refer_j='[{"refField":"ncOrgCode","valueField":"ncOrgCode"}]'/>
+        <JHidden cid="ncOrgCode"/>
+    </JForm>
+</view>

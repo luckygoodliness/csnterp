@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonreport version="1.0">
+    <report>
+        <reporttype>L</reporttype>
+        <reporttemplate>erp/scm/ScmContractProgress.cpt</reporttemplate>
+        <reportcache>false</reportcache>
+    </report>
+    <conditions columns="4">
+        <JHidden cid="contractorOfficeDesc"/>
+        <JErpDepartMent pos="A1:A1" fieldLabel_s="contractorOffice" cid="contractorOffice"
+                        field="contractorOffice" allowBlank_b="true" editable_b="true"/>
+        <JText pos="B1:B1" cid="projectCode" fieldLabel_s="projectCode" field="projectCode"/>
+        <JText pos="C1:C1" cid="projectName" fieldLabel_s="projectName" field="projectName"/>
+        <JCombo pos="D1:D1" fieldLabel_s="contractState" cid="contractState"
+                comboType="scdp_fmcode"
+                codeType="SCM_CONTRACT_STATE" displayDesc_b="true" field="contractState"/>
+        <JText pos="A2:A2" cid="name" fieldLabel_s="name" field="name"/>
+        <JSupplierGrid pos="B2:B2" fieldLabel_s="supplierName" cid="supplierName" field="supplierName"/>
+    </conditions>
+</commonreport>

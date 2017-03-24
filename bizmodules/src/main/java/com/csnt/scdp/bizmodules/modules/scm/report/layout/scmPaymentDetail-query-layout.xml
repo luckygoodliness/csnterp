@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonreport version="1.0">
+    <report>
+        <reporttype>L</reporttype>
+        <reporttemplate>erp/scm/M6_NRPT6_支付明细报表.cpt</reporttemplate>
+        <reportcache>false</reportcache>
+    </report>
+    <conditions columns="4">
+        <JHidden cid="dateStartHidden" field="dateStart"/>
+        <JDatetime pos="A1:A1" cid="dateStart" fieldLabel_s="dateStart" labelWidth_n="100" allowBlank_b="false"/>
+
+        <JHidden cid="dateOverHidden" field="dateOver"/>
+        <JDatetime pos="B1:B1" cid="dateOver" fieldLabel_s="dateOver" labelWidth_n="100" allowBlank_b="false"/>
+
+        <JText pos="C1:C1" cid="supplierName" fieldLabel_s="supplier" field="supplierName"/>
+
+        <JText pos="A2:A2" fieldLabel_s="scmContractCode" cid="scmContractCode" field="scmContractCode"/>
+        <JText pos="B2:B2" fieldLabel_s="project" cid="project" field="project"/>
+
+        <JHidden cid="officeIdDesc" field="officeIdDesc"/>
+        <JErpDepartMent pos="C2:C2" cid="officeId" fieldLabel_s="officeId" field="officeId" labelWidth_n="100"/>
+    </conditions>
+</commonreport>

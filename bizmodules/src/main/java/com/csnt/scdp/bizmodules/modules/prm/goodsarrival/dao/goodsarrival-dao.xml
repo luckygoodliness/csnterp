@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select * from prm_goods_arrival where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+    <newgoodsarrival_query>
+        <common>
+            <![CDATA[ SELECT C.*,
+       (CASE
+         WHEN NVL(C.ACTUAL_AMOUNT, 0) = 0 THEN
+          '未确认'
+         WHEN C.ACTUAL_AMOUNT < C.AMOUNT THEN
+          '部分确认'
+         WHEN C.ACTUAL_AMOUNT = C.AMOUNT THEN
+          '全部确认'
+         ELSE
+          '超额'
+       END) AS CONFIRM_STATE
+  FROM (SELECT DT.*,
+               CT.SUPPLIER_CODE,
+               CT.SUPPLIER_NAME,
+               CT.SCM_CONTRACT_CODE,
+               CT.PROJECT_ID AS PRM_PROJECT_MAIN_ID,
+               PPM.PROJECT_NAME,
+               ACTUAL_AMOUNT,
+               CT.IS_PROJECT
+          FROM SCM_CONTRACT_DETAIL DT
+          LEFT JOIN SCM_CONTRACT CT ON CT.UUID = DT.SCM_CONTRACT_ID
+          LEFT JOIN PRM_PROJECT_MAIN PPM ON PPM.UUID = CT.PROJECT_ID
+          LEFT JOIN (SELECT R.SCM_CONTRACT_DETAIL_ID,
+                           SUM(R.AMOUNT) AS ACTUAL_AMOUNT
+                      FROM PRM_GOODS_ARRIVAL R
+                     GROUP BY R.SCM_CONTRACT_DETAIL_ID) R ON R.SCM_CONTRACT_DETAIL_ID =
+                                                             DT.UUID
+         WHERE CT.CONTRACT_NATURE <> 1
+           AND CT.STATE = 2 ) C
+         where ${conditions} and ${voidfilter}  and ${selfconditions} and ${projectfilter} ]]>
+        </common>
+    </newgoodsarrival_query>
+    <!--查找是否存在数据符合条件-->
+    <query_if_all_confirm_records>
+        <common>
+            <![CDATA[  SELECT 1
+                       FROM (SELECT T.UUID,
+                                    T.AMOUNT,
+                                    NVL((SELECT SUM(R.AMOUNT)
+                                          FROM PRM_GOODS_ARRIVAL R
+                                         WHERE R.SCM_CONTRACT_DETAIL_ID = T.UUID),
+                                        0) AS actual_amount
+                               FROM SCM_CONTRACT_DETAIL T) C
+                      WHERE C.AMOUNT <= C.ACTUAL_AMOUNT
+                      AND ${selfConditions} ]]>
+        </common>
+    </query_if_all_confirm_records>
+    <update_is_closed_yes>
+        <common>
+            <![CDATA[
+                UPDATE SCM_CONTRACT SC
+                   SET SC.IS_CLOSED = 1
+                 WHERE EXISTS (SELECT 1
+                          FROM (SELECT V.AMOUNT, V.CHECKED_MONEY, V.UUID
+                                  FROM VW_SCM_CONTRACT_EXECUTE V
+                                 WHERE V.UUID IN (SELECT SCM_CONTRACT_ID
+                                                    FROM SCM_CONTRACT_DETAIL SD
+                                                   WHERE ${selfConditions})
+                                   AND (NVL(V.AMOUNT, 0) - NVL(V.CHECKED_MONEY, 0)) <= 0) V
+                         WHERE V.UUID = SC.UUID)
+            ]]>
+        </common>
+    </update_is_closed_yes>
+    <update_is_closed_no>
+        <common>
+            <![CDATA[
+                UPDATE SCM_CONTRACT SC
+                   SET SC.IS_CLOSED = 0
+                 WHERE EXISTS (SELECT 1
+                          FROM (SELECT V.AMOUNT, V.CHECKED_MONEY, V.UUID
+                                  FROM VW_SCM_CONTRACT_EXECUTE V
+                                 WHERE V.UUID IN (SELECT SCM_CONTRACT_ID
+                                                    FROM SCM_CONTRACT_DETAIL SD
+                                                   WHERE ${selfConditions})
+                                   AND (NVL(V.AMOUNT, 0) - NVL(V.CHECKED_MONEY, 0)) > 0) V
+                         WHERE V.UUID = SC.UUID)
+            ]]>
+        </common>
+    </update_is_closed_no>
+    <get_rest_amount>
+        <common>
+            <![CDATA[
+                SELECT T.UUID,
+                       CASE
+                         WHEN LAST_AMOUNT < 0 THEN
+                          0
+                         ELSE
+                          LAST_AMOUNT
+                       END AS LAST_AMOUNT
+                  FROM (SELECT SCD.UUID,
+                               (NVL(SCD.AMOUNT, 0) -
+                               NVL(SUM(PGA.AMOUNT) OVER(PARTITION BY SCD.UUID), 0)) AS LAST_AMOUNT
+                          FROM SCM_CONTRACT_DETAIL SCD
+                          LEFT JOIN PRM_GOODS_ARRIVAL PGA
+                            ON PGA.SCM_CONTRACT_DETAIL_ID = SCD.UUID
+                         WHERE SCD.${selfConditions}) T
+            ]]>
+        </common>
+    </get_rest_amount>
+    <find_contract_detail_name_freight>
+        <common>
+            <![CDATA[
+                SELECT * FROM SCM_CONTRACT_DETAIL WHERE SCM_CONTRACT_ID=?
+                AND MATERIAL_NAME LIKE '%运费%'
+        ]]>
+        </common>
+    </find_contract_detail_name_freight>
+</DAO>

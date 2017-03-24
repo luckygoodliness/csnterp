@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>invoice-dao</daotype>
+        <daokey>non_trip_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="A1:A1" fieldLabel_s="invoiceReqNo" cid="invoiceReqNo" field="invoice_req_no"/>
+        <JText pos="B1:B1" fieldLabel_s="invoiceNo" cid="invoiceNo" field="invoice_no"/>
+        <JText pos="C1:C1" fieldLabel_s="expensesMoney" cid="expensesMoneyQ" field="expenses_money"/>
+
+        <JHidden cid="officeId_QDesc"/>
+        <JErpDepartMent pos="A2:A2" fieldLabel_s="officeId" cid="officeId_Q"
+                      field="office_Id"/>
+        <JHidden  fieldLabel_s="renderPerson" cid="renderPerson_Q" field="render_person"/>
+        <JUserGrid pos="B2:B2" fieldLabel_s="renderPerson" cid="renderPersonName"
+                   refer_j='[{"refField":"renderPerson_Q","valueField":"userId"}]'/>
+        <JCombo pos="C2:C2" cid="state" fieldLabel_s="state"
+                comboType="scdp_fmcode" codeType="FAD_BILL_STATE" displayDesc_b="true" field="state"/>
+        <!--M4_C9_F2_查询条件优化-->
+        <JFromTo pos="A3:B3" subXtype="JDatetime" fieldLabel_s="createTime" cid="createTime" field="create_time"/>
+        <JText pos="C3:C3" fieldLabel_s="报销总金额" cid="invoiceTotalValue" field="invoice_total_value"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="invoiceReqNo" dataIndex="invoiceReqNo" width_n="120"/>
+        <JTextCol text_s="state" dataIndex="stateName" width_n="120"/>
+        <JTextCol text_s="部门" dataIndex="officeNameR" width_n="120"/>
+        <JTextCol text_s="fadSubjectCode" dataIndex="fadSubjectCode" width_n="120"/>
+        <JTextCol text_s="renderPerson" dataIndex="renderPersonR" width_n="120"/>
+        <JTextCol text_s="tripLocation" dataIndex="tripLocation" width_n="120"/>
+        <JCurCol text_s="invoiceTotalValue" dataIndex="invoiceTotalValue" width_n="150"/>
+        <JCurCol text_s="expensesMoney" dataIndex="expensesMoney" width_n="150"/>
+        <JCurCol text_s="payCash" dataIndex="payCash" width_n="150"/>
+        <JDatetimeCol text_s="tripBeginDate" dataIndex="tripBeginDate" width_n="150"/>
+        <JDatetimeCol text_s="tripEndDate" dataIndex="tripEndDate" width_n="150"/>
+        <JIntCol text_s="tripDays" dataIndex="tripDays" width_n="100"/>
+        <JTextCol text_s="tripReason" dataIndex="tripReason" width_n="120"/>
+        <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+    </results>
+</commonquery>

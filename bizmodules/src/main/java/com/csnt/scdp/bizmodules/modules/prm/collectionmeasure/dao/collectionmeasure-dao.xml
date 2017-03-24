@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select * from prm_collection_measure where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+    <common_query_department>
+        <common>
+            <![CDATA[select     c.uuid,
+                                c.prm_project_main_id,
+                                c.prm_weekly_id,
+                                c.periods,
+                                c.report,
+                                c.principal,
+                                c.measure_money,
+                                c.sign,
+                                c.actual_receipts_date,
+                                c.remark,
+                                c.state,
+                                c.company_code,
+                                c.project_id,
+                                c.department_code,
+                                c.create_by,
+                                c.create_time,
+                                c.update_by,
+                                c.update_time,
+                                c.loc_timezone,
+                                c.tbl_version,
+                                c.is_void,
+                                o.org_name,
+                                (select a.project_name  from (select ppm.*,pc.contract_name
+                                                                from prm_project_main ppm
+                                                                 left join PRM_CONTRACT  pc
+                                                               on ppm.prm_contract_id = pc.uuid ) a
+                                where a.uuid=c.prm_project_main_id) as project_name,
+                                 (SELECT A.USER_NAME FROM SCDP_USER A WHERE A.user_id =c.PRINCIPAL) AS PRINCIPAL_NAME,
+                                 (select c.code_desc from scdp_code c where c.code_type='PRM_MEASURE_SIGN'  and  c.sys_code= c.sign) as PRM_MEASURE_SIGN_COMBO,
+                                 (select c.code_desc from scdp_code c where c.code_type='PRM_MEASURE_REPORT'  and  c.sys_code= c.report) as PRM_MEASURE_REPORT_COMBO
+                        from   prm_collection_measure c
+                        left join scdp_org o
+                        on     c.department_code = o.org_code
+                        where 1=1 and ${conditions}]]>
+        </common>
+    </common_query_department>
+</DAO>

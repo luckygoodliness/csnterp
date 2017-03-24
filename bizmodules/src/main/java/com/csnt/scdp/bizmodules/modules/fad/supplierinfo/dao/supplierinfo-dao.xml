@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[
+ SELECT (SELECT CODE_DESC
+              FROM SCDP_CODE A
+             WHERE A.CODE_TYPE = 'SCM_SUPPLIER_TYPE'
+               AND A.SYS_CODE = T.SUPPLIER_TYPE) AS SUPPLIER_TYPE_COMBO,
+           (SELECT COUNTRY_DESC
+               FROM FM_COUNTRY A
+               WHERE A.COUNTRY_CODE=T.COUNTRY) AS COUNTRY_NAME,
+          (SELECT STATE_DESC
+               FROM FM_STATE A
+               WHERE A.STATE_CODE=T.PROVINCE) AS PROVINCE_NAME,
+          (SELECT MAX(CITY_DESC)
+               FROM FM_CITY A
+               WHERE A.CITY_CODE=T.CITY) AS CITY_NAME,
+               (SELECT CODE_DESC
+              FROM SCDP_CODE A
+             WHERE A.CODE_TYPE = 'SCM_SUPPLIER_IN_OUT_ORG'
+               AND A.SYS_CODE = T.inout_Type) AS INOUT_TYPE_COMBO,
+             (SELECT CODE_DESC
+              FROM SCDP_CODE A
+             WHERE A.CODE_TYPE = 'SCM_SUPPLIER_STATUS'
+               AND A.SYS_CODE = T.SUPPLIER_STATUS) AS SUPPLIER_STATUS_COMBO,
+            (SELECT CODE_DESC
+              FROM SCDP_CODE A
+             WHERE A.CODE_TYPE = 'SCM_SUPPLIER_ENTERPRISE_SCALE'
+               AND A.SYS_CODE = T.ENTERPRISE_SCALE) AS ENTERPRISE_SCALE_COMBO,
+           (SELECT CODE_DESC
+              FROM SCDP_CODE A
+             WHERE A.CODE_TYPE = 'SCM_SUPPLIER_PROPERTY'
+               AND A.SYS_CODE = T.SUPPLIER_PROPERTY) AS SUPPLIER_PROPERTY_COMBO,
+          (SELECT CODE_DESC
+              FROM SCDP_CODE A
+             WHERE A.CODE_TYPE = 'SCM_SUPPLIER_ORGANIZATION_TYPE'
+               AND A.SYS_CODE = T.ORGANIZATION_TYPE) AS ORGANIZATION_TYPE_COMBO,
+         (SELECT CODE_DESC
+              FROM SCDP_CODE A
+             WHERE A.CODE_TYPE = 'SCM_SUPPLIER_ENTERPRISE_TYPE'
+               AND A.SYS_CODE = T.ENTERPRISE_TYPE) AS ENTERPRISE_TYPE_COMBO,
+            (SELECT CURRENCY_DESC
+              FROM FM_CURRENCY A
+             WHERE  A.CURRENCY_CODE = T.REGISTERED_CAPITAL_CURRENCY) AS REGISTERED_CURRENCY_NAME,
+            (SELECT CURRENCY_DESC
+              FROM FM_CURRENCY A
+             WHERE  A.CURRENCY_CODE = T.FIXED_ASSET_CURRENCY) AS FIXED_ASSET_CURRENCY_NAME,
+            (SELECT CODE_DESC FROM SCDP_CODE SC WHERE SC.CODE_TYPE = 'FAD_BILL_STATE' AND SC.SYS_CODE=T.STATE) AS STATE_NAME,
+             DECODE(T.TAX_TYPES,'0','一般纳税人','1','小规模纳税人','未知') AS TAX_TYPES_NAME,
+             DECODE(T.SUPPLIER_GENRE,'0','合格供方','1','普通供方','2','零星供方','3','报销供方','4','其他','') AS SUPPLIER_GENRE_NAME,
+                T.*
+             FROM SCM_SUPPLIER T
+             where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+    <efficient_supplier_query>
+        <common>
+            <![CDATA[
+            SELECT (SELECT CODE_DESC
+              FROM SCDP_CODE A
+             WHERE A.CODE_TYPE = 'SCM_SUPPLIER_TYPE'
+               AND A.SYS_CODE = T.SUPPLIER_TYPE) AS SUPPLIER_TYPE_COMBO,
+           (SELECT COUNTRY_DESC
+               FROM FM_COUNTRY A
+               WHERE A.COUNTRY_CODE=T.COUNTRY) AS COUNTRY_NAME,
+          (SELECT STATE_DESC
+               FROM FM_STATE A
+               WHERE A.STATE_CODE=T.PROVINCE) AS PROVINCE_NAME,
+          (SELECT MAX(CITY_DESC)
+               FROM FM_CITY A
+               WHERE A.CITY_CODE=T.CITY) AS CITY_NAME,
+               (SELECT CODE_DESC
+              FROM SCDP_CODE A
+             WHERE A.CODE_TYPE = 'SCM_SUPPLIER_IN_OUT_ORG'
+               AND A.SYS_CODE = T.inout_Type) AS INOUT_TYPE_COMBO,
+             (SELECT CODE_DESC
+              FROM SCDP_CODE A
+             WHERE A.CODE_TYPE = 'SCM_SUPPLIER_STATUS'
+               AND A.SYS_CODE = T.SUPPLIER_STATUS) AS SUPPLIER_STATUS_COMBO,
+            (SELECT CODE_DESC
+              FROM SCDP_CODE A
+             WHERE A.CODE_TYPE = 'SCM_SUPPLIER_ENTERPRISE_SCALE'
+               AND A.SYS_CODE = T.ENTERPRISE_SCALE) AS ENTERPRISE_SCALE_COMBO,
+           (SELECT CODE_DESC
+              FROM SCDP_CODE A
+             WHERE A.CODE_TYPE = 'SCM_SUPPLIER_PROPERTY'
+               AND A.SYS_CODE = T.SUPPLIER_PROPERTY) AS SUPPLIER_PROPERTY_COMBO,
+          (SELECT CODE_DESC
+              FROM SCDP_CODE A
+             WHERE A.CODE_TYPE = 'SCM_SUPPLIER_ORGANIZATION_TYPE'
+               AND A.SYS_CODE = T.ORGANIZATION_TYPE) AS ORGANIZATION_TYPE_COMBO,
+         (SELECT CODE_DESC
+              FROM SCDP_CODE A
+             WHERE A.CODE_TYPE = 'SCM_SUPPLIER_ENTERPRISE_TYPE'
+               AND A.SYS_CODE = T.ENTERPRISE_TYPE) AS ENTERPRISE_TYPE_COMBO,
+            (SELECT CURRENCY_DESC
+              FROM FM_CURRENCY A
+             WHERE  A.CURRENCY_CODE = T.REGISTERED_CAPITAL_CURRENCY) AS REGISTERED_CURRENCY_NAME,
+            (SELECT CURRENCY_DESC
+              FROM FM_CURRENCY A
+             WHERE  A.CURRENCY_CODE = T.FIXED_ASSET_CURRENCY) AS FIXED_ASSET_CURRENCY_NAME,
+             DECODE(T.TAX_TYPES,'0','一般纳税人','1','小规模纳税人','未知') AS TAX_TYPES_NAME,
+             DECODE(T.LEVEL_CODE,NULL,'普通供方','D','不合格供方',T.LEVEL_CODE||'级年度合格供方') AS LEVEL_TYPES,
+                T.*
+             FROM SCM_SUPPLIER T
+             where ${conditions} and ${voidfilter}
+             and state =2]]>
+        </common>
+    </efficient_supplier_query>
+    <cancel_effect_supplier>
+        <common>
+            <![CDATA[
+                UPDATE SCM_SUPPLIER SET STATE = 3 WHERE UUID = ?
+            ]]>
+        </common>
+    </cancel_effect_supplier>
+    <check_if_have_effect_bank>
+        <common>
+            <![CDATA[
+                SELECT 1 FROM SCM_SUPPLIER_BANK WHERE SCM_SUPPLIER_ID=? AND IS_EFFECT='1'
+            ]]>
+        </common>
+    </check_if_have_effect_bank>
+    <pick_supplier_query>
+        <common>
+            <![CDATA[
+            SELECT (SELECT CODE_DESC
+              FROM SCDP_CODE A
+             WHERE A.CODE_TYPE = 'SCM_SUPPLIER_TYPE'
+               AND A.SYS_CODE = T.SUPPLIER_TYPE) AS SUPPLIER_TYPE_COMBO,
+           (SELECT COUNTRY_DESC
+               FROM FM_COUNTRY A
+               WHERE A.COUNTRY_CODE=T.COUNTRY) AS COUNTRY_NAME,
+          (SELECT STATE_DESC
+               FROM FM_STATE A
+               WHERE A.STATE_CODE=T.PROVINCE) AS PROVINCE_NAME,
+          (SELECT MAX(CITY_DESC)
+               FROM FM_CITY A
+               WHERE A.CITY_CODE=T.CITY) AS CITY_NAME,
+               (SELECT CODE_DESC
+              FROM SCDP_CODE A
+             WHERE A.CODE_TYPE = 'SCM_SUPPLIER_IN_OUT_ORG'
+               AND A.SYS_CODE = T.inout_Type) AS INOUT_TYPE_COMBO,
+             (SELECT CODE_DESC
+              FROM SCDP_CODE A
+             WHERE A.CODE_TYPE = 'SCM_SUPPLIER_STATUS'
+               AND A.SYS_CODE = T.SUPPLIER_STATUS) AS SUPPLIER_STATUS_COMBO,
+            (SELECT CODE_DESC
+              FROM SCDP_CODE A
+             WHERE A.CODE_TYPE = 'SCM_SUPPLIER_ENTERPRISE_SCALE'
+               AND A.SYS_CODE = T.ENTERPRISE_SCALE) AS ENTERPRISE_SCALE_COMBO,
+           (SELECT CODE_DESC
+              FROM SCDP_CODE A
+             WHERE A.CODE_TYPE = 'SCM_SUPPLIER_PROPERTY'
+               AND A.SYS_CODE = T.SUPPLIER_PROPERTY) AS SUPPLIER_PROPERTY_COMBO,
+          (SELECT CODE_DESC
+              FROM SCDP_CODE A
+             WHERE A.CODE_TYPE = 'SCM_SUPPLIER_ORGANIZATION_TYPE'
+               AND A.SYS_CODE = T.ORGANIZATION_TYPE) AS ORGANIZATION_TYPE_COMBO,
+         (SELECT CODE_DESC
+              FROM SCDP_CODE A
+             WHERE A.CODE_TYPE = 'SCM_SUPPLIER_ENTERPRISE_TYPE'
+               AND A.SYS_CODE = T.ENTERPRISE_TYPE) AS ENTERPRISE_TYPE_COMBO,
+            (SELECT CURRENCY_DESC
+              FROM FM_CURRENCY A
+             WHERE  A.CURRENCY_CODE = T.REGISTERED_CAPITAL_CURRENCY) AS REGISTERED_CURRENCY_NAME,
+            (SELECT CURRENCY_DESC
+              FROM FM_CURRENCY A
+             WHERE  A.CURRENCY_CODE = T.FIXED_ASSET_CURRENCY) AS FIXED_ASSET_CURRENCY_NAME,
+             DECODE(T.TAX_TYPES,'0','一般纳税人','1','小规模纳税人','未知') AS TAX_TYPES_NAME,
+             DECODE(T.SUPPLIER_GENRE,'0','合格供方','1','普通供方','2','零星供方','3','报销供方','4','其他') AS SUPPLIER_GENRE_NAME,
+             DECODE(T.LEVEL_CODE,NULL,'普通供方','D','不合格供方',T.LEVEL_CODE||'级年度合格供方') AS LEVEL_TYPES,
+                T.*,
+                H.CUR_AMOUNT,
+                H.CUR_VOLUME
+             FROM SCM_SUPPLIER T
+             LEFT JOIN(SELECT SC.SUPPLIER_CODE,SUM(SC.AMOUNT) AS CUR_AMOUNT,COUNT(1) AS CUR_VOLUME FROM SCM_CONTRACT SC
+                       WHERE SC.STATE = 2 AND SC.SUPPLIER_CODE IS NOT NULL GROUP BY SC.SUPPLIER_CODE) H ON T.UUID = H.SUPPLIER_CODE
+             where ${conditions} and ${voidfilter} and ${selfconditions}
+             and state =2 AND NVL(SUPPLIER_GENRE,4)<>0]]>
+        </common>
+    </pick_supplier_query>
+    <common_union_query>
+        <common>
+            <![CDATA[
+                                  SELECT *
+                  FROM (SELECT S.UUID,
+                               S.SUPPLIER_CODE,
+                               (SELECT CODE_DESC
+                                  FROM SCDP_CODE C
+                                 WHERE C.CODE_TYPE = 'CDM_YES_OR_NO'
+                                   AND C.SYS_CODE = S.INOUT_TYPE) AS INOUT_TYPE,
+                               S.COMPLETE_NAME,
+                               S.ENGLISH_NAME,
+                               S.SIMPLE_NAME,
+                               S.LEVEL_CODE,
+                                S.IS_VOID,
+                               S.CREATE_TIME,
+                               BK.BANK_NAME,
+                               BK.ACCOUNT_NO
+                          FROM SCM_SUPPLIER S
+                          LEFT JOIN (SELECT SCM_SUPPLIER_ID,BANK_NAME,ACCOUNT_NO
+                                      FROM (SELECT row_number() OVER(PARTITION BY SCM_SUPPLIER_ID ORDER BY CREATE_TIME DESC) R,
+                                                   B.*
+                                              FROM SCM_SUPPLIER_BANK B
+                                             WHERE IS_EFFECT = '1')
+                                     WHERE R = 1) BK
+                            ON BK.SCM_SUPPLIER_ID = S.UUID) T
+                  where ${conditions}
+            and ${voidfilter}
+                    ]]>
+        </common>
+    </common_union_query>
+</DAO>

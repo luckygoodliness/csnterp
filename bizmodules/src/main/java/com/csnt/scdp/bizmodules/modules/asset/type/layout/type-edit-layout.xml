@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="assetTypeDto" row="23*3" col="0.25*4" title_s="" border_n="1">
+         <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JText pos="A1:A1" cid="code" fieldLabel_s="code" allowBlank_b="false"/>
+        <JText pos="B1:B1" cid="name" fieldLabel_s="name" allowBlank_b="false"/>
+        <!--<JText pos="C1:C1" cid="isenabled" fieldLabel_s="isenabled" allowBlank_b="true"/>-->
+        <JCombo pos="C1:C1" cid="isenabled" fieldLabel_s="isenabled" comboType="scdp_fmcode" codeType="ASSET_TYPE_ISENABLED"/>
+        <JText pos="D1:D1" cid="updateOffice1" fieldLabel_s="上级设备" allowBlank_b="true"/>
+
+        <!--<JSearchField pos="A1:A1" cid="assetTypeDto"-->
+                      <!--upperCase_b="true"-->
+                      <!--refer_j='[{"refField":"card","valueField":"name"}]'-->
+                      <!--controller="Type.controller.TypeController"-->
+                      <!--menuCode_s="CODE" defaultField="CODE|code"-->
+                      <!--multiSelect_b="false"/>-->
+        <!--<JSearchField pos="A4:A4" cid="assetTypeDto" fieldLabel_s="查询字段" allowBlank_b="true"-->
+                      <!--refer_j='[{"refField":"assetTypeDto","valueField":"code"}]'-->
+                      <!--controller="Type.controller.TypeController"-->
+                      <!--menuCode_s="MNU_SF_SINGLE"-->
+                      <!--multiSelect_b="true"/>-->
+        <!--<JGridCombo pos="A2:A2" modulePath="com/csnt/scdp/modules/asset/type"-->
+                    <!--layoutFile="layout.xml"  fieldLabel_s="code" valueField="code" gridWidth_n="17"/>-->
+                    <!--cid="gridcombo" fieldLabel_s="Grid Combo" allowBlank_b="true"-->
+        <!--<JSearchField pos="A1:A1" cid="code"  allowBlank_b="true"-->
+                      <!--upperCase_b="true"-->
+                      <!--refer_j='[{"refField":"code","valueField":"code"},{"refField":"name","valueField":"name"}]'-->
+                      <!--controller="Type.controller.TypeController"-->
+                      <!--menuCode_s="CODE" defaultField="CODE|code"-->
+                      <!--multiSelect_b="false"/>-->
+
+        <JText pos="A3:A3" cid="updateOffice1" fieldLabel_s="录入人" allowBlank_b="true"/>
+        <JText pos="B3:B3" cid="updateOffice1" fieldLabel_s="录入时间" allowBlank_b="true"/>
+        <JTextArea pos="C3:D3" cid="updateOffice1" fieldLabel_s="备注" allowBlank_b="true"/>
+
+        <!--<JText pos="D3:D3" cid="name" fieldLabel_s="name" allowBlank_b="true"/>-->
+        <!--<JText pos="B1:B1" cid="upgradeCode" fieldLabel_s="upgradeCode" allowBlank_b="true"/>-->
+        <!--<JText pos="B2:B2" cid="descp" fieldLabel_s="descp" allowBlank_b="true"/>-->
+        <!--<JText pos="B3:B3" cid="companyCode" fieldLabel_s="companyCode" allowBlank_b="true"/>-->
+        <!--<JText pos="C1:C1" cid="companyName" fieldLabel_s="companyName" allowBlank_b="true"/>-->
+        <!--<JText pos="C2:C2" cid="departmentCode" fieldLabel_s="departmentCode" allowBlank_b="true"/>-->
+        <!--<JText pos="C3:C3" cid="createOffice" fieldLabel_s="createOffice" allowBlank_b="true"/>-->
+        <!--<JText pos="A4:A4" cid="updateOffice" fieldLabel_s="updateOffice" allowBlank_b="true"/>-->
+    </JForm>
+</view>

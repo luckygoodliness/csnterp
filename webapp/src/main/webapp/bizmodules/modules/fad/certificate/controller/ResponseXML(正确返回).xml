@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding='utf-8'?>
+<ufinterface billtype="gl" filename="voucher.xml" isexchange="Y" proc="add" receiver="9137A00@9137A00-0002" replace="Y" roottag="sendresult" sender="ZHKJ" successful="Y">
+    <sendresult>
+        <billpk></billpk>
+        <bdocid>25D130C5CBB7950FE0530B1F120A2CE4</bdocid>
+        <filename>voucher.xml</filename>
+        <resultcode>1</resultcode>
+        <resultdescription>单据25D130C5CBB7950FE0530B1F120A2CE4开始处理...单据25D130C5CBB7950FE0530B1F120A2CE4处理完毕!</resultdescription>
+        <content>2015.12-现金凭证-1</content>
+    </sendresult>
+</ufinterface>

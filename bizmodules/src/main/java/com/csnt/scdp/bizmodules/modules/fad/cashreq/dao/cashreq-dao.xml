@@ -1,0 +1,466 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select * from fad_cash_req where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+    <common_query_single>
+        <common>
+            <![CDATA[
+                            SELECT S.*
+                  FROM (SELECT T.*,
+                               O.ORG_NAME,
+                               U.USER_NAME,
+                               S.BILL_STATE,
+                               CT.CERTIFICATE_NO,
+                               NVL(FI.CLEARANCE_MONEY, 0) AS CLEARANCE_MONEY,
+                               DECODE(sign(NVL(FI.CLEARANCE_MONEY, 0)-T.MONEY), -1, 0,1) AS IS_CLEARED
+                          FROM FAD_CASH_REQ T
+                          LEFT JOIN (SELECT C.SYS_CODE, C.CODE_DESC AS BILL_STATE
+                                      FROM SCDP_CODE C
+                                     WHERE C.CODE_TYPE = 'FAD_BILL_STATE') S
+                            ON T.STATE = S.SYS_CODE
+                          LEFT JOIN SCDP_ORG O
+                            ON T.OFFICE_ID = O.ORG_CODE
+                          LEFT JOIN SCDP_USER U
+                            ON T.STAFF_ID = U.USER_ID
+                          LEFT JOIN (SELECT BUSINESS_ID,
+                                           LISTAGG(T.CERTIFICATE_NO, '||') WITHIN GROUP(ORDER BY BUSINESS_ID) AS CERTIFICATE_NO
+                                      FROM FAD_CERTIFICATE T
+                                     GROUP BY T.BUSINESS_ID) CT
+                            ON T.UUID = CT.BUSINESS_ID
+                          LEFT JOIN (SELECT FAD_CASH_REQ_ID,
+                                           SUM(CLEARANCE_MONEY) AS CLEARANCE_MONEY
+                                      FROM (SELECT CD.FAD_CASH_REQ_ID, CD.CLEARANCE_MONEY
+                                              FROM FAD_CASH_CLEARANCE   CL,
+                                                   FAD_CASH_REQ_INVOICE CD
+                                             WHERE CD.FAD_INVOICE_ID = CL.UUID
+                                               AND CL.STATE = '4'   AND (CL.IS_VOID = '0' OR CL.IS_VOID IS NULL)
+                                            UNION
+                                            SELECT FAD_CASH_REQ_ID,
+                                                   FCRI.CLEARANCE_MONEY
+                                              FROM FAD_CASH_REQ_INVOICE FCRI,
+                                                   FAD_INVOICE          FI
+                                             WHERE FCRI.FAD_INVOICE_ID = FI.UUID
+                                               AND FI.STATE = '4'  AND (FI.IS_VOID = '0' OR FI.IS_VOID IS NULL))
+                                     GROUP BY FAD_CASH_REQ_ID) FI
+                            ON T.UUID = FI.FAD_CASH_REQ_ID
+                         WHERE T.REQ_TYPE IN ('1', '2')) S
+                   where 1=1 and s.project_id is  null  and ${conditions}   and ${voidfilter}]]>
+        </common>
+    </common_query_single>
+
+    <common_query_deposit>
+        <common>
+            <![CDATA[
+                            SELECT S.*
+                  FROM (SELECT T.*,
+                               O.ORG_NAME,
+                               U.USER_NAME,
+                               CO.CODE_DESC,
+                               S.BILL_STATE,
+                               CT.CERTIFICATE_NO,
+                               I.PROJECT_NAME AS BUSINESS_BID_INFO_ID_DESC,
+                               (SELECT PPM.PROJECT_CODE
+                                  FROM PRM_PROJECT_MAIN PPM
+                                 WHERE PPM.UUID = T.PROJECT_ID) AS PROJECT_CODE,
+                               NVL(FI.CLEARANCE_MONEY, 0) AS CLEARANCE_MONEY,
+                                DECODE(sign(NVL(FI.CLEARANCE_MONEY, 0)-T.MONEY), -1, 0,1) AS IS_CLEARED
+                          FROM FAD_CASH_REQ T
+                          LEFT JOIN (SELECT C.SYS_CODE, C.CODE_DESC AS BILL_STATE
+                                      FROM SCDP_CODE C
+                                     WHERE C.CODE_TYPE = 'FAD_BILL_STATE') S
+                            ON T.STATE = S.SYS_CODE
+                          LEFT JOIN SCDP_ORG O
+                            ON T.OFFICE_ID = O.ORG_CODE
+                          LEFT JOIN SCDP_USER U
+                            ON T.STAFF_ID = U.USER_ID
+                              LEFT JOIN (SELECT BUSINESS_ID,
+                                           LISTAGG(T.CERTIFICATE_NO, '||') WITHIN GROUP(ORDER BY BUSINESS_ID) AS CERTIFICATE_NO
+                                      FROM FAD_CERTIFICATE T
+                                     GROUP BY T.BUSINESS_ID) CT
+                            ON T.UUID = CT.BUSINESS_ID
+                          LEFT JOIN (SELECT C.SYS_CODE, C.CODE_DESC
+                                      FROM SCDP_CODE C
+                                     WHERE C.CODE_TYPE = 'FAD_PAYWAY') CO
+                            ON T.PAY_STYLE = CO.SYS_CODE
+                          LEFT JOIN (SELECT FAD_CASH_REQ_ID,
+                                           SUM(CLEARANCE_MONEY) AS CLEARANCE_MONEY
+                                      FROM (SELECT CD.FAD_CASH_REQ_ID, CD.CLEARANCE_MONEY
+                                              FROM FAD_CASH_CLEARANCE   CL,
+                                                   FAD_CASH_REQ_INVOICE CD
+                                             WHERE CD.FAD_INVOICE_ID = CL.UUID
+                                               AND CL.STATE = '4' AND (CL.IS_VOID = '0' OR CL.IS_VOID IS NULL)
+                                            UNION ALL
+                                            SELECT FAD_CASH_REQ_ID,
+                                                   FCRI.CLEARANCE_MONEY
+                                              FROM FAD_CASH_REQ_INVOICE FCRI,
+                                                   FAD_INVOICE          FI
+                                             WHERE FCRI.FAD_INVOICE_ID = FI.UUID
+                                               AND FI.STATE = '4' AND (FI.IS_VOID = '0' OR FI.IS_VOID IS NULL))
+                                     GROUP BY FAD_CASH_REQ_ID) FI
+                            ON T.UUID = FI.FAD_CASH_REQ_ID
+                          LEFT JOIN OPERATE_BUSINESS_BID_INFO I
+                            ON T.OPERATE_BUSINESS_BID_INFO_ID = I.UUID
+                         WHERE T.REQ_TYPE = '3') S
+                    where 1=1 and ${conditions}   and ${voidfilter}]]>
+        </common>
+    </common_query_deposit>
+    <!--M7_NC3_周转金申请-->
+    <common_query_revolving>
+        <common>
+            <![CDATA[
+                            SELECT S.*
+                  FROM (SELECT T.*,
+                               O.ORG_NAME,
+                               U.USER_NAME,
+                               CO.CODE_DESC,
+                               S.BILL_STATE,
+                               CT.CERTIFICATE_NO,
+                               (SELECT PPM.PROJECT_CODE
+                                  FROM PRM_PROJECT_MAIN PPM
+                                 WHERE PPM.UUID = T.PROJECT_ID) AS PROJECT_CODE,
+                               NVL(FI.CLEARANCE_MONEY, 0) AS CLEARANCE_MONEY,
+                                DECODE(sign(NVL(FI.CLEARANCE_MONEY, 0)-T.MONEY), -1, 0,1) AS IS_CLEARED,
+                                DECODE(sign(NVL(FI.CLEARANCE_MONEY, 0)-T.MONEY), -1, '未核销', '已核销') AS IS_CLEARED_STATE
+                          FROM FAD_CASH_REQ T
+                          LEFT JOIN (SELECT C.SYS_CODE, C.CODE_DESC AS BILL_STATE
+                                      FROM SCDP_CODE C
+                                     WHERE C.CODE_TYPE = 'FAD_BILL_STATE') S
+                            ON T.STATE = S.SYS_CODE
+                          LEFT JOIN SCDP_ORG O
+                            ON T.OFFICE_ID = O.ORG_CODE
+                          LEFT JOIN SCDP_USER U
+                            ON T.STAFF_ID = U.USER_ID
+                              LEFT JOIN (SELECT BUSINESS_ID,
+                                           LISTAGG(T.CERTIFICATE_NO, '||') WITHIN GROUP(ORDER BY BUSINESS_ID) AS CERTIFICATE_NO
+                                      FROM FAD_CERTIFICATE T
+                                     GROUP BY T.BUSINESS_ID) CT
+                            ON T.UUID = CT.BUSINESS_ID
+                          LEFT JOIN (SELECT C.SYS_CODE, C.CODE_DESC
+                                      FROM SCDP_CODE C
+                                     WHERE C.CODE_TYPE = 'FAD_PAYWAYS') CO
+                            ON T.PAY_STYLE = CO.SYS_CODE
+                          LEFT JOIN (SELECT FAD_CASH_REQ_ID,
+                                           SUM(CLEARANCE_MONEY) AS CLEARANCE_MONEY
+                                      FROM (SELECT CD.FAD_CASH_REQ_ID, CD.CLEARANCE_MONEY
+                                              FROM FAD_CASH_CLEARANCE   CL,
+                                                   FAD_CASH_REQ_INVOICE CD
+                                             WHERE CD.FAD_INVOICE_ID = CL.UUID
+                                               AND CL.STATE = '4' AND (CL.IS_VOID = '0' OR CL.IS_VOID IS NULL)
+                                            UNION
+                                            SELECT FAD_CASH_REQ_ID,
+                                                   FCRI.CLEARANCE_MONEY
+                                              FROM FAD_CASH_REQ_INVOICE FCRI,
+                                                   FAD_INVOICE          FI
+                                             WHERE FCRI.FAD_INVOICE_ID = FI.UUID
+                                               AND FI.STATE = '4' AND (FI.IS_VOID = '0' OR FI.IS_VOID IS NULL))
+                                     GROUP BY FAD_CASH_REQ_ID) FI
+                            ON T.UUID = FI.FAD_CASH_REQ_ID
+                         WHERE T.REQ_TYPE = '4') S
+                    where 1=1 and ${conditions} ]]>
+        </common>
+    </common_query_revolving>
+    <common_query_project>
+        <common>
+            <![CDATA[
+                            SELECT S.*
+                  FROM (SELECT T.UUID,
+                               T.RUNNING_NO,
+                               T.PROJECT_ID,
+                               T.STATE,
+                               T.SUBJECT_CODE,
+                               T.SUBJECT_NAME,
+                               T.OFFICE_ID,
+                               T.DEPOSIT_CHARACTERISTIC,
+                               T.DEPOSIT_TYPE,
+                               T.STAFF_ID,
+                               T.MONEY,
+                               T.TRIP_LOCATION,
+                               T.SUPPLIER_NAME,
+                               T.TRIP_DAYS,
+                               T.TRIP_MEMBER_NUM,
+                               T.VEHICLE,
+                               T.TRIP_REASON,
+                               T.PAY_STYLE,
+                               T.SQUARE_DATE,
+                               T.APPLY_DATE,
+                               T.PRECLEAR_DATE,
+                               T.FAD_SUBJECT_CODE,
+                               T.REMARK,
+                               T.CREATE_BY,
+                               T.CREATE_TIME,
+                               T.IS_VOID,
+                               CT.CERTIFICATE_NO,
+                               M.PROJECT_NAME,
+                               O.ORG_NAME,
+                               U.USER_NAME,
+                               S.BILL_STATE,
+                               T.REQ_TYPE,
+                               NVL(FI.CLEARANCE_MONEY, 0) AS CLEARANCE_MONEY,
+                              DECODE(sign(NVL(FI.CLEARANCE_MONEY, 0)-T.MONEY), -1, 0,1) AS IS_CLEARED,
+                              (select count(1) from fad_cash_req_invoice fc where fc.fad_cash_req_id = T.uuid) as records
+                          FROM FAD_CASH_REQ T
+                          LEFT JOIN PRM_PROJECT_MAIN M
+                            ON T.PROJECT_ID = M.UUID
+                          LEFT JOIN SCDP_ORG O
+                            ON T.OFFICE_ID = O.ORG_CODE
+                          LEFT JOIN SCDP_USER U
+                            ON T.STAFF_ID = U.USER_ID
+                          LEFT JOIN (SELECT BUSINESS_ID,
+                                           LISTAGG(T.CERTIFICATE_NO, '||') WITHIN GROUP(ORDER BY BUSINESS_ID) AS CERTIFICATE_NO
+                                      FROM FAD_CERTIFICATE T
+                                     GROUP BY T.BUSINESS_ID) CT
+                           ON T.UUID = CT.BUSINESS_ID
+                          LEFT JOIN (SELECT C.SYS_CODE, C.CODE_DESC AS BILL_STATE
+                                      FROM SCDP_CODE C
+                                     WHERE C.CODE_TYPE = 'FAD_BILL_STATE') S
+                            ON T.STATE = S.SYS_CODE
+                          LEFT JOIN (SELECT FAD_CASH_REQ_ID,
+                                           SUM(CLEARANCE_MONEY) AS CLEARANCE_MONEY
+                                      FROM (SELECT CD.FAD_CASH_REQ_ID, CD.CLEARANCE_MONEY
+                                              FROM FAD_CASH_CLEARANCE   CL,
+                                                   FAD_CASH_REQ_INVOICE CD
+                                             WHERE CD.FAD_INVOICE_ID = CL.UUID
+                                               AND CL.STATE = '4' AND (CL.IS_VOID = '0' OR CL.IS_VOID IS NULL)
+                                            UNION
+                                            SELECT FAD_CASH_REQ_ID,
+                                                   FCRI.CLEARANCE_MONEY
+                                              FROM FAD_CASH_REQ_INVOICE FCRI,
+                                                   FAD_INVOICE          FI
+                                             WHERE FCRI.FAD_INVOICE_ID = FI.UUID
+                                               AND FI.STATE = '4' AND (FI.IS_VOID = '0' OR FI.IS_VOID IS NULL))
+                                     GROUP BY FAD_CASH_REQ_ID) FI
+                            ON T.UUID = FI.FAD_CASH_REQ_ID
+                         WHERE T.REQ_TYPE IN ('1', '2')
+                           AND T.PROJECT_ID IS NOT NULL) S
+                        where 1=1 and ${conditions}   and ${voidfilter}]]>
+        </common>
+    </common_query_project>
+
+    <grid_nonpurchase_budget_sql>
+        <common>
+            <![CDATA[select t.*  from  vw_prm_budget t where  t.package_id is null]]>
+        </common>
+    </grid_nonpurchase_budget_sql>
+
+    <common_query_scm>
+        <common>
+            <![CDATA[
+                            SELECT S.*,decode(IS_ADVANCE_PAYMENT,0,'普通请款',1,'预付款',2,'支付请款') as IS_ADVANCE_PAYMENT_DESC
+                  FROM (SELECT T.UUID,
+                               T.RUNNING_NO,
+                               T.PROJECT_ID,
+                               T.STATE,
+                               T.SUBJECT_CODE,
+                               T.SUBJECT_NAME,
+                               T.SUPPLIER_NAME,
+                               T.OFFICE_ID,
+                               T.STAFF_ID,
+                               (select s.user_name from scdp_user s where s.user_id=t.staff_id) as staff_name,
+                               T.MONEY,
+                               T.TRIP_LOCATION,
+                               T.TRIP_DAYS,
+                               T.TRIP_MEMBER_NUM,
+                               T.PURCHASE_CONTRACT_ID,
+                               T.VEHICLE,
+                               T.TRIP_REASON,
+                               T.PAY_STYLE,
+                               T.SQUARE_DATE,
+                               T.PAYEE_NAME,
+                               T.PAYEE_BANK_NAME,
+                               T.PAYEE_ACCOUNT,
+                               T.FAD_SUBJECT_CODE,
+                               NVL(T.IS_ADVANCE_PAYMENT,0) AS IS_ADVANCE_PAYMENT,
+                               T.REMARK,
+                               T.CREATE_BY,
+                               T.CREATE_TIME,
+                               T.IS_VOID,
+                               M.PROJECT_NAME,
+                               M.PROJECT_CODE,
+                               T.OPERATOR_NAME,
+                               CT.CERTIFICATE_NO,
+                               O.ORG_NAME,
+                               S.BILL_STATE,
+                               SC.SCM_CONTRACT_CODE,
+                               NVL(FI.CLEARANCE_MONEY, 0) AS CLEARANCE_MONEY,
+                                 DECODE(sign(NVL(FI.CLEARANCE_MONEY, 0)-T.MONEY), -1, 0,1) AS IS_CLEARED
+                          FROM FAD_CASH_REQ T
+                          LEFT JOIN (SELECT C.SYS_CODE, C.CODE_DESC AS BILL_STATE
+                                      FROM SCDP_CODE C
+                                     WHERE C.CODE_TYPE = 'FAD_BILL_STATE') S
+                            ON T.STATE = S.SYS_CODE
+                          LEFT JOIN SCM_CONTRACT SC
+                            ON T.PURCHASE_CONTRACT_ID = SC.UUID
+                          LEFT JOIN (SELECT BUSINESS_ID,
+                                           LISTAGG(T.CERTIFICATE_NO, '||') WITHIN GROUP(ORDER BY BUSINESS_ID) AS CERTIFICATE_NO
+                                      FROM FAD_CERTIFICATE T
+                                     GROUP BY T.BUSINESS_ID) CT
+                          ON T.UUID = CT.BUSINESS_ID
+                          LEFT JOIN PRM_PROJECT_MAIN M
+                            ON T.PROJECT_ID = M.UUID
+                          LEFT JOIN SCDP_ORG O
+                            ON T.OFFICE_ID = O.ORG_CODE
+                          LEFT JOIN (SELECT FAD_CASH_REQ_ID,
+                                           SUM(CLEARANCE_MONEY) AS CLEARANCE_MONEY
+                                      FROM (SELECT CD.FAD_CASH_REQ_ID, CD.CLEARANCE_MONEY
+                                              FROM FAD_CASH_CLEARANCE   CL,
+                                                   FAD_CASH_REQ_INVOICE CD
+                                             WHERE CD.FAD_INVOICE_ID = CL.UUID
+                                               AND CL.STATE = '4' AND (CL.IS_VOID = '0' OR CL.IS_VOID IS NULL)
+                                            UNION
+                                            SELECT FAD_CASH_REQ_ID,
+                                                   FCRI.CLEARANCE_MONEY
+                                              FROM FAD_CASH_REQ_INVOICE FCRI,
+                                                   FAD_INVOICE          FI
+                                             WHERE FCRI.FAD_INVOICE_ID = FI.UUID
+                                               AND FI.STATE = '4' AND (FI.IS_VOID = '0' OR FI.IS_VOID IS NULL))
+                                     GROUP BY FAD_CASH_REQ_ID) FI
+                            ON T.UUID = FI.FAD_CASH_REQ_ID
+                         WHERE T.REQ_TYPE = '0') S
+                        where   ${conditions}   and ${voidfilter}]]>
+        </common>
+    </common_query_scm>
+    <query_for_clearance>
+        <common>
+            <![CDATA[select r.*,nvl(r.money,0)-nvl(r.clearanced_money,0) as un_clearanced_money from (select    t.uuid,
+                               t.running_no,
+                               t.project_id,
+                               (select p.project_name from prm_project_main p where p.uuid=t.project_id) as project_name,
+                               t.budget_c_uuid,
+                               case when t.is_project = '1' then
+                                (select m.project_code from prm_project_main m
+                                        where m.uuid = t.project_id)
+                                else
+                                       t.subject_code
+                                end as subject_code,
+                               t.subject_name,
+                               t.office_id,
+                               (select s.org_name from scdp_org s where s.ORG_CODE=t.office_id) as office_name,
+                               t.deposit_characteristic,
+                               t.deposit_type,
+                               t.staff_id,
+                               (select s.user_name from scdp_user s where s.user_id=t.staff_id) as staff_Name,
+                               t.money,
+                               t.trip_location,
+                               t.supplier_name,
+                               t.trip_days,
+                               t.trip_member_num,
+                               t.vehicle,
+                               t.trip_reason,
+                               t.pay_style,
+                               (select code_desc
+                                  from scdp_code a
+                                 where a.code_type = 'FAD_PAYWAY'
+                                   and a.sys_code = t.pay_style) as pay_style_name,
+                               t.square_date,
+                               t.remark,
+                               t.create_by,
+                               t.create_time,
+                               '待补充' as finance_No,
+                               (SELECT SUM(FCRI.CLEARANCE_MONEY)
+                                  FROM FAD_CASH_REQ_INVOICE FCRI
+                                 WHERE T.UUID = FCRI.FAD_CASH_REQ_ID
+                                   AND (EXISTS
+                                        (SELECT 1
+                                           FROM FAD_INVOICE F
+                                          WHERE F.UUID = FCRI.FAD_INVOICE_ID
+                                            AND F.STATE <>'3') OR EXISTS
+                                        (SELECT 1
+                                           FROM FAD_CASH_CLEARANCE F
+                                          WHERE F.UUID = FCRI.FAD_INVOICE_ID
+                                            AND F.STATE <>'3'))) AS clearanced_money
+                        from   fad_cash_req t where state = '4' and ${conditions}   and ${voidfilter} and ${selfconditions} ) r where( nvl(r.money,0)-nvl(clearanced_money,0))>0]]>
+        </common>
+    </query_for_clearance>
+
+    <if-exists-deposit>
+        <common>
+            <![CDATA[select r.*,nvl(r.money,0)-nvl(r.clearanced_money,0) as un_clearanced_money from (select    t.uuid,
+                               t.running_no,
+                               t.project_id,
+                               (select p.project_name from prm_project_main p where p.uuid=t.project_id) as project_name,
+                               t.budget_c_uuid,
+                               case when t.is_project = '1' then
+                                (select m.project_code from prm_project_main m
+                                        where m.uuid = t.project_id)
+                                else
+                                       t.subject_code
+                                end as subject_code,
+                               t.subject_name,
+                               t.office_id,
+                               (select s.org_name from scdp_org s where s.ORG_CODE=t.office_id) as office_name,
+                               t.deposit_characteristic,
+                               t.deposit_type,
+                               t.staff_id,
+                               (select s.user_name from scdp_user s where s.user_id=t.staff_id) as staff_Name,
+                               t.money,
+                               t.trip_location,
+                               t.supplier_name,
+                               t.trip_days,
+                               t.trip_member_num,
+                               t.vehicle,
+                               t.trip_reason,
+                               t.pay_style,
+                               (select code_desc
+                                  from scdp_code a
+                                 where a.code_type = 'FAD_PAYWAY'
+                                   and a.sys_code = t.pay_style) as pay_style_name,
+                               t.square_date,
+                               t.remark,
+                               t.create_by,
+                               t.create_time,
+                               '待补充' as finance_No,
+                               (SELECT SUM(FCRI.CLEARANCE_MONEY)
+                                  FROM FAD_CASH_REQ_INVOICE FCRI
+                                 WHERE T.UUID = FCRI.FAD_CASH_REQ_ID
+                                   AND (EXISTS
+                                        (SELECT 1
+                                           FROM FAD_INVOICE F
+                                          WHERE F.UUID = FCRI.FAD_INVOICE_ID
+                                            AND F.STATE <>'3') OR EXISTS
+                                        (SELECT 1
+                                           FROM FAD_CASH_CLEARANCE F
+                                          WHERE F.UUID = FCRI.FAD_INVOICE_ID
+                                            AND F.STATE <>'3'))) AS clearanced_money
+                        from fad_cash_req t where t.req_type = '3'
+                        and (t.project_id = '${projectId}'
+                        or exists(select 1 from prm_contract pc
+                                inner join prm_contract_detail pcd on pcd.prm_contract_id = pc.uuid
+                                where pc.operate_business_bid_info_id = t.operate_business_bid_info_id
+                                        and pcd.prm_project_main_id = '${projectId}')
+                        or t.office_id = '${officeId}') and ${selfSql}
+                        and state = '4' ) r where( nvl(r.money,0)-nvl(clearanced_money,0))>0]]>
+        </common>
+    </if-exists-deposit>
+
+    <invoice-exists-deposit>
+        <common>
+            <![CDATA[
+             select count(1) as num
+                from fad_cash_req req
+                where req.req_type = '3'
+                and exists (select 1
+                      from fad_cash_req_invoice fcri
+                     where fcri.fad_invoice_id = '${fadInvoiceId}'
+                       and fcri.fad_cash_req_id = req.uuid)
+             ]]>
+        </common>
+    </invoice-exists-deposit>
+
+    <query_ebusiness_name_grid>
+        <common>
+            <![CDATA[   select t1.ebusiness_name,
+                               t1.user_code,
+                               t1.password,
+                               t1.scm_supplier_id,
+                               t2.complete_name as supplier_name
+                          from scm_ebusiness_user t1
+                          left join scm_supplier t2
+                            on t2.supplier_code = t1.scm_supplier_id
+                          where  ${conditions} and  ${selfconditions} ]]>
+        </common>
+    </query_ebusiness_name_grid>
+
+</DAO>

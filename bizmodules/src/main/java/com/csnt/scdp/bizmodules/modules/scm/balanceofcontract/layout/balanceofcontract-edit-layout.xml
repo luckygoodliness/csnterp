@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JTab pos="A1:A1" row="flex" col="1*1" border_n="1">
+        <!--<JForm pos="A1:A1" cid="scmContractDto" row="23*7" col="0.25*4" title_s="" border_n="1">-->
+            <!--<JHidden cid="uuid"/>-->
+            <!--<JHidden cid="tblVersion"/>-->
+            <!--<JText pos="A1:A1" cid="scmContractCode" fieldLabel_s="scmContractCode" allowBlank_b="true"/>-->
+            <!--<JText pos="B1:B1" cid="contractNature" fieldLabel_s="contractNature" allowBlank_b="true"/>-->
+            <!--<JText pos="C1:C1" cid="supplierCode" fieldLabel_s="supplierCode" allowBlank_b="true"/>-->
+            <!--<JText pos="D1:D1" cid="supplierName" fieldLabel_s="supplierName" allowBlank_b="true"/>-->
+            <!--<JDec pos="A2:A2" cid="amount" fieldLabel_s="amount" allowBlank_b="true"/>-->
+            <!--<JDec pos="B2:B2" cid="quantity" fieldLabel_s="quantity" allowBlank_b="true"/>-->
+            <!--<JText pos="C2:C2" cid="purchaseType" fieldLabel_s="purchaseType" allowBlank_b="true"/>-->
+            <!--<JText pos="D2:D2" cid="contractPayType" fieldLabel_s="contractPayType" allowBlank_b="true"/>-->
+            <!--<JText pos="A3:A3" cid="otherDes" fieldLabel_s="otherDes" allowBlank_b="true"/>-->
+            <!--<JText pos="B3:B3" cid="debter" fieldLabel_s="debter" allowBlank_b="true"/>-->
+            <!--<JText pos="C3:C3" cid="debterDepartment" fieldLabel_s="debterDepartment" allowBlank_b="true"/>-->
+            <!--<JText pos="D3:D3" cid="bank" fieldLabel_s="bank" allowBlank_b="true"/>-->
+            <!--<JText pos="A4:A4" cid="bankId" fieldLabel_s="bankId" allowBlank_b="true"/>-->
+            <!--<JDec pos="B4:B4" cid="totalValue" fieldLabel_s="totalValue" allowBlank_b="true"/>-->
+            <!--<JText pos="C4:C4" cid="payType" fieldLabel_s="payType" allowBlank_b="true"/>-->
+            <!--<JText pos="D4:D4" cid="isUrgent" fieldLabel_s="isUrgent" allowBlank_b="true"/>-->
+            <!--<JDatetime pos="A5:A5" cid="debtDate" fieldLabel_s="debtDate" allowBlank_b="true"/>-->
+            <!--<JText pos="B5:B5" cid="state" fieldLabel_s="state" allowBlank_b="true"/>-->
+            <!--<JDatetime pos="C5:C5" cid="effectiveDate" fieldLabel_s="effectiveDate" allowBlank_b="true"/>-->
+            <!--<JDatetime pos="D5:D5" cid="stampDate" fieldLabel_s="stampDate" allowBlank_b="true"/>-->
+            <!--<JText pos="A6:A6" cid="contractState" fieldLabel_s="contractState" allowBlank_b="true"/>-->
+            <!--<JText pos="B6:B6" cid="isVirtual" fieldLabel_s="isVirtual" allowBlank_b="true"/>-->
+            <!--<JDec pos="C6:C6" cid="paid" fieldLabel_s="paid" allowBlank_b="true"/>-->
+            <!--<JDec pos="D6:D6" cid="invoiceAmount" fieldLabel_s="invoiceAmount" allowBlank_b="true"/>-->
+            <!--<JText pos="A7:A7" cid="remark" fieldLabel_s="remark" allowBlank_b="true"/>-->
+            <!--&lt;!&ndash;<JText pos="B7:B7" cid="companyCode" fieldLabel_s="companyCode" allowBlank_b="true"/>&ndash;&gt;-->
+            <!--&lt;!&ndash;<JText pos="C7:C7" cid="projectId" fieldLabel_s="projectId" allowBlank_b="true"/>&ndash;&gt;-->
+            <!--&lt;!&ndash;<JText pos="D7:D7" cid="departmentCode" fieldLabel_s="departmentCode" allowBlank_b="true"/>&ndash;&gt;-->
+            <!--&lt;!&ndash;<JText pos="A8:A8" cid="createOffice" fieldLabel_s="createOffice" allowBlank_b="true"/>&ndash;&gt;-->
+            <!--&lt;!&ndash;<JText pos="B8:B8" cid="updateOffice" fieldLabel_s="updateOffice" allowBlank_b="true"/>&ndash;&gt;-->
+        <!--</JForm>-->
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="支付记录" border_n="1" width="1366" height="150">
+
+            <JEGrid pos="A1:A1" cid="scmContractPayDto" store="Balanceofcontract.store.ScmContractPayStore">
+                <JTextCol text_s="scmContractId" dataIndex="scmContractId" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="swiftNumber" dataIndex="swiftNumber" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JDecCol text_s="amount" dataIndex="amount" width_n="150">
+                    <JDec allowBlank_b="true"/>
+                </JDecCol>
+                <JTextCol text_s="payType" dataIndex="payType" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="payClass" dataIndex="payClass" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="payee" dataIndex="payee" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JDateCol text_s="payTime" dataIndex="payTime" width_n="150">
+                    <JDate allowBlank_b="true"/>
+                </JDateCol>
+                <JTextCol text_s="isDebt" dataIndex="isDebt" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JDecCol text_s="writeOff" dataIndex="writeOff" width_n="150">
+                    <JDec allowBlank_b="true"/>
+                </JDecCol>
+                <JTextCol text_s="voucherNo" dataIndex="voucherNo" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="principal" dataIndex="principal" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="projectId" dataIndex="projectId" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+            </JEGrid>
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="发票分配" border_n="1" width="1366" height="150">
+
+
+            <JEGrid pos="A1:A1" cid="scmContractInvoiceDto" store="Balanceofcontract.store.ScmContractInvoiceStore">
+                <JTextCol text_s="scmContractId" dataIndex="scmContractId" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="fadInvoiceId" dataIndex="fadInvoiceId" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JDecCol text_s="amount" dataIndex="amount" width_n="150">
+                    <JDec allowBlank_b="true"/>
+                </JDecCol>
+                <JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="projectId" dataIndex="projectId" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+            </JEGrid>
+        </JPanel>
+    </JTab>
+</view>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonreport version="1.0">
+    <report>
+        <reporttype>L</reporttype>
+        <reporttemplate>erp/prm/项目收支动态图.cpt&amp;op=view</reporttemplate>
+        <reportcache>false</reportcache>
+    </report>
+    <conditions columns="4">
+        <JHidden cid="officeIdDesc" field="officeIdDesc"/>
+        <JErpDepartMent pos="A1:A1" cid="officeId" fieldLabel_s="officeId" field="officeId" labelWidth_n="100"
+                        allowBlank_b="false"/>
+        <JText pos="B1:B1" cid="projectCode" fieldLabel_s="projectCode" field="projectCode"/>
+        <JText pos="C1:C1" cid="projectName" fieldLabel_s="projectName" field="projectName"/>
+    </conditions>
+</commonreport>

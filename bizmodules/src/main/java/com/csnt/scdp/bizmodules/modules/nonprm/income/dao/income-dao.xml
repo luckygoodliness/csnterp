@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select * from non_project_income where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+
+    <common_query_year>
+        <common>
+            <![CDATA[select  distinct   year as uuid
+                             from non_project_budget_h
+                             where  1=1 and ${conditions}]]>
+        </common>
+    </common_query_year>
+
+    <common_query_new>
+        <common>
+            <![CDATA[select
+                        i.UUID,
+                        i.YEAR,
+                        i.SUBJECT,
+                        i.APPLIED_VALUE,
+                        i.FIRST_INSTANCE,
+                        i.ASSIGNED_VALUE,
+                        i.OCCURRED_VALUE,
+                        i.COMPANY_CODE,
+                        i.COMPANY_NAME,
+                        i.DEPARTMENT_CODE,
+                        i.CREATE_BY,
+                        i.CREATE_OFFICE,
+                        i.CREATE_TIME,
+                        i.UPDATE_BY,
+                        i.UPDATE_OFFICE,
+                        i.UPDATE_TIME,
+                        i.IS_VOID,
+                        i.LOC_TIMEZONE,
+                        i.TBL_VERSION,
+                        i.SEQ_NO
+                        from non_project_income  i
+
+                        where 1=1]]>
+        </common>
+    </common_query_new>
+
+    <query_lastyear_occurred>
+        <common>
+            <![CDATA[
+            select t.*, p.*
+            from (select *
+            from non_project_income_in
+            where year = to_char(sysdate, 'yyyy')) t
+            left join (select *
+            from non_project_income_in income
+            left join (select sum(m.occurred_value), m.puuid
+            from non_project_income_mon m
+            group by m.puuid) im
+            on income.uuid = im.puuid
+            where year = to_char(sysdate, 'yyyy') - 1) p
+            on t.subject = p.subject
+            and nvl(t.subject_office_id, 0) = nvl(p.subject_office_id, 0)]]>
+        </common>
+    </query_lastyear_occurred>
+
+    <query_dept_non_project_income_expenses>
+        <common>
+            <![CDATA[
+            select      t.uuid,
+                        t.year,
+                        t.subject,
+                        t.applied_value,
+                        t.first_instance,
+                        t.assigned_value,
+                        t.occurred_value,
+                        t.company_code,
+                        t.company_name,
+                        t.department_code,
+                        t.create_by,
+                        t.subject_office_id,
+                        t.subject_office_name,
+                        t.seq_no,
+                        p.occurred_value occ
+            from        (select inc.uuid,
+                                inc.year,
+                                inc.subject,
+                                inc.applied_value,
+                                inc.first_instance,
+                                inc.assigned_value,
+                                inc.occurred_value,
+                                inc.company_code,
+                                inc.company_name,
+                                inc.department_code,
+                                inc.create_by,
+                                inc.subject_office_id,
+                                inc.subject_office_name,
+                                inc.seq_no
+                        from non_project_income inc where year = ?) t
+            left join   (select *
+                            from  non_project_income income
+                            left join   (select sum(m.occurred_value),
+                                                m.puuid
+                                        from non_project_income_mon m
+                                        group by m.puuid) im
+                            on income.uuid = im.puuid
+                            where year = ?) p
+            on t.subject = p.subject
+            and nvl(t.subject_office_id, 0) = nvl(p.subject_office_id, 0)]]>
+        </common>
+    </query_dept_non_project_income_expenses>
+
+    -- 根据年份和部门查找当年上报值的总和
+    <query_total_applied>
+        <common>
+            <![CDATA[
+            SELECT  sum(c.this_year_applyed) sapp,
+                    SUM(c.this_year_first_instance) sins,
+                    SUM(c.this_year_assigned) sass
+            FROM non_project_budget_c c
+            WHERE hid=(SELECT h.uuid FROM non_project_budget_h h WHERE h.budget_office_id=? AND h.year=?)
+            ]]>
+        </common>
+    </query_total_applied>
+
+</DAO>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>certificatesetrule-dao</daotype>
+        <daokey>common_query_accsubj</daokey>
+    </querysql>
+    <defaultSort>to_number(uuid) asc</defaultSort>
+    <conditions columns="4">
+        <JHidden cid="subjectCode$Optr" value="^"/>
+        <JText pos="A1:A1" cid="subjectCode" fieldLabel_s="subjectCode" field="subject_code"/>
+        <JText pos="A2:A2" cid="subjectName" fieldLabel_s="subjectName" field="subject_name"/>
+    </conditions>
+    <quickquery>
+        <QueryCids>subjectCode,subjectName</QueryCids>
+        <ForceQueryCids></ForceQueryCids>
+    </quickquery>
+    <results>
+        <JTextCol text_s="subjectCode" dataIndex="subjectCode" width_n="100"/>
+        <JTextCol text_s="subjectName" dataIndex="subjectName" width_n="100"/>
+    </results>
+</commonquery>

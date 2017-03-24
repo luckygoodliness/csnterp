@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sessionFactorys>
+    <sessionFactory name="sessionFactory">
+        <package>com.csnt.scdp.sysmodules.modules.sample.single</package>
+    </sessionFactory>
+    <sessionFactory name="sessionFactory">
+        <package>com.spm</package>
+    </sessionFactory>
+</sessionFactorys>

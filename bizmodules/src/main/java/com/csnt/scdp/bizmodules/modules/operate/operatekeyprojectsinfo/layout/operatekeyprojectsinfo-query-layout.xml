@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>operatekeyprojectsinfo-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JCombo pos="A1:A1" cid="operationState_query" fieldLabel_s="operationState" allowBlank_b="true"
+                comboType="scdp_fmcode"
+                codeType="OPERATE_STATE" displayDesc_b="true" field="operation_state"/>
+
+        <JCombo pos="B1:B1" cid="area" fieldLabel_s="area" allowBlank_b="true"
+                comboType="fm_state" labelWidth_n="132"
+                displayDesc_b="true" fullInfo_b="true" field="OKPI.area"/>
+
+        <JHidden cid="officeIdDesc"/>
+        <JErpDepartMent pos="C1:C1" cid="officeId" field="office_id" fieldLabel_s="officeId" allowBlank_b="true"/>
+
+        <JHidden pos="A1:A1" cid="plannedCa" fieldLabel_s="plannedCa" field="planned_Ca"/>
+    </conditions>
+    <quickquery>
+        <ExpandConditions>true</ExpandConditions>
+        <QueryCids>plannedCa</QueryCids>
+        <ForceQueryCids>createBy</ForceQueryCids>
+    </quickquery>
+    <results>
+        <JDateCol text_s="recordDate" dataIndex="recordDate" width_n="150"/>
+        <JTextCol text_s="officeId" dataIndex="orgName" width_n="150"/>
+        <JTextCol text_s="projectName" dataIndex="projectName" width_n="120"/>
+        <JDecCol text_s="plannedCa" dataIndex="plannedCa" width_n="150"/>
+        <JDateCol text_s="bidTime" dataIndex="bidTime" width_n="150"/>
+        <JDecCol text_s="projectMoney" dataIndex="projectMoney" width_n="150"/>
+        <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+    </results>
+</commonquery>

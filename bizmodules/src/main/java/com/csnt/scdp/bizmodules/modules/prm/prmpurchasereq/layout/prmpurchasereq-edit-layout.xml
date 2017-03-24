@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JTab pos="A1:A1" row="flex" col="1*1" border_n="1">
+        <JPanel pos="A1:A1" row="105,flex" col="1*1" title_s="基本信息" border_n="1">
+            <JFieldSet pos="A1:A1" col="1*1" row="300" border_n="1" title_s="">
+                <JForm pos="A1:A1" cid="prmPurchaseReqDto" row="23,23,23,23" col="0.06*16" title_s="" border_n="1">
+                    <JHidden cid="uuid"/>
+                    <JHidden cid="tblVersion"/>
+                    <JText pos="A1:D1" cid="purchaseReqNo" fieldLabel_s="purchaseReqNo" allowBlank_b="true"
+                           readOnly_b="true" adaptable_b="false"/>
+                    <!--<JText pos="B1:B1" cid="state" fieldLabel_s="state" allowBlank_b="true"/>-->
+                    <JCombo pos="E1:H1" cid="state" fieldLabel_s="state" comboType="scdp_fmcode"
+                            codeType="CDM_BILL_STATE"
+                            displayDesc_b="true" readOnly_b="true" adaptable_b="false"/>
+
+                    <JCheck pos="I1:L1" cid="isInner" fieldLabel_s="isInner" field="isInner" active="true"
+                            checked="checked"/>
+
+                    <!--<JTreeComboField pos="M1:P1" fieldLabel_s="innerSupplier" cid="innerSupplier"-->
+                    <!--field="innerSupplier" canSelectFolders_b="true"  allowBlank_b="true"-->
+                    <!--selectChildren_b="false" store="SysOrg.store.ScdpDepartTreeStore"/>-->
+                    <JHidden cid="innerSupplierDesc"/>
+                    <JErpDepartMent pos="M1:P1" fieldLabel_s="innerSupplier" cid="innerSupplier"
+                                    field="innerSupplier"/>
+
+                    <!--<JText pos="E1:H1" cid="stateNm" fieldLabel_s="stateNm" allowBlank_b="true" readOnly_b="true" adaptable_b="false" />-->
+                    <!--<JText pos="A2:H2" cid="remark" fieldLabel_s="remark" allowBlank_b="true" />-->
+
+                    <!--<JText pos="A1:A1" cid="prmProjectMainId" fieldLabel_s="prmProjectMainId" allowBlank_b="true"/>-->
+                    <!--<JText pos="C1:C1" cid="financialSubject" fieldLabel_s="financialSubject" allowBlank_b="true"/>-->
+                    <!--<JText pos="D1:D1" cid="financialSubjectCode" fieldLabel_s="financialSubjectCode" allowBlank_b="true"/>-->
+                    <!--<JText pos="A2:A2" cid="subjectLevel" fieldLabel_s="subjectLevel" allowBlank_b="true"/>-->
+                    <!--<JText pos="D2:D2" cid="companyCode" fieldLabel_s="companyCode" allowBlank_b="true"/>-->
+                    <!--<JOrg pos="B3:B3" cid="departmentCode" fieldLabel_s="departmentCode" allowBlank_b="true"/>-->
+                    <!--<JText pos="C3:C3" cid="createOffice" fieldLabel_s="createOffice" allowBlank_b="true"/>-->
+                    <!--<JText pos="A4:A4" cid="updateOffice" fieldLabel_s="updateOffice" allowBlank_b="true"/>-->
+
+                    <JNoneFinishedProject pos="A2:D2" fieldLabel_s="projectId" cid="projectName" allowBlank_b="false"
+                                          refer_j='[{"refField":"prmProjectMainId","valueField":"uuid"}
+                                        ,{"refField":"departmentCode","valueField":"contractorOffice"}
+                                        ,{"refField":"officeId","valueField":"contractorOffice"}]'
+                            />
+
+                    <!--修改为地址编辑下拉框-->
+                    <!--//M3_C5_F1_到货地址-->
+                    <JArriveLocationGrid pos="E2:L2" cid="addrArriveLocation" fieldLabel_s="arriveLocation"
+                                         valueField="arriveLocation" allowBlank_b="false"
+                                         refer_j='[{"refField":"addrConsignee","valueField":"consignee"}
+                                        ,{"refField":"addrContactWay","valueField":"contactWay"}]'
+                                         filterFields="prmProjectMainId"/>
+
+                    <JText pos="M2:P2" cid="addrConsignee" fieldLabel_s="consignee" allowBlank_b="false"/>
+                    <JText pos="A3:D3" cid="addrContactWay" fieldLabel_s="contactWay" allowBlank_b="false"/>
+
+                    <JTextArea pos="E3:L4" cid="addrRemark" fieldLabel_s="remark" allowBlank_b="true"/>
+
+                    <JCur pos="M3:P3" cid="totalMoney" fieldLabel_s="totalMoney" allowBlank_b="true" readOnly_b="true"
+                          adaptable_b="false"/>
+
+                    <JHidden cid="chkPrmProjectMainId"/>
+                    <JHidden cid="chkPrmPurchaseReqId"/>
+
+                    <!--<JPrmProjectMainIdGrid pos="A3:D3" fieldLabel_s="projectId" cid="projectName"  allowBlank_b="false"-->
+                    <!--refer_j='[{"refField":"prmProjectMainId","valueField":"uuid"}-->
+                    <!--,{"refField":"departmentCode","valueField":"departmentCode"}-->
+                    <!--,{"refField":"officeId","valueField":"contractorOffice"}]'-->
+                    <!--/>-->
+                    <JHidden cid="departmentCodeDesc"/>
+                    <JErpDepartMent pos="A4:D4" fieldLabel_s="departmentCode" cid="departmentCode"
+                                    field="departmentCode" readOnly_b="true" adaptable_b="false"/>
+
+                    <!--0811<JNoneFinishedProject pos="E4:H4" fieldLabel_s="projectId" cid="projectName" allowBlank_b="false"-->
+                    <!--refer_j='[{"refField":"prmProjectMainId","valueField":"uuid"}-->
+                    <!--,{"refField":"departmentCode","valueField":"contractorOffice"}-->
+                    <!--,{"refField":"officeId","valueField":"contractorOffice"}]'-->
+                    <!--/>-->
+
+                    <!--<JText pos="E4:H4" cid="prmProjectMainId" fieldLabel_s="projectId" allowBlank_b="true"/>-->
+                    <JHidden cid="prmProjectMainId"/>
+                    <!--<JHidden cid="departmentCode" />-->
+                    <JHidden cid="purchaseLevel"/>
+                    <JHidden cid="officeId"/>
+
+                    <!--<JText pos="E3:F3" cid="purchasePackageId" fieldLabel_s="purchasePackageId" allowBlank_b="true"/>-->
+
+                    <!--<JPrmPackageGrid pos="E4:H4" fieldLabel_s="purchasePackageId" cid="purchasePackageName"-->
+                    <!--refer_j='[{"refField":"purchasePackageId","valueField":"uuid"}]'-->
+                    <!--filterFields="prmProjectMainId|prmProjectMainId"/>-->
+
+
+                    <JHidden cid="purchasePackageId" fieldLabel_s="purchasePackageId" allowBlank_b="true"/>
+
+                    <!--<JButton text_s="searchBtn" cid="searchBtn" pos="O4:O4" iconCls="query_btn"></JButton>-->
+                    <!--去掉添加按钮-->
+                    <!--<JButton text_s="addPlanBtn" cid="addPlanBtn" pos="P4:P4" iconCls="temp_icon_16"></JButton>-->
+                    <!--</JFieldSet>-->
+                </JForm>
+            </JFieldSet>
+
+            <!--采购包-->
+            <!--<JFieldSet pos="A2:A2" col="1*1" row="flex" border_n="1" title_s="">-->
+            <!--<JEGrid pos="A1:A1" cid="prmPurchasePlanDtoTemp" withSelMode="true"-->
+            <!--store="Purchaseplan.store.PurchasePlanDetailStore" sortableColumns_b="true">-->
+            <!--<JHidden cid="uuid"/>-->
+            <!--<JHidden cid="purchasePackageId" dataIndex="purchasePackageId"/>-->
+            <!--<JHidden cid="purchaseLevel" dataIndex="purchaseLevel"/>-->
+
+            <!--<JTextCol text_s="purchasePackageId" dataIndex="purchasePackageId" width_n="120" />-->
+            <!--<JTextCol text_s="packageName" dataIndex="packageName" width_n="100"/>-->
+            <!--<JTextCol text_s="serialNumber" dataIndex="serialNumber" width_n="80"/>-->
+            <!--<JTextCol text_s="name" dataIndex="name" width_n="120"/>-->
+            <!--<JTextCol text_s="model" dataIndex="model" width_n="120"/>-->
+            <!--<JTextCol text_s="factory" dataIndex="factory" width_n="120"/>-->
+            <!--<JDecCol text_s="amount" dataIndex="amount" width_n="90"/>-->
+            <!--<JCurCol text_s="budgetPrice" dataIndex="budgetPrice" width_n="120"/>-->
+            <!--<JDecCol text_s="appliedAmount" dataIndex="appliedAmount" width_n="90"/>-->
+            <!--<JHidden cid="remainAmount" dataIndex="remainAmount"/>-->
+            <!--<JTextCol text_s="unit" dataIndex="unit" width_n="120"/>-->
+            <!--<JTextCol text_s="supplierId" dataIndex="supplierId" width_n="120"/>-->
+            <!--<JTextCol text_s="supplierProperty" dataIndex="supplierProperty" width_n="120"/>-->
+            <!--<JComboCol text_s="purchaseLevel" dataIndex="purchaseLevel" width_n="80">-->
+            <!--<JCombo comboType="scdp_fmcode"-->
+            <!--codeType="PRM_PURCHASE_LEVEL" displayDesc_b="true" fullInfo_b="false"-->
+            <!--multiSelect_b="false" readOnly_b="true"/>-->
+            <!--</JComboCol>-->
+            <!--<JComboCol text_s="subjectProperty" dataIndex="subjectProperty" width_n="80">-->
+            <!--<JCombo pos="A1:A4" comboType="scdp_fmcode"-->
+            <!--codeType="SCM_DEFAULTPROPERTY" displayDesc_b="true" readOnly_b="true"/>-->
+            <!--</JComboCol>-->
+
+            <!--</JEGrid>-->
+            <!--</JFieldSet>-->
+
+            <JFieldSet pos="A2:A2" col="1*1" row="flex,flex" border_n="1" title_s="">
+                <JEGrid pos="A1:A1" cid="prmPurchaseReqDetailDto" withSelMode="true"
+                        store="Prmpurchasereq.store.PrmPurchaseReqDetailStore" sortableColumns_b="true">
+
+                    <JHidden cid="needUpdate"/>
+                    <JHidden cid="chkAmount"/>
+                    <JHidden cid="chkBudgetPrice"/>
+                    <JHidden cid="chkPackageId"/>
+                    <JHidden cid="chkPackageName"/>
+                    <JHidden cid="uuid"/>
+                    <JHidden cid="purchasePackageId" dataIndex="purchasePackageId"/>
+                    <JHidden cid="handleAmount" dataIndex="handleAmount"/>
+                    <JHidden cid="prmPurchasePlanDetailId"/>
+                    <JHidden cid="isStamp"/>
+                    <JHidden cid="stampProjectUuid"/>
+                    <JTextCol text_s="packageName" dataIndex="packageName" width_n="100"/>
+                    <JTextCol text_s="serialNumber" dataIndex="serialNumber" width_n="80"/>
+                    <JCurCol text_s="purchaseBudgetMoney" dataIndex="purchaseBudgetMoney" width_n="100">
+                    </JCurCol>
+                    <JDecCol text_s="planAmount" dataIndex="planAmount" planAmount="80">
+                    </JDecCol>
+                    <JTextCol text_s="name" dataIndex="name" width_n="100">
+                    </JTextCol>
+                    <JTextCol text_s="model" dataIndex="model" width_n="80">
+                    </JTextCol>
+                    <JTextCol text_s="factory" dataIndex="factory" width_n="100">
+                    </JTextCol>
+                    <JDecCol text_s="amount" dataIndex="amount" width_n="80">
+                        <JDec allowBlank_b="true"/>
+                    </JDecCol>
+                    <JCurCol text_s="budgetPrice" dataIndex="budgetPrice" width_n="100">
+                    </JCurCol>
+
+                    <JCurCol text_s="expectedPrice" dataIndex="expectedPrice" width_n="100">
+                        <JDec allowBlank_b="false"/>
+                    </JCurCol>
+
+                    <JTextCol text_s="unit" dataIndex="unit" width_n="80">
+                        <JText allowBlank_b="true"/>
+                    </JTextCol>
+                    <JCurCol text_s="subTotal" dataIndex="subTotal" width_n="100"/>
+                    <JTextCol text_s="supplierId" dataIndex="supplierId" width_n="150">
+                        <JText allowBlank_b="true"/>
+                    </JTextCol>
+                    <JComboCol text_s="supplierProperty" dataIndex="supplierProperty" width_n="100">
+                        <JCombo pos="A1:A4" cid="supplierProperty" allowBlank_b="true"
+                                comboType="scdp_fmcode"
+                                codeType="PRM_SUPPLIER_PROPERTY" displayDesc_b="true" fullInfo_b="false"
+                                multiSelect_b="false"/>
+                    </JComboCol>
+
+                    <JDateCol text_s="arriveDate" dataIndex="arriveDate" width_n="100">
+                        <JDate allowBlank_b="false"/>
+                    </JDateCol>
+                    <JTextCol text_s="scmContractCode" dataIndex="scmContractCode" width_n="150">
+                    </JTextCol>
+                    <JTextCol text_s="contractState" dataIndex="contractState" width_n="100">
+                    </JTextCol>
+                    <JTextCol text_s="undertaker" dataIndex="undertaker" width_n="100"/>
+                    <JTextCol text_s="isUploaded" dataIndex="isUploaded" width_n="80">
+                    </JTextCol>
+                    <JHidden cid="technicalDrawing" dataIndex="technicalDrawing"/>
+                    <JComboCol text_s="isfallback" dataIndex="isfallback" width_n="80">
+                        <JCombo pos="A1:A4" comboType="scdp_fmcode"
+                                codeType="CDM_YES_OR_NO" displayDesc_b="true" readOnly_b="true"/>
+                    </JComboCol>
+                    <JTextCol text_s="fallbackReason" dataIndex="fallbackReason" width_n="100"/>
+                    <JTextCol text_s="fadSubjectCode" dataIndex="fadSubjectCode" width_n="100"/>
+                    <!--<JTextCol text_s="serialNumber" dataIndex="serialNumber" width_n="120">-->
+                    <!--<JText allowBlank_b="true"/>-->
+                    <!--</JTextCol>-->
+                </JEGrid>
+                <!--<JForm pos="A2:A2" cid="prmPurchaseReqDetailDtoAddress" row="23*2" col="0.25*4" title_s="" border_n="1">-->
+                <!--<JHidden cid="uuid"/>-->
+                <!--<JHidden cid="tblVersion"/>-->
+
+                <!--<JText pos="A1:A1" cid="consignee" fieldLabel_s="consignee" allowBlank_b="false"/>-->
+                <!--<JText pos="B1:B1" cid="contactWay" fieldLabel_s="contactWay" allowBlank_b="false"/>-->
+                <!--<JText pos="C1:D1" cid="arriveLocation" fieldLabel_s="arriveLocation" allowBlank_b="false"/>-->
+                <!--<JText pos="A2:D2" cid="remark" fieldLabel_s="remark" allowBlank_b="true"/>-->
+                <!--</JForm>-->
+            </JFieldSet>
+
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex,25" col="0.1*10" title_s="附件信息" border_n="1">
+            <JEGrid pos="A1:J1" cid="cdmFileRelationDto" store="Cdmfile.store.CdmFileRelationStore"
+                    withToolbar_b="false" cdmFileType="SCM_PURCHASE_REQ">
+                <JTextCol text_s="fileType" dataIndex="fileType" width_n="100"/>
+                <JTextCol text_s="fileName" dataIndex="fileName" width_n="120"/>
+                <JTextCol text_s="fileSize" dataIndex="convertedFileSize" width_n="120"/>
+                <JTextCol text_s="remark" dataIndex="remark" width_n="200"/>
+                <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+                <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+            </JEGrid>
+            <JButton pos="A2:A2" cid="fileUpload" text_s="附件上传" iconCls="file_upload_icon"/>
+            <JButton pos="B2:B2" cid="fileDownload" text_s="附件下载" iconCls="file_download_icon"/>
+            <JButton pos="C2:C2" cid="filePreview" text_s="附件预览" iconCls="file_preview_icon"/>
+            <JButton pos="D2:D2" cid="fileDelete" text_s="附件删除" iconCls="delete_btn"/>
+        </JPanel>
+    </JTab>
+</view>

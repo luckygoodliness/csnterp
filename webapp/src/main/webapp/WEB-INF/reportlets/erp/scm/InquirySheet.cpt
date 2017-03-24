@@ -1,0 +1,625 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20141222" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="InquiryMainDs" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="scmContractCode"/>
+<O>
+<![CDATA[T1600000212]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT M.PROJECT_NAME AS 项目名称,
+       M.PROJECT_CODE AS 项目代码,
+       SC.SCM_CONTRACT_CODE AS 流水号,
+       (SELECT O.ORG_NAME FROM SCDP_ORG O WHERE O.ORG_CODE = SC.OFFICE_ID) AS 申请部门,
+       (SELECT U.USER_NAME FROM SCDP_USER U WHERE U.USER_ID = SC.CREATE_BY) AS 经办人,
+       TO_CHAR(SC.CREATE_TIME, 'YYYY-MM-DD') AS 日期
+  FROM SCM_CONTRACT SC
+  LEFT JOIN PRM_PROJECT_MAIN M
+    ON SC.PROJECT_ID = M.UUID
+ WHERE SC.SCM_CONTRACT_CODE = '${scmContractCode}']]></Query>
+</TableData>
+<TableData name="InquiryDetailDs" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="scmContractCode"/>
+<O>
+<![CDATA[T1600000212]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[ SELECT D.SERIAL_NUMBER  AS 序号,
+       D.NAME           AS 设备材料名称,
+       D.MODEL          AS 规格型号,
+       D.FACTORY        AS 厂家,
+       D.UNIT           AS 单位,
+       D.AMOUNT         AS 数量,
+       D.EXPECTED_PRICE AS 单价,
+       D.REMARK         AS 备注,
+       D.ARRIVE_DATE    AS 到货日期
+  FROM SCM_CONTRACT SC
+  LEFT JOIN PRM_PURCHASE_REQ_DETAIL D
+    ON SC.UUID = D.SCM_CONTRACT_ID
+ WHERE SC.SCM_CONTRACT_CODE = '${scmContractCode}']]></Query>
+</TableData>
+<TableData name="ArriveDs" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="scmContractCode"/>
+<O>
+<![CDATA[T1600000212]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT (LISTAGG(T.ARRIVE_LOCATION, ',') WITHIN GROUP(ORDER BY NULL)) AS ARRIVE_LOCATION,
+       (LISTAGG(T.CONSIGNEE, ',') WITHIN GROUP(ORDER BY NULL)) AS CONSIGNEE,
+       (LISTAGG(T.CONTACT_WAY, ',') WITHIN GROUP(ORDER BY NULL)) AS CONTACT_WAY,
+       (LISTAGG(T.REMARK, ',') WITHIN GROUP(ORDER BY NULL)) AS REMARK
+  FROM (SELECT DISTINCT D.ARRIVE_LOCATION,
+                        D.CONSIGNEE,
+                        D.CONTACT_WAY,
+                        D.REMARK
+          FROM SCM_CONTRACT SC
+          LEFT JOIN PRM_PURCHASE_REQ_DETAIL D ON SC.UUID = D.SCM_CONTRACT_ID
+         WHERE SC.SCM_CONTRACT_CODE = '${scmContractCode}') T
+]]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="报价单流水号">
+<ReportPageAttr>
+<HR F="0" T="4"/>
+<FR F="7" T="9"/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1592072,1023112,1296000,1296000,1728000,1008000,1016000,1516380,1016000,1667764,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[1409700,2590800,3924300,5143500,5334000,3848100,1866900,1790700,3810000,5219700,4229100,2514600,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="0" cs="10" s="0">
+<O>
+<![CDATA[询 价 单]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" cs="10" s="1">
+<O>
+<![CDATA[询价方：中海网络科技股份有限公司]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="2" cs="3" s="2">
+<O>
+<![CDATA[项目名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="2" s="2">
+<O>
+<![CDATA[项目代号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="2" cs="2" s="2">
+<O>
+<![CDATA[流水号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="2" cs="2" s="2">
+<O>
+<![CDATA[申请部门]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="2" s="2">
+<O>
+<![CDATA[经办人]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="2" s="2">
+<O>
+<![CDATA[日期]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="3" cs="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="InquiryMainDs" columnName="项目名称"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="InquiryMainDs" columnName="项目代码"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="3" cs="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="InquiryMainDs" columnName="流水号"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="3" cs="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="InquiryMainDs" columnName="申请部门"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="InquiryMainDs" columnName="经办人"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="10" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="InquiryMainDs" columnName="日期"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="4" s="2">
+<O>
+<![CDATA[序号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="4" s="2">
+<O>
+<![CDATA[设备材料名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="4" s="2">
+<O>
+<![CDATA[规格型号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="4" s="2">
+<O>
+<![CDATA[厂家]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="4" s="2">
+<O>
+<![CDATA[单位]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="4" s="4">
+<O>
+<![CDATA[数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="4" s="4">
+<O>
+<![CDATA[单价]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="4" s="4">
+<O>
+<![CDATA[合计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="4" s="2">
+<O>
+<![CDATA[备注]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="4" s="2">
+<O>
+<![CDATA[要求到货日期]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="5" s="3">
+<O t="DSColumn">
+<Attributes dsName="InquiryDetailDs" columnName="序号"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" upParentDefault="false"/>
+</C>
+<C c="2" r="5" s="5">
+<O t="DSColumn">
+<Attributes dsName="InquiryDetailDs" columnName="设备材料名称"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="5" s="5">
+<O t="DSColumn">
+<Attributes dsName="InquiryDetailDs" columnName="规格型号"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="5" s="3">
+<O t="DSColumn">
+<Attributes dsName="InquiryDetailDs" columnName="厂家"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="5" s="3">
+<O t="DSColumn">
+<Attributes dsName="InquiryDetailDs" columnName="单位"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="5" s="6">
+<O t="DSColumn">
+<Attributes dsName="InquiryDetailDs" columnName="数量"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="5" s="6">
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="5" s="7">
+<PrivilegeControl/>
+<Expand leftParentDefault="false" left="B6"/>
+</C>
+<C c="9" r="5" s="5">
+<O t="DSColumn">
+<Attributes dsName="InquiryDetailDs" columnName="备注"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B6"/>
+</C>
+<C c="10" r="5" s="3">
+<O t="DSColumn">
+<Attributes dsName="InquiryDetailDs" columnName="到货日期"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B6"/>
+</C>
+<C c="1" r="6" cs="7" s="8">
+<O>
+<![CDATA[金额总计（人民币）：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="6" s="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="6" s="9">
+<O>
+<![CDATA[]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="6" s="8">
+<O>
+<![CDATA[]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="7" cs="2" s="8">
+<O>
+<![CDATA[收货地址：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="7" cs="8" s="5">
+<O t="DSColumn">
+<Attributes dsName="ArriveDs" columnName="ARRIVE_LOCATION"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="8" cs="2" s="8">
+<O>
+<![CDATA[收货人：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="8" cs="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="ArriveDs" columnName="CONSIGNEE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="8" cs="3" s="8">
+<O>
+<![CDATA[收货人联系方式：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="8" cs="3" s="10">
+<O t="DSColumn">
+<Attributes dsName="ArriveDs" columnName="CONTACT_WAY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="9" cs="2" s="8">
+<O>
+<![CDATA[其他说明：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="9" cs="8" s="11">
+<O t="DSColumn">
+<Attributes dsName="ArriveDs" columnName="REMARK"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="10" cs="2" rs="2" s="8">
+<O>
+<![CDATA[报价支付说明：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="10" cs="8" rs="2" s="10">
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="859536" footerHeight="566928">
+<PaperSetting orientation="1">
+<Margin top="1280160" left="1280160" bottom="1005840" right="566928"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" textStyle="1" imageLayout="1">
+<FRFont name="宋体" style="1" size="192"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="2" textStyle="1" imageLayout="1">
+<FRFont name="宋体" style="1" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Bottom style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="宋体" style="1" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="宋体" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0]]></Format>
+<FRFont name="宋体" style="1" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="2" imageLayout="1">
+<FRFont name="宋体" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" textStyle="1" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="宋体" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0]]></Format>
+<FRFont name="宋体" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="宋体" style="1" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="宋体" style="1" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="2" vertical_alignment="1" imageLayout="1">
+<FRFont name="宋体" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

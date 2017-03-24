@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>responsibleproject-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>t.create_time desc</defaultSort>
+    <conditions columns="4">
+        <JHidden cid="principalDesc"/>
+        <JHidden cid="responsibleProjectDesc"/>
+        <JUserGrid pos="A1:A1" fieldLabel_s="principal" cid="principal" field="principal"
+                   descField_s="userName" valueField_s="userId"/>
+        <JProject pos="B1:B1" fieldLabel_s="responsibleProject" cid="responsibleProject" descField="projectName" valueField="uuid"
+                  field="responsible_Project"
+                  allowBlank_b="true"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="principal" dataIndex="principalName" width_n="120"/>
+        <JTextCol text_s="projectCode" dataIndex="projectCode" width_n="120"/>
+        <JTextCol text_s="responsibleProject" dataIndex="projectName" width_n="120"/>
+        <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+        <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+        <JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>
+        <JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>
+    </results>
+</commonquery>

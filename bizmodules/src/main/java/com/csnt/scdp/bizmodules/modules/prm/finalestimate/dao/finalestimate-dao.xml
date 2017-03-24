@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select * from prm_final_estimate where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+
+    <common_query_department>
+        <common>
+            <![CDATA[select     f.uuid,
+                                f.prm_project_main_id,
+                                m.project_name,
+                                m.project_code,
+                                f.square_project_money,
+                                f.square_gross_profit,
+                                f.manage_money,
+                                f.rax,
+                                f.square_date,
+                                f.square_cost,
+                                case when f.tax_correction is not null then 1 else 0 end as tax_corrected,
+                                f.is_archiving,
+                                f.revise_tax_date,
+                                f.company_code,
+                                f.project_id,
+                                f.department_code,
+                                f.create_by,
+                                f.create_time,
+                                f.update_by,
+                                f.update_time,
+                                f.loc_timezone,
+                                f.tbl_version,
+                                f.is_void,
+                                f.exam_date,
+                                f.exam_r_tax_date,
+                                o.org_name,
+                                (select c.code_desc from scdp_code c where c.code_type='CDM_BILL_STATE'  and  c.sys_code= f.state) as CDM_BILL_STATE_COMBO,
+                                (select c.code_desc from scdp_code c where c.code_type='PRM_SQUARE_TYPE'  and  c.sys_code= f.square_type) as square_type
+                        from   prm_final_estimate f
+                        left join prm_project_main m
+                        on f.prm_project_main_id = m.uuid
+                        left join scdp_org o
+                        on     f.department_code = o.org_code
+                        where 1=1 and ${conditions} and ${selfconditions}]]>
+        </common>
+    </common_query_department>
+
+    <get_prm_cost_sum>
+        <common>
+            <![CDATA[
+                    SELECT SUM(LOCKED_BUDGET) AS LOCKED_BUDGET
+  FROM (SELECT SUM(FI.EXPENSES_MONEY) AS LOCKED_BUDGET
+          FROM FAD_INVOICE FI
+         WHERE FI.EXPENSES_TYPE != '0'
+           AND FI.STATE IN ('2', '4', '8')
+           AND FI.PRM_PROJECT_MAIN_ID IS NOT NULL
+           AND FI.PRM_PROJECT_MAIN_ID = ?
+        UNION ALL
+        SELECT SUM(SC.AMOUNT) LOCKED_BUDGET
+          FROM SCM_CONTRACT SC
+         WHERE (SC.IS_VOID IS NULL OR SC.IS_VOID = 0)
+           AND (SC.STATE IS NULL OR SC.STATE != '3')
+           AND SC.PROJECT_ID = ?
+        UNION ALL
+        SELECT SUM(NVL(T2.HANDLE_AMOUNT, T2.AMOUNT) * T2.EXPECTED_PRICE) AS LOCKED_BUDGET
+          FROM PRM_PURCHASE_REQ T1
+         INNER JOIN PRM_PURCHASE_REQ_DETAIL T2 ON T2.PRM_PURCHASE_REQ_ID =
+                                                  T1.UUID
+                                              AND (T2.ISFALLBACK IS NULL OR
+                                                  T2.ISFALLBACK != 1)
+          LEFT JOIN PRM_CONTRACT T3 ON T3.INNER_PURCHASE_REQ_ID = T1.UUID
+                                   AND (T3.IS_VOID IS NULL OR T3.IS_VOID = 0)
+         WHERE (T1.IS_VOID IS NULL OR T1.IS_VOID = 0)
+           AND T1.IS_INNER = 1
+           AND T2.SCM_CONTRACT_ID IS NULL
+           AND (T1.STATE IS NULL OR T1.STATE != '3')
+           AND T1.PRM_PROJECT_MAIN_ID = ?
+           AND T3.UUID IS NULL
+        UNION ALL
+        SELECT SUM(CONTRACT_NOW_MONEY) AS LOCKED_BUDGET
+          FROM PRM_PURCHASE_REQ T1
+          LEFT JOIN PRM_CONTRACT T3 ON T3.INNER_PURCHASE_REQ_ID = T1.UUID
+                                   AND (T3.IS_VOID IS NULL OR T3.IS_VOID = 0)
+         WHERE (T1.IS_VOID IS NULL OR T1.IS_VOID = 0)
+           AND T1.IS_INNER = 1
+           AND (T1.STATE IS NULL OR T1.STATE != '3')
+           AND T1.PRM_PROJECT_MAIN_ID = ?
+           AND T3.UUID IS NOT NULL
+        UNION ALL
+        SELECT SUM(SUB_NEGATIVE_TO_0(NVL(FCR.MONEY, 0),
+                                     NVL(FCRI.CLEARANCE_MONEY, 0))) MONEYS
+          FROM FAD_CASH_REQ FCR
+          LEFT JOIN (SELECT FAD_CASH_REQ_ID,
+                            SUM(T.CLEARANCE_MONEY) AS CLEARANCE_MONEY
+                       FROM FAD_CASH_REQ_INVOICE T
+                      WHERE (EXISTS
+                             (SELECT 1
+                                FROM FAD_INVOICE F
+                               WHERE F.UUID = T.FAD_INVOICE_ID
+                                 AND F.STATE IN ('1', '2', '4', '8', '9')) OR
+                             EXISTS (SELECT 1
+                                       FROM FAD_CASH_CLEARANCE F
+                                      WHERE F.UUID = T.FAD_INVOICE_ID
+                                        AND F.STATE = '4'))
+                        AND (T.IS_VOID = '0' OR T.IS_VOID IS NULL)
+                      GROUP BY T.FAD_CASH_REQ_ID) FCRI ON FCR.UUID =
+                                                          FCRI.FAD_CASH_REQ_ID
+         WHERE FCR.REQ_TYPE <> '0' --采购请款
+           AND FCR.REQ_TYPE <> '4' --周转金请款
+           AND FCR.REQ_TYPE <> '3'--投标保证金
+           AND FCR.PROJECT_ID IS NOT NULL
+           AND FCR.STATE IN ('1', '2', '4', '8', '9')
+           AND FCR.PROJECT_ID = ?)
+                    ]]>
+        </common>
+    </get_prm_cost_sum>
+
+    <get_prm_cost_sum2>
+        <common>
+            <![CDATA[
+                    select sum (locked_budget) as locked_budget
+  from (select sum( fi.expenses_money) as locked_budget
+          from fad_invoice fi
+         where fi.expenses_type!='0' and  fi.state in ('2','4','8')
+           and fi.prm_project_main_id is not null
+           and fi.prm_project_main_id = ?
+           union all
+           select t2.amount as locked_budget
+              from fad_invoice t1
+             inner join scm_contract_invoice t2
+                on t1.uuid = t2.fad_invoice_id
+             where (t1.state is null or t1.state != '3')
+             and t2.project_id=?
+           union all
+           select sum(nvl(t2.handle_amount,t2.amount) * t2.expected_price) as locked_budget
+  from prm_purchase_req t1
+ inner join prm_purchase_req_detail t2
+    on t2.prm_purchase_req_id = t1.uuid
+   and (t2.isfallback is null or t2.isfallback != 1)
+  left join prm_contract t3
+    on t3.inner_purchase_req_id = t1.uuid
+   and (t3.is_void is null or t3.is_void = 0)
+ where (t1.is_void is null or t1.is_void = 0)
+   and t1.is_inner = 1
+   and t2.scm_contract_id is null
+   and (t1.state is null or t1.state !='3')
+   and t1.prm_project_main_id = ?
+   and t3.uuid is null
+union all
+select sum(contract_now_money) as locked_budget
+  from prm_purchase_req t1
+  left join prm_contract t3
+    on t3.inner_purchase_req_id = t1.uuid
+   and (t3.is_void is null or t3.is_void = 0)
+ where (t1.is_void is null or t1.is_void = 0)
+   and t1.is_inner = 1
+   and (t1.state is null or t1.state !='3')
+   and t1.prm_project_main_id = ?
+   and t3.uuid is not null
+         )
+                    ]]>
+        </common>
+    </get_prm_cost_sum2>
+
+    <get_stamp_tax>
+        <common>
+            <![CDATA[
+                    select dtl.cost_control_money from prm_budget_detail dtl where dtl.budget_code = 'STAMP_TAX' and  dtl.prm_project_main_id = ?
+                    ]]>
+        </common>
+    </get_stamp_tax>
+    <get_approved_final_history>
+        <common>
+            <![CDATA[
+                    select * from prm_final_estimate f
+                where f.state= '2' and (f.is_void is null or f.is_void =0) and f.prm_project_main_id = ?
+                    ]]>
+        </common>
+    </get_approved_final_history>
+    <get_contract_unclosed>
+        <common>
+            <![CDATA[
+                    select 1 from scm_contract t1
+                    where (t1.is_void is null or t1.is_void=0)
+                    and  t1.is_project=1 and (t1.is_closed is null or t1.is_closed!='1')
+                    and  t1.state <> '3'
+                    and  t1.project_id = ?
+                    ]]>
+        </common>
+    </get_contract_unclosed>
+    <get_contract_change>
+        <common>
+            <![CDATA[
+                         select 1
+                      from scm_contract_change c, scm_contract t
+                     where c.scm_contract_id = t.uuid
+                       and (c.is_void is null or c.is_void = 0)
+                       and c.state  in ('0','1','9')
+                       and t.project_id = ?
+                    ]]>
+        </common>
+    </get_contract_change>
+    <get_contract_unrelative>
+        <common>
+            <![CDATA[
+                      select ppr.purchase_req_no
+                       from prm_purchase_req ppr
+                       left join prm_final_estimate pfe
+                         on ppr.prm_project_main_id = pfe.prm_project_main_id
+                       left join prm_purchase_req_detail pprd
+                         on pprd.prm_purchase_req_id = ppr.uuid
+                      where pfe.prm_project_main_id = ?
+                        and (pprd.isfallback <> '1' or pprd.isfallback is null)
+                        and pprd.scm_contract_id is null
+                        and (ppr.is_inner <> '1' or ppr.is_inner is null)
+                        and ((ppr.create_time <
+                            to_date('2016-02-01 00:00:00', 'yyyy-mm-dd hh24:mi:ss') and
+                            pprd.prm_budget_type  in
+                            ('ACCESSORY', 'PRINCIPAL', 'OUTSOURCE')) or
+                            ppr.create_time >=
+                            to_date('2016-02-01 00:00:00', 'yyyy-mm-dd hh24:mi:ss'))
+                      group by ppr.purchase_req_no
+                    ]]>
+        </common>
+    </get_contract_unrelative>
+    <get_purchaseReq_state>
+        <common>
+            <![CDATA[SELECT P.PURCHASE_REQ_NO,
+                        P.STATE,
+                        PR.PRINCIPAL,
+                        CASE
+                          WHEN P.STATE = 2 THEN
+                           '存在未采购明细，需要采购负责人办理或退回。相关负责人:' ||
+                           NVL(PR.PRINCIPAL, '代供应链部主任分配')
+                          WHEN P.STATE = 1THEN '正在审核流程中，需要审核办理或退回删除！' WHEN P.STATE = 0 THEN
+                           '新增状态，需要提交审核办理或删除！'
+                        END AS DES
+                   FROM PRM_PURCHASE_REQ P
+                   LEFT JOIN (SELECT PRM_PURCHASE_REQ_ID, LISTAGG(USER_NAME, ';') WITHIN
+                               GROUP(
+                               ORDER BY PRM_PURCHASE_REQ_ID) AS PRINCIPAL
+                                FROM (SELECT DISTINCT SU.USER_NAME, SPR.PRM_PURCHASE_REQ_ID
+                                        FROM SCM_PURCHASE_REQ SPR
+                                        LEFT JOIN SCDP_USER SU ON SU.USER_ID = SPR.PRINCIPAL
+                                       WHERE EXISTS (SELECT 1
+                                                FROM PRM_PURCHASE_REQ_DETAIL D
+                                               WHERE SPR.UUID = D.SCM_PURCHASE_REQ_ID
+                                                 AND NVL(D.ISFALLBACK, 0) = 0
+                                                 AND D.TBL_VERSION <> 'old'
+                                                 AND D.SCM_CONTRACT_ID IS NULL))
+                               GROUP BY PRM_PURCHASE_REQ_ID) PR ON PR.PRM_PURCHASE_REQ_ID(+) =
+                                                                   P.UUID
+                  WHERE P.STATE <> '3'
+                    AND NVL(P.IS_INNER,0) <> 1
+                    AND EXISTS
+                  (SELECT 1
+                           FROM PRM_PURCHASE_REQ_DETAIL D
+                          WHERE P.UUID = D.PRM_PURCHASE_REQ_ID
+                            AND NVL(D.ISFALLBACK, 0) = 0
+                            AND D.TBL_VERSION <> 'old'
+                            AND D.SCM_CONTRACT_ID IS NULL)
+                       AND P.PRM_PROJECT_MAIN_ID = ?
+                    ]]>
+        </common>
+    </get_purchaseReq_state>
+    <get_unapproved_claim>
+        <common>
+            <![CDATA[
+                    select * from fad_invoice fi
+                where (fi.is_void is null or fi.is_void=0)
+                and fi.expenses_type!='0' and (fi.state is null or fi.state not in ('2','4','8','3'))
+           and fi.prm_project_main_id = ?
+                    ]]>
+        </common>
+    </get_unapproved_claim>
+    <get_unsquared_inner_project>
+        <common>
+            <![CDATA[
+            SELECT T1.CONTRACT_NAME,
+                   T1.CONTRACT_NOW_MONEY,
+                   SUM(T3.ACTUAL_MONEY) AS RECEIPTS_MONEY
+              FROM PRM_CONTRACT T1
+              LEFT JOIN PRM_RECEIPTS T3
+                ON T1.UUID = T3.PRM_CONTRACT_ID
+               AND T3.STATE IN ('2', '4', '8')
+               AND (T3.IS_VOID IS NULL OR T3.IS_VOID = 0)
+             WHERE (T1.IS_VOID IS NULL OR T1.IS_VOID = 0)
+               AND T1.INNER_PURCHASE_REQ_ID IN
+                   (SELECT UUID
+                      FROM PRM_PURCHASE_REQ T4
+                     WHERE (T4.IS_VOID IS NULL OR T4.IS_VOID = 0)
+                       AND T4.IS_INNER = 1
+                       AND (T4.STATE IS NULL OR T4.STATE != '3')
+                       AND T4.PRM_PROJECT_MAIN_ID =?)
+             GROUP BY T1.CONTRACT_NAME,
+                      T1.CONTRACT_NOW_MONEY
+            ]]>
+        </common>
+    </get_unsquared_inner_project>
+    <get_uncleared_cash_req>
+        <common>
+            <![CDATA[
+            select t1.* from fad_cash_req t1
+            inner join prm_project_main t2 on t2.uuid=t1.project_id
+            left join (SELECT FAD_CASH_REQ_ID,
+                                           SUM(TOTAL_MONEY) AS CLEARANCE_MONEY
+                                      FROM (SELECT CD.FAD_CASH_REQ_ID, CL.TOTAL_MONEY
+                                              FROM FAD_CASH_CLEARANCE   CL,
+                                                   FAD_CASH_REQ_INVOICE CD
+                                             WHERE CD.FAD_INVOICE_ID = CL.UUID
+                                               AND CL.STATE = '4'
+                                            UNION
+                                            SELECT FAD_CASH_REQ_ID,
+                                                   FCRI.CLEARANCE_MONEY
+                                              FROM FAD_CASH_REQ_INVOICE FCRI,
+                                                   FAD_INVOICE          FI
+                                             WHERE FCRI.FAD_INVOICE_ID = FI.UUID
+                                               AND FI.STATE = '4')
+                                     GROUP BY FAD_CASH_REQ_ID) t3
+                ON T1.UUID = t3.FAD_CASH_REQ_ID
+            where (t1.is_void is null or t1.is_void=0)
+             and t1.req_type in ('1','2')
+                and (t1.state is null or t1.state!='3') and NVL(t3.clearance_money,0)<t1.money
+                and t2.uuid=?
+            ]]>
+        </common>
+    </get_uncleared_cash_req>
+    <prm_unapproved_project_c>
+        <common>
+            select * from prm_project_main_c t1
+            where (t1.is_void is null or t1.is_void=0)
+            and (t1.state is null or t1.state!='2')
+            and t1.prm_project_main_id=?
+            order by t1.create_time asc
+        </common>
+    </prm_unapproved_project_c>
+
+    <get_tax_money>
+        <common>
+            <![CDATA[
+                    select nvl(sum(nvl(sci.amount,0) * nvl(f.tax_rate,0)),0) as tax_money
+                    from fad_invoice f
+                    left join scm_contract_invoice sci
+                    on f.uuid = sci.fad_invoice_id
+                     left join scm_contract sc
+                     on sc.uuid = sci.scm_contract_id
+                    where f.invoice_type = '0'
+                    and f.state = '4'
+                    and sc.project_id = ?
+                    ]]>
+        </common>
+    </get_tax_money>
+
+</DAO>

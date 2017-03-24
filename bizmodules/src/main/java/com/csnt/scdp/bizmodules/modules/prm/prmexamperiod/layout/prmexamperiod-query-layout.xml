@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>prmexamperiod-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JCombo pos="A1:A1" fieldLabel_s="state" cid="isActive" field="is_active"
+                comboType="scdp_fmcode" codeType="NONPRM_FINANCIAL_IS_ENABLED" allowBlank_b="true"
+                displayDesc_b="true" fullInfo_b="false"/>
+    </conditions>
+    <results resultGridConfig="{'autoResizeColumn':false}">
+        <JHidden dataIndex="uuid"/>
+        <JDateCol text_s="examDate" dataIndex="examDate" width_n="120"/>
+        <JDateCol text_s="beginDate" dataIndex="beginDate" width_n="100"/>
+        <JDateCol text_s="endDate" dataIndex="endDate" width_n="120"/>
+        <JRCheckCol text_s="isActive" dataIndex="isActive" width_n="80"/>
+    </results>
+</commonquery>

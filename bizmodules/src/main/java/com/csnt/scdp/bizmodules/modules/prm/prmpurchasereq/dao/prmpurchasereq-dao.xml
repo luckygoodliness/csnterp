@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[SELECT R.*, PR.PRINCIPAL
+                   FROM (SELECT REQ.UUID UUID
+                        ,REQ.PURCHASE_REQ_NO PURCHASE_REQ_NO
+                        ,REQ.STATE STATE
+                        ,SCODE.CODE_DESC STATE_NM
+                        ,REQ.REMARK REMARK
+                        ,REQ.COMPANY_CODE COMPANY_CODE
+                        ,REQ.DEPARTMENT_CODE DEPARTMENT_CODE
+                        ,NVL(ORG.ORG_NAME, '') ORG_NAME
+                        ,NVL(P.PROJECT_NAME, '') PROJECT_NAME
+                        ,REQ.CREATE_BY CREATE_BY
+                        ,REQ.CREATE_TIME CREATE_TIME
+                        ,REQ.UPDATE_BY UPDATE_BY
+                        ,REQ.UPDATE_TIME UPDATE_TIME
+                        ,REQ.TBL_VERSION TBL_VERSION
+                        ,REQ.IS_VOID IS_VOID
+                        ,REQ.SEQ_NO SEQ_NO
+                        ,REQ.OFFICE_ID OFFICE_ID
+                        ,REQ.IS_PROJECT IS_PROJECT
+                        ,REQ.PURCHASE_LEVEL PURCHASE_LEVEL
+                        ,REQ.IS_INNER IS_INNER
+                        ,RD.TOTAL_EXPECTED_PRICE TOTAL_EXPECTED_PRICE
+                        ,RD.ALL_NAME ALL_NAME
+                        ,RD.FIRST_SUPPLIER FIRST_SUPPLIER
+                        ,P.PROJECT_CODE PROJECT_CODE
+                        ,SCODE2.CODE_DESC IS_INNER_DESC
+                        ,U.USER_NAME USER_NAME
+                    FROM PRM_PURCHASE_REQ REQ
+                        ,SCDP_CODE SCODE
+                        ,SCDP_CODE SCODE2
+                        ,SCDP_ORG ORG
+                        ,SCDP_USER U
+                        ,PRM_PROJECT_MAIN P
+                        ,(
+                            SELECT REQD.PRM_PURCHASE_REQ_ID
+                                ,NVL(SUM(REQD.HANDLE_AMOUNT*REQD.EXPECTED_PRICE) ,0) TOTAL_EXPECTED_PRICE
+                                ,LISTAGG(REQD.NAME, ';') WITHIN GROUP  (ORDER BY REQD.UUID) AS ALL_NAME
+                                ,MAX(REQD.SUPPLIER_ID) FIRST_SUPPLIER
+                            FROM PRM_PURCHASE_REQ REQ
+                            ,PRM_PURCHASE_REQ_DETAIL REQD
+                            WHERE 1 = 1
+                            AND REQ.UUID = REQD.PRM_PURCHASE_REQ_ID
+                            AND (REQD.ISFALLBACK IS NULL OR REQD.ISFALLBACK <> '1')
+                            GROUP BY (REQD.PRM_PURCHASE_REQ_ID)
+                          ) RD
+                    WHERE SCODE.CODE_TYPE(+) = 'CDM_BILL_STATE'
+                            AND REQ.STATE = SCODE.SYS_CODE(+)
+                            AND SCODE2.CODE_TYPE(+) = 'CDM_YES_OR_NO'
+                            AND REQ.IS_INNER = SCODE2.SYS_CODE(+)
+                            AND REQ.DEPARTMENT_CODE = ORG.ORG_CODE(+)
+                            AND ${selfconditions}
+                            AND REQ.PRM_PROJECT_MAIN_ID = P.UUID(+)
+                            AND REQ.IS_PROJECT = '1'
+                            AND REQ.CREATE_BY = U.USER_ID(+)
+                            AND RD.PRM_PURCHASE_REQ_ID(+) = REQ.UUID) R
+  LEFT JOIN (SELECT PRM_PURCHASE_REQ_ID, LISTAGG(USER_NAME, ';') WITHIN
+              GROUP(
+              ORDER BY PRM_PURCHASE_REQ_ID) AS PRINCIPAL
+               FROM (SELECT DISTINCT SU.USER_NAME, SPR.PRM_PURCHASE_REQ_ID
+                       FROM SCM_PURCHASE_REQ SPR
+                       LEFT JOIN SCDP_USER SU ON SU.USER_ID = SPR.PRINCIPAL)
+              GROUP BY PRM_PURCHASE_REQ_ID) PR ON PR.PRM_PURCHASE_REQ_ID =
+                                                  R.UUID ]]>
+
+        </common>
+    </common_query>
+
+
+    <common_query_plan>
+        <common>
+            <![CDATA[SELECT
+                    t.UUID                          ,
+                    t.PRM_BUDGET_REF_ID             ,
+                    t.PRM_BUDGET_TYPE               ,
+                    t.SUB_PACKAGE_NO                ,
+                    t.PURCHASE_TYPE                 ,
+                    t.PURCHASE_BUDGET_MONEY         ,
+                    t.PURCHASE_LEVEL                ,
+                    t.SUBJECT_CODE                  ,
+                    t.SUBJECT_PROPERTY              ,
+                    t.NAME                          ,
+                    t.MODEL                         ,
+                    t.FACTORY                       ,
+                    t.AMOUNT                        ,
+                    t.BUDGET_PRICE                  ,
+                    t.SUPPLIER_ID                   ,
+                    t.SUPPLIER_PROPERTY             ,
+                    t.ARRIVE_DATE                   ,
+                    t.TECHNICAL_DRAWING             ,
+                    t.ARRIVE_LOCATION               ,
+                    t.CONSIGNEE                     ,
+                    t.CONTACT_WAY                   ,
+                    t.REMARK                        ,
+                    t.PRM_CONTRACT_ID               ,
+                    t.COMPANY_CODE                  ,
+                    t.PROJECT_ID                    ,
+                    t.DEPARTMENT_CODE               ,
+                    t.CREATE_BY                     ,
+                    t.CREATE_TIME                   ,
+                    t.UPDATE_BY                     ,
+                    t.UPDATE_TIME                   ,
+                    t.LOC_TIMEZONE                  ,
+                    t.TBL_VERSION                   ,
+                    t.IS_VOID                       ,
+                    t.SERIAL_NUMBER                 ,
+                    t.SEQ_NO                        ,
+                    t.PRM_PROJECT_MAIN_ID           ,
+                    t.PURCHASE_PACKAGE_ID
+             FROM PRM_PURCHASE_PLAN_DETAIL t
+             WHERE 1=1
+             AND ${selfconditions}]]>
+        </common>
+    </common_query_plan>
+
+    <package_common_query>
+        <common>
+            <![CDATA[ select v.PROJECT_MAIN_ID as prm_project_main_id,
+       v.PACKAGE_ID as uuid,
+       v.PACKAGE_NO,
+       v.PACKAGE_NAME,
+       v.COST_CONTROL_MONEY,
+       v.LOCKED_BUDGET,
+       v.REMAIN_BUDGET,
+       v.BUDGET_CODE,
+       f.subject_name as budget_name
+  from VW_PRM_PUR_BUDGET_PLAN v
+  left join fad_base_subject f on v.BUDGET_CODE = f.subject_no
+  where v.PACKAGE_ID is not null and  v.PACKAGE_STATE<>'4'
+            and v.PROJECT_MAIN_ID ='${prmProjectMainId}'
+            and (v.BUDGET_CODE ='${budgetCode}' or v.BUDGET_CODE is null)
+            and ${conditions}]]>
+        </common>
+    </package_common_query>
+
+    <pick_project_main_id_query>
+        <common>
+            <![CDATA[select t1.*,t2.contract_name prm_contract_name,t3.user_name as project_manager_name,
+            t4.customer_name,t6.code_desc as state_desc
+        from prm_project_main t1
+        left join  prm_contract t2 on t2.uuid=t1.prm_contract_id
+        left join scdp_user t3 on t3.user_id=t1.project_manager
+        left join prm_customer t4 on t4.uuid=t1.customer_id
+        left join scdp_code t6 on t6.code_type='PRM_SQUARE_STATE' and t6.sys_code=t1.state
+        where (t1.is_void is null or t1.is_void=0) and (t1.state is null or t1.state!='1') and ${conditions}
+        and not exists (select 1 from prm_project_main_c t11 where (t11.is_void is null or t11.is_void =0)
+         and t11.prm_project_main_id=t1.uuid and (t11.state is null or t11.state!='2')
+         and t11.detail_type='${detailType}')
+         ]]>
+        </common>
+    </pick_project_main_id_query>
+
+    <query_principal>
+        <common>
+            <![CDATA[select nvl(SRS.PRINCIPAL, (SELECT nvl(SRC.PRINCIPAL, SELECT SRD.PRINCIPAL FROM SCM_RESPONSIBLE_DEPARTMENT SRD WHERE SRD.RESPONSIBLE_DEPARTMENT =? AND SRD.IS_PROJECT = '0')
+                                                FROM SCM_RESPONSIBLE_CLASS SRC
+                                                WHERE SRC.RESPONSIBLE_CLASS = (SELECT MATERIAL_CLASS_CODE FROM PRM_PURCHASE_PACKAGE PPP WHERE PPP.UUID = ?) AND SRC.PRINCIPAL IS NOT NULL)
+                     FROM SCM_RESPONSIBLE_SUBJECT SRS WHERE SRS.SUBJECT_CODE LIKE '%' || ?
+         ]]>
+        </common>
+    </query_principal>
+
+    <query_load_reqdetail>
+        <common>
+            <![CDATA[SELECT REQ.*,
+                           PK.PACKAGE_NAME,
+                           (PL.AMOUNT - NVL(V.APPLIEDAMOUNT, 0)) AS PLAN_AMOUNT,
+                           CD.CODE_DESC CONTRACT_STATE,
+                           U.USER_NAME UNDERTAKER
+                      FROM PRM_PURCHASE_REQ_DETAIL REQ
+                      LEFT JOIN PRM_PURCHASE_PACKAGE PK ON REQ.PURCHASE_PACKAGE_ID = PK.UUID
+                      LEFT JOIN PRM_PURCHASE_PLAN_DETAIL PL ON REQ.PRM_PURCHASE_PLAN_DETAIL_ID =
+                                                               PL.UUID
+                      LEFT JOIN (SELECT V.PRM_PURCHASE_PLAN_DETAIL_ID,
+                                        SUM(V.LOCK_AMOUNT) AS APPLIEDAMOUNT
+                                   FROM VW_PURCHASE_PLAN_DETAIL_LOCK V
+                                  GROUP BY V.PRM_PURCHASE_PLAN_DETAIL_ID) V ON REQ.PRM_PURCHASE_PLAN_DETAIL_ID =
+                                                                               V.PRM_PURCHASE_PLAN_DETAIL_ID
+                      LEFT JOIN PRM_PURCHASE_REQ R ON R.UUID = REQ.PRM_PURCHASE_REQ_ID
+                      LEFT JOIN SCM_CONTRACT CON ON REQ.SCM_CONTRACT_CODE =
+                                                    CON.SCM_CONTRACT_CODE
+                      LEFT JOIN SCM_PURCHASE_REQ SPR ON REQ.SCM_PURCHASE_REQ_ID =
+                                                    SPR.UUID
+                      LEFT JOIN (SELECT *
+                                   FROM SCDP_CODE CD
+                                  WHERE CD.CODE_TYPE(+) = 'SCM_CONTRACT_STATE') CD ON CON.CONTRACT_STATE =
+                                                                                      CD.SYS_CODE
+                      LEFT JOIN SCDP_USER U ON SPR.PRINCIPAL = U.USER_ID
+                     WHERE 1 = 1
+                AND REQ.PRM_PURCHASE_REQ_ID = '${qryCondition}'
+            ]]>
+        </common>
+    </query_load_reqdetail>
+
+    <query_load_plan>
+        <common>
+            <![CDATA[SELECT * FROM (SELECT PL.*,
+                       PK.PACKAGE_NAME,
+                       NVL(V.APPLIEDAMOUNT, 0) APPLIED_AMOUNT,
+                       (PL.AMOUNT - NVL(V.APPLIEDAMOUNT, 0)) REMAIN_AMOUNT
+                  FROM PRM_PURCHASE_PLAN_DETAIL PL,
+                       PRM_PURCHASE_PACKAGE PK,
+                       (SELECT V.PRM_PURCHASE_PLAN_DETAIL_ID,
+                                   SUM(V.LOCK_AMOUNT) AS APPLIEDAMOUNT
+                              FROM VW_PURCHASE_PLAN_DETAIL_LOCK V
+                             GROUP BY V.PRM_PURCHASE_PLAN_DETAIL_ID) V
+                 WHERE 1 = 1
+                   AND PL.PURCHASE_PACKAGE_ID = PK.UUID
+                   AND PK.PACKAGE_STATE = '2'
+                   AND PL.UUID = V.PRM_PURCHASE_PLAN_DETAIL_ID(+)
+                    ${qryCondition}) R WHERE R.REMAIN_AMOUNT > 0
+            ]]>
+        </common>
+    </query_load_plan>
+
+    <arrdive-location-query>
+        <common>
+            <![CDATA[
+                   select DISTINCT ARRIVE_LOCATION,
+                                   CONSIGNEE,
+                                   CONTACT_WAY
+                    FROM (select  ARRIVE_LOCATION,
+                                   CONSIGNEE,
+                                   CONTACT_WAY,UPDATE_TIME
+                    FROM PRM_PURCHASE_REQ_DETAIL  WHERE PRM_PURCHASE_REQ_ID in
+                    (select uuid
+                        from PRM_PURCHASE_REQ
+                        where PRM_PROJECT_MAIN_ID = '${prmProjectMainId}' and ${conditions})
+                    ORDER BY UPDATE_TIME desc)
+
+            ]]>
+        </common>
+    </arrdive-location-query>
+
+    <query_load_conchanged>
+        <common>
+            <![CDATA[SELECT REQ.UUID,
+                           REQ.PRM_PURCHASE_REQ_ID,
+                           REQ.PRM_PURCHASE_PLAN_DETAIL_ID,
+                           REQ.PURCHASE_TYPE,
+                           REQ.PURCHASE_BUDGET_MONEY,
+                           REQ.NAME,
+                           REQ.MODEL,
+                           REQ.FACTORY,
+                           REQ.AMOUNT,
+                           REQ.SUPPLIER_ID,
+                           REQ.SUPPLIER_PROPERTY,
+                           REQ.ARRIVE_DATE,
+                           REQ.TECHNICAL_DRAWING,
+                           REQ.ARRIVE_LOCATION,
+                           REQ.CONSIGNEE,
+                           REQ.CONTACT_WAY,
+                           REQ.REMARK,
+                           REQ.PRM_BUDGET_REF_ID,
+                           REQ.PRM_BUDGET_TYPE,
+                           REQ.COMPANY_CODE,
+                           REQ.DEPARTMENT_CODE,
+                           REQ.CREATE_BY,
+                           REQ.CREATE_TIME,
+                           REQ.UPDATE_BY,
+                           REQ.UPDATE_TIME,
+                           REQ.LOC_TIMEZONE,
+                           REQ.TBL_VERSION,
+                           REQ.IS_VOID,
+                           REQ.SCM_PURCHASE_REQ_ID,
+                           REQ.SCM_CONTRACT_ID,
+                           REQ.HANDLE_AMOUNT,
+                           REQ.FALLBACK_REASON,
+                           REQ.PUUID,
+                           REQ.SERIAL_NUMBER,
+                           REQ.SEQ_NO,
+                           REQ.EXPECTED_PRICE,
+                           REQ.SCM_CONTRACT_CODE,
+                           REQ.PURCHASE_PACKAGE_ID,
+                           REQ.UNIT,
+                           REQ.ISFALLBACK,
+                           REQ.ACTUAL_PURCHASE_MONEY,
+                           REQ.ADD_FROM,
+                           PL.BUDGET_PRICE AS BUDGET_PRICE,
+                           PK.PACKAGE_NAME,
+                           (PL.AMOUNT - NVL(V.APPLIEDAMOUNT, 0)) AS PLAN_AMOUNT
+                      FROM PRM_PURCHASE_REQ_DETAIL REQ
+                      LEFT JOIN PRM_PURCHASE_PACKAGE PK ON REQ.PURCHASE_PACKAGE_ID = PK.UUID
+                      LEFT JOIN PRM_PURCHASE_PLAN_DETAIL PL ON REQ.PRM_PURCHASE_PLAN_DETAIL_ID =
+                                                               PL.UUID
+                      LEFT JOIN (SELECT V.PRM_PURCHASE_PLAN_DETAIL_ID,
+                                        SUM(V.LOCK_AMOUNT) AS APPLIEDAMOUNT
+                                   FROM VW_PURCHASE_PLAN_DETAIL_LOCK V
+                                  GROUP BY V.PRM_PURCHASE_PLAN_DETAIL_ID) V ON REQ.PRM_PURCHASE_PLAN_DETAIL_ID =
+                                                                               V.PRM_PURCHASE_PLAN_DETAIL_ID
+                      LEFT JOIN PRM_PURCHASE_REQ R ON R.UUID = REQ.PRM_PURCHASE_REQ_ID
+                     WHERE 1 = 1
+                       AND REQ.scm_contract_id = '${qryCondition}'
+            ]]>
+        </common>
+    </query_load_conchanged>
+</DAO>

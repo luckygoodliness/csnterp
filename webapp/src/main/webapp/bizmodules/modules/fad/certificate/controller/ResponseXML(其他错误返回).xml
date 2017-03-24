@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding='utf-8'?>
+<ufinterface billtype="gl" filename="voucher.xml" isexchange="Y" proc="add" receiver="9137A00@9137A00-0002" replace="Y" roottag="sendresult" sender="ZHKJ" successful="N">
+    <sendresult>
+        <billpk></billpk>
+        <bdocid>258497B7FE4A0AFAE0530C1F120A83F3</bdocid>
+        <filename>voucher.xml</filename>
+        <resultcode>-32000</resultcode>
+        <resultdescription>单据258497B7FE4A0AFAE0530C1F120A83F3开始处理...单据258497B7FE4A0AFAE0530C1F120A83F3处理错误:业务插件处理错误:插件类=nc.bs.gl.pfxx.VoucherPlugin,异常信息:java.lang.NullPointerException</resultdescription>
+        <content></content>
+    </sendresult>
+</ufinterface>

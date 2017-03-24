@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonreport version="1.0">
+    <report>
+        <reporttype>L</reporttype>
+        <reporttemplate>erp/jcb/公司非项目执行情况表.cpt</reporttemplate>
+        <reportcache>false</reportcache>
+    </report>
+    <conditions columns="4">
+        <JInt pos="A1:A1" fieldLabel_s="year" cid="year" allowBlank_b="false" field="year" minValue_n="1949"
+              maxValue_n="2200"/>
+        <JHidden cid="officeIdDesc"/>
+        <JErpDepartMent pos="B1:B1" fieldLabel_s="officeId" cid="officeId"
+                        field="officeId" labelWidth_n="100"/>
+        <JCombo pos="C1:C1" cid="subjectName" comboType="fm_financial_non_subject" fieldLabel_s="subjectName"
+                valueField="codedesc"
+                field="subjectName"
+                displayDesc_b="true" fullInfo_b="false"/>
+    </conditions>
+</commonreport>

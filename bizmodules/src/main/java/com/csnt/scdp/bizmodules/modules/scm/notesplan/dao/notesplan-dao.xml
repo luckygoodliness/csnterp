@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[
+            SELECT
+                   (SELECT A.CODE_DESC
+                      FROM SCDP_CODE A
+                     WHERE A.SYS_CODE = T.ISLOCK
+                       AND A.CODE_TYPE = 'SCM_NOTES_PLAN_ISLOCK') AS ISLOCK_NAME,
+                   T.*
+              FROM SCM_NOTES_PLAN T
+            where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+    <locked_detail_filter_query>
+        <common>
+            <![CDATA[
+            SELECT (SELECT A.USER_NAME FROM SCDP_USER A WHERE A.USER_ID = T.CREATE_BY) AS CREATE_BY_CONTRACT_NAME,
+                   (SELECT A.ORG_NAME FROM SCDP_ORG A WHERE A.ORG_CODE = T.OFFICE_ID) AS OFFICE_NAME,
+                   B.PRM_PROJECT_MAIN_ID AS PROJECT_ID,
+                   (SELECT A.PROJECT_NAME FROM PRM_PROJECT_MAIN A WHERE A.UUID=B.PRM_PROJECT_MAIN_ID) AS PRM_PROJECT_MAIN_ID_NAME,
+                   B.*
+              FROM SCM_NOTES_PLAN_DETAIL B
+              LEFT JOIN SCM_CONTRACT T
+                ON T.SCM_CONTRACT_CODE = B.SCM_CONTRACT_CODE
+
+                 WHERE B.SCM_NOTES_PLAN_ID = ?
+                    AND ${SELFCONDITIONS} AND MARK_TIME IS NOT NULL
+                 ORDER BY  B.SUPPLIER_NAME,B.CREATE_TIME DESC
+
+            ]]>
+        </common>
+    </locked_detail_filter_query>
+    <unlocked_detail_filter_query>
+        <common>
+            <![CDATA[
+            SELECT * FROM (
+                SELECT  DISTINCT A.UUID,
+                       NVL(A.SCM_NOTES_PLAN_ID, ?) AS SCM_NOTES_PLAN_ID,
+                       A.MARK_TIME AS MARK_TIME,
+                       T.ORG_NAME AS OFFICE_NAME,
+                       T.PROJECT_ID,
+                       T.PROJECT_NAME AS PRM_PROJECT_MAIN_ID_NAME,
+                       T.CONCLUSION_LINE_IN AS CONCLUSION_LINE_IN,
+                       NVL(T.AMOUNT*CONCLUSION_RATE_OUT/100-NVL(T.FAD_INVOICE_MONEY,0),0) AS CONCLUSION_LINE_OUT,
+                       NVL(T.CONCLUSION_LINE_CONTRACT,0) AS CONCLUSION_LINE_CONTRACT,
+                       NVL(A.CONCLUSION_LINE_FINANCIAL,0) AS CONCLUSION_LINE_FINANCIAL,
+                       T.CONCLUSION_RATE_IN ,
+                       A.CONCLUSION_RATE_OUT AS CONCLUSION_RATE_OUT,
+                       T.CONCLUSION_RATE_CONTRACT AS CONCLUSION_RATE_CONTRACT,
+                       T.CONCLUSION_RATE_RECEIPT,
+                       T.SCM_CONTRACT_CODE AS SCM_CONTRACT_CODE,
+                       (SELECT USER_NAME FROM SCDP_USER C WHERE C.USER_ID = T.CREATE_BY) AS CREATE_BY_CONTRACT_NAME,
+                       T.SUPPLIER_NAME AS SUPPLIER_NAME,
+                       T.AMOUNT AS SCM_CONTRACT_AMOUNT,
+                       T.FAD_INVOICE_MONEY AS SCM_CONTRACT_INVOICE,
+                       T.PAID_MONEY AS PAID,
+                       T.CREATE_TIME
+                  FROM VW_SCM_NOTES_PLAN_EXECUTE T
+                  LEFT JOIN (SELECT *
+                               FROM SCM_NOTES_PLAN_DETAIL SNPD
+                              WHERE SNPD.SCM_NOTES_PLAN_ID =
+                                    ?) A
+                    ON A.SCM_CONTRACT_CODE = T.SCM_CONTRACT_CODE
+                WHERE ${SELFCONDITIONS} AND (T.AMOUNT > T.FAD_INVOICE_MONEY OR A.MARK_TIME IS NOT NULL )) NOTESPLAN
+                 ORDER BY NOTESPLAN.SUPPLIER_NAME, NOTESPLAN.CREATE_TIME DESC
+            ]]>
+        </common>
+    </unlocked_detail_filter_query>
+    <simple_query_from_view>
+        <common>
+            SELECT * FROM VW_SCM_NOTES_PLAN_EXECUTE T WHERE SCM_CONTRACT_CODE=?
+        </common>
+    </simple_query_from_view>
+    <query_exist_by_issue_number>
+        <common>
+            SELECT 1 FROM SCM_NOTES_PLAN WHERE ISSUE_NUMBER=?
+        </common>
+    </query_exist_by_issue_number>
+    <lock_issue>
+        <common>
+            UPDATE SCM_NOTES_PLAN SET ISLOCK='1' WHERE UUID=?
+        </common>
+    </lock_issue>
+</DAO>

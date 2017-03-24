@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss-deployment-structure>
+    <deployment>
+        <dependencies>
+            <module name="org.bouncycastle" slot="main" export="true"/>
+            <module name="com.oracle" slot="main" export="true"/>
+        </dependencies>
+        <exclude-subsystems>
+            <subsystem name="webservices" />
+            <subsystem name="logging" />
+            <subsystem name="weld" />
+        </exclude-subsystems>
+    </deployment>
+</jboss-deployment-structure>

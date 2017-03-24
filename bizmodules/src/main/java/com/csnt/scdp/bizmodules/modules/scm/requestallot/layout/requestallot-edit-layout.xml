@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JTab pos="A1:A1" row="flex" col="1*1" border_n="1">
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="基本信息" border_n="1">
+            <JForm pos="A1:A1" cid="scmPurchaseReqDto" row="23*5" col="0.25*4" title_s="" border_n="1">
+                <JHidden cid="uuid"/>
+                <JHidden cid="tblVersion"/>
+                <JHidden cid="officeIdDesc"/>
+                <JHidden cid="prmPurchaseReqId"/>
+                <JHidden cid="isProject"/>
+                <JErpDepartMent pos="A1:A1" fieldLabel_s="officeId" cid="officeId"
+                              field="responsible_department" readOnly_b="true"
+                              adaptable_b="false" allowBlank_b="false"/>
+                <JText pos="B1:B1" fieldLabel_s="prmProjectMainId" cid="prmProjectMainIdName" allowBlank_b="true"
+                       readOnly_b="true" adaptable_b="false"/>
+                <JHidden pos="A5:A5" cid="prmProjectMainId"/>
+                <JText pos="C1:C1" fieldLabel_s="projectCode" cid="projectCode" allowBlank_b="true"
+                       readOnly_b="true" adaptable_b="false"/>
+                <JText pos="A2:A2" cid="purchaseReqNo" fieldLabel_s="purchaseReqNo" readOnly_b="true"
+                       adaptable_b="false" allowBlank_b="true"/>
+
+                <!--<JText pos="B1:B1" cid="prmProjectMainId" fieldLabel_s="prmProjectMainId" readOnly_b="true" adaptable_b="false"	 allowBlank_b="true"/>-->
+                <JDec pos="B2:B2" fieldLabel_s="totalMoney" cid="totalMoney" readOnly_b="true" adaptable_b="false"/>
+                <JUserGrid pos="C2:C2" fieldLabel_s="principal" cid="principalName" allowBlank_b="false"
+                           refer_j='[{"refField":"principal","valueField":"userId"}]'/>
+                <JHidden pos="A5:A5" cid="principal"/>
+                <JTextArea pos="A3:C5" cid="remark" fieldLabel_s="remark" allowBlank_b="true" wrap_b="true"/>
+                <!--<JText pos="A1:A1" cid="prmPurchaseReqId" fieldLabel_s="prmPurchaseReqId" allowBlank_b="true"/>-->
+                <!--<JDec pos="A1:A1" cid="subPackageNo" fieldLabel_s="subPackageNo" allowBlank_b="true"/>-->
+                <!--<JText pos="A1:A1" cid="financialSubject" fieldLabel_s="financialSubject" allowBlank_b="true"/>-->
+                <!--<JText pos="A1:A1" cid="financialSubjectCode" fieldLabel_s="financialSubjectCode" allowBlank_b="true"/>-->
+                <!--<JText pos="A1:A1" cid="subjectLevel" fieldLabel_s="subjectLevel" allowBlank_b="true"/>-->
+                <!--<JText pos="A1:A1" cid="state" fieldLabel_s="state" allowBlank_b="true"/>-->
+                <!--<JText pos="A1:A1" cid="companyCode" fieldLabel_s="companyCode" allowBlank_b="true"/>-->
+                <!--<JText pos="A1:A1" cid="projectId" fieldLabel_s="projectId" allowBlank_b="true"/>-->
+                <!--<JText pos="A1:A1" cid="departmentCode" fieldLabel_s="departmentCode" allowBlank_b="true"/>-->
+                <!--<JText pos="A1:A1" cid="createOffice" fieldLabel_s="createOffice" allowBlank_b="true"/>-->
+                <!--<JText pos="A1:A1" cid="updateOffice" fieldLabel_s="updateOffice" allowBlank_b="true"/>-->
+                <!--<JInt pos="A1:A1" cid="seqNo" fieldLabel_s="seqNo" allowBlank_b="true"/>-->
+                <!--<JText pos="A1:A1" cid="officeId" fieldLabel_s="officeId" allowBlank_b="true"/>-->
+            </JForm>
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="申请单明细" border_n="1">
+            <JEGrid pos="A1:A1" cid="prmPurchaseReqDetailDto" store="Prmpurchasereq.store.PrmPurchaseReqDetailStore">
+                <JTextCol text_s="name" dataIndex="name" width_n="120"/>
+                <JTextCol text_s="model" dataIndex="model" width_n="120"/>
+                <JDecCol text_s="amount" dataIndex="amount" width_n="120" format="0.000"/>
+                <JDecCol text_s="handleAmount" dataIndex="handleAmount" width_n="120" format="0.000"/>
+                <JTextCol text_s="factory" dataIndex="factory" width_n="120"/>
+                <JTextCol text_s="supplierId" dataIndex="supplierId" width_n="120"/>
+                <JTextCol text_s="budgetPrice" dataIndex="budgetPrice" width_n="120"/>
+                <JRCheckCol text_s="isfallback" dataIndex="isfallback" width_n="80"/>
+                <JTextCol text_s="fallbackReason" dataIndex="fallbackReason" width_n="200"/>
+                <JTextCol text_s="scmContractCode" dataIndex="scmContractCode" width_n="200"/>
+                <JHidden text_s="scmContractId" dataIndex="scmContractId" width_n="200"/>
+            </JEGrid>
+        </JPanel>
+    </JTab>
+</view>

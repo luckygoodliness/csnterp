@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <!--<![CDATA[select * from scdp_org where ${conditions} and ${voidfilter}]]>-->
+            <![CDATA[select * from scdp_org org where ${conditions} and ${voidfilter} and org.is_active=1 ]]>
+        </common>
+    </common_query>
+</DAO>

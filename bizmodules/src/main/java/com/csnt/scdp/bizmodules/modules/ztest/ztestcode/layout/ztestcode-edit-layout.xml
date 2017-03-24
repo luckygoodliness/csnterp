@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JTab pos="A1:A1" row="flex" col="1*1" border_n="1">
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="cardInfo" border_n="1">
+            <JForm pos="A1:A1" cid="ztrainMainDto" row="23*4" col="0.25*4" title_s="" border_n="1">
+                <JHidden cid="uuid"/>
+                <JHidden cid="tblVersion"/>
+                <JText pos="A1:A1" cid="code" fieldLabel_s="code" allowBlank_b="false"/>
+                <JText pos="B1:B1" cid="name" fieldLabel_s="name" allowBlank_b="false"/>
+                <JInt pos="C1:C1" cid="phone" fieldLabel_s="phone" allowBlank_b="true"/>
+                <JText pos="D1:D1" cid="email" fieldLabel_s="email" allowBlank_b="true"/>
+
+                <!--联动赋值-->
+                <JCustomerGrid pos="A2:A2" cid="cusomterUuid" fieldLabel_s="cusomterUuid" valueField="uuid"
+                               descField="customerName" displayDesc_b="true"
+                               allowBlank_b="false" forceValidate_b="false"
+                               refer_j='[{"refField":"customerName","valueField":"customerName"}]'/>
+                <!--客户名称customerName表里面没有，为了展现出来，手动加上-->
+                <JText pos="B2:B2" cid="customerName" fieldLabel_s="customerName" allowBlank_b="true" readOnly_b="true"
+                       adaptable_b="false"/>
+
+                <JText pos="C2:C2" cid="projectId" fieldLabel_s="projectId" allowBlank_b="true"/>
+                <JText pos="D2:D2" cid="departmentCode" fieldLabel_s="departmentCode" allowBlank_b="true"/>
+                <JInt pos="A3:A3" cid="seqNo" fieldLabel_s="seqNo" allowBlank_b="true"/>
+                <JCombo pos="D3:D3" cid="state" fieldLabel_s="state" allowBlank_b="true"
+                        comboType="scdp_fmcode" codeType="CDM_BILL_STATE" displayDesc_b="true" fullInfo_b="false"
+                        multiSelect_b="false"/>
+                <JText pos="C3:C3" cid="companyCode" fieldLabel_s="companyCode" allowBlank_b="true"/>
+            </JForm>
+        </JPanel>
+        <!--附件信息-->
+        <JPanel pos="A1:J1" row="flex" col="0.1*10" title_s="附件信息" border_n="1">
+            <JEGrid pos="A1:A1" cid="ztrainMainContentDto" store="Ztestcode.store.ZtrainMainContentStore">
+                <JTextCol text_s="travelCity" dataIndex="travelCity" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JDateCol text_s="travelTime" dataIndex="travelTime" width_n="150">
+                    <JDate allowBlank_b="true"/>
+                </JDateCol>
+                <JTextCol text_s="remark" dataIndex="remark" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="projectId" dataIndex="projectId" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+            </JEGrid>
+        </JPanel>
+    </JTab>
+</view>

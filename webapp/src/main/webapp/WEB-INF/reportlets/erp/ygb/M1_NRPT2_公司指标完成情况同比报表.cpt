@@ -1,0 +1,4082 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="T1" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="year"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="month"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--T1
+--今年当月
+SELECT
+O.SEQ_NO,
+O.ORG_CODE,
+O.ORG_NAME,
+O.TARGET,
+O.FLAG,
+NVL(NVL(R.CUR_YEAR, '${year}'), TO_CHAR(SYSDATE,'yyyy')) CUR_YEAR,
+NVL(NVL(R.CUR_MONTH, '${month}'), TO_CHAR(SYSDATE,'mm')) CUR_MONTH,
+NVL(R.MONEY, 0) + NVL(JH.JZ, 0) MONEY
+FROM
+(
+  SELECT
+  *
+  FROM 
+  (
+    SELECT
+    R.ORG_CODE,
+    R.CUR_YEAR,
+    R.CUR_MONTH,
+    R.TARGET,
+    SUM(R.MONEY) MONEY
+    FROM
+    (
+      SELECT
+      D.ORG_CODE,
+      D.CUR_YEAR,
+      D.CUR_MONTH,
+      '合同额' TARGET,
+      NVL2(SUM(D.CONTRACT_MONEY), SUM(D.CONTRACT_MONEY) / 10000, 0) MONEY --合同额
+      FROM
+      (
+        SELECT
+        P.CONFIRMED_DATE,
+        P.CONTRACT_SIGN_MONEY CONTRACT_MONEY,
+        P.CONTRACTOR_OFFICE ORG_CODE,
+        TO_CHAR(NVL(CONFIRMED_DATE, CREATE_TIME), 'yyyy') CUR_YEAR,
+        TO_CHAR(NVL(CONFIRMED_DATE, CREATE_TIME), 'mm') CUR_MONTH
+        FROM
+        PRM_CONTRACT P
+        WHERE
+        NVL(P.PROJECT_SOURCE_TYPE, 0) <> '4' AND (IS_VOID = 0 OR IS_VOID IS NULL)
+      ) D
+      GROUP BY
+      D.ORG_CODE,
+      D.CUR_YEAR,
+      D. CUR_MONTH
+
+      UNION ALL
+
+      SELECT
+      D.ORG_CODE,
+      D.CUR_YEAR,
+      D. CUR_MONTH,
+      '立项利润' TARGET,
+      NVL2(SUM(D.PROFIT_MONEY), SUM(D.PROFIT_MONEY) / 10000, 0) MONEY --立项利润
+      FROM
+      (
+        SELECT
+        R.ORG_CODE,
+        R.PRM_PROJECT_MAIN_ID,
+        R.CUR_YEAR,
+        R.CUR_MONTH,
+        NVL(R.PROFIT, 0) - NVL(R.PROFIT_L, 0) PROFIT_MONEY
+        FROM
+        (
+          SELECT
+          R.UUID,
+          R.ORG_CODE,
+          R.PRM_PROJECT_MAIN_ID,
+          R.CUR_YEAR,
+          R.CUR_MONTH,
+          PROFIT,
+          LEAD(R.PROFIT) OVER(PARTITION BY R.PRM_PROJECT_MAIN_ID ORDER BY R.CUR_YEAR DESC, R.CUR_MONTH DESC) PROFIT_L
+          FROM
+          (
+            SELECT
+            R.*,
+            ROW_NUMBER() OVER(PARTITION BY R.PRM_PROJECT_MAIN_ID, R.CUR_YEAR, R.CUR_MONTH ORDER BY R.CUR_TIME DESC) ROW_NUM
+            FROM
+            (
+              SELECT
+              PPMC.UUID,
+              PPMC.CONTRACTOR_OFFICE ORG_CODE,
+              PPMC.PRM_PROJECT_MAIN_ID,
+              TO_CHAR(NVL(AHP.END_TIME_, PPMC.ESTABLISH_DATE), 'yyyy') CUR_YEAR,
+              TO_CHAR(NVL(AHP.END_TIME_, PPMC.ESTABLISH_DATE), 'mm') CUR_MONTH,
+              AHP.END_TIME_ CUR_TIME,
+              NVL(PPMC.PROJECT_MONEY, 0) - NVL(PPMC.COST_CONTROL_MONEY, 0) PROFIT
+              FROM
+              PRM_PROJECT_MAIN_C PPMC
+
+              LEFT JOIN
+              ACT_HI_PROCINST AHP
+              ON
+              PPMC.UUID = AHP.BUSINESS_KEY_
+
+              WHERE
+              (
+                PROC_DEF_ID_ LIKE 'Prm_Main%'
+                OR
+                PROC_DEF_ID_ LIKE 'Prm_Revise%'
+                OR
+                PPMC.TBL_VERSION = 'old'
+              )
+              AND
+              (
+                AHP.END_ACT_ID_ IS NOT NULL
+                OR
+                PPMC.TBL_VERSION = 'old'
+              )
+              AND
+              PPMC.STATE = 2
+              AND
+              (
+                SUBSTR(PPMC.PROJECT_CODE, 1, 1)<> '研'
+                OR
+                SUBSTR(PPMC.PROJECT_CODE, 7, 2) = 'KY'
+              )--不含外部研发
+              AND
+              NVL(PPMC.IS_PRE_PROJECT, 0) = 0
+              AND
+              PPMC.ESTABLISH_DATE >= TO_DATE('2014-06-01', 'yyyy-MM-dd')
+              AND (PPMC.IS_VOID = 0 OR PPMC.IS_VOID IS NULL)
+            ) R
+          ) R
+          WHERE
+          R.ROW_NUM = 1
+        ) R
+      ) D
+      GROUP BY
+      D.ORG_CODE,
+      D.CUR_YEAR,
+      D. CUR_MONTH
+
+      UNION ALL
+       
+      SELECT
+      R.ORG_CODE,
+      R.CUR_YEAR,
+      R.CUR_MONTH,
+      '收款' TARGET,
+      NVL2(SUM(R.ACTUAL_MONEY), SUM(R.ACTUAL_MONEY) / 10000, 0) MONEY --收款
+      FROM
+      (
+        SELECT
+        M.CONTRACTOR_OFFICE ORG_CODE,
+        T.ACTUAL_MONEY,
+        T.ACTUAL_DATE,
+        TO_CHAR(T.ACTUAL_DATE, 'yyyy') CUR_YEAR,
+        TO_CHAR(T.ACTUAL_DATE, 'mm') CUR_MONTH
+        FROM
+        PRM_RECEIPTS T,
+        PRM_PROJECT_MAIN M
+        WHERE
+        T.PRM_PROJECT_MAIN_ID = M.UUID
+        AND
+        T.STATE IN ('2','4','8')
+        AND (T.IS_VOID = 0 OR T.IS_VOID IS NULL)
+        AND (M.IS_VOID = 0 OR M.IS_VOID IS NULL)
+      ) R
+      GROUP BY
+      R.ORG_CODE,
+      R.CUR_YEAR,
+      R.CUR_MONTH
+
+      UNION ALL
+
+      SELECT
+      PPM.CONTRACTOR_OFFICE ORG_CODE,
+      JS.CUR_YEAR,
+      JS.CUR_MONTH,
+      '结算收入' TARGET,
+      SUM(JSSR) / 10000 MONEY
+      FROM
+      (
+        SELECT
+        PROJECT_ID,
+        CUR_YEAR,
+        CUR_MONTH,
+        SUM(JSSR) JSSR
+        FROM
+        (
+          SELECT
+          T.PRM_PROJECT_MAIN_ID PROJECT_ID,
+          TO_CHAR(T.SQUARE_DATE, 'YYYY') CUR_YEAR,
+          TO_CHAR(T.SQUARE_DATE, 'MM') CUR_MONTH,
+          T.SQUARE_PROJECT_MONEY JSSR --收入
+          FROM
+          PRM_FINAL_ESTIMATE T,
+          PRM_PROJECT_MAIN M
+          WHERE
+          T.SQUARE_DATE IS NOT NULL
+          AND
+          T.PRM_PROJECT_MAIN_ID = M.UUID
+          AND
+          M.PROJECT_CODE NOT LIKE '研%'
+          AND (T.IS_VOID = 0 OR T.IS_VOID IS NULL)
+          AND (M.IS_VOID = 0 OR M.IS_VOID IS NULL)
+        ) R
+        GROUP BY
+        PROJECT_ID,
+        CUR_YEAR,
+        CUR_MONTH
+      ) JS
+
+      LEFT JOIN
+      (SELECT * FROM PRM_PROJECT_MAIN WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PPM
+      ON
+      PPM.UUID = JS.PROJECT_ID
+
+      GROUP BY
+      PPM.CONTRACTOR_OFFICE,
+      JS.CUR_YEAR,
+      JS.CUR_MONTH
+
+      UNION ALL
+
+      SELECT
+      PPM.CONTRACTOR_OFFICE ORG_CODE,
+      JS.CUR_YEAR,
+      JS.CUR_MONTH,
+      '结算利润' TARGET,
+      SUM(NVL(JSLR, 0) - NVL(SJXZ, 0)) / 10000 JSLR
+      FROM
+      (
+        SELECT
+        PROJECT_ID,
+        CUR_YEAR,
+        CUR_MONTH,
+        SUM(JSLR) JSLR
+        FROM
+        (
+          SELECT
+          T.PRM_PROJECT_MAIN_ID PROJECT_ID,
+          TO_CHAR(T.SQUARE_DATE, 'YYYY') CUR_YEAR,
+          TO_CHAR(T.SQUARE_DATE, 'MM') CUR_MONTH,
+          NVL(T. SQUARE_GROSS_PROFIT, 0) + NVL(T.TAX_CORRECTION, 0) JSLR --利润
+          FROM
+          PRM_FINAL_ESTIMATE T,
+          PRM_PROJECT_MAIN M
+          WHERE
+          T.SQUARE_DATE IS NOT NULL
+          AND
+          T.PRM_PROJECT_MAIN_ID = M.UUID
+          AND
+          M.PROJECT_CODE NOT LIKE '研%'
+          AND (T.IS_VOID = 0 OR T.IS_VOID IS NULL)
+          AND (M.IS_VOID = 0 OR M.IS_VOID IS NULL)
+        ) R
+        GROUP BY
+        PROJECT_ID,
+        CUR_YEAR,
+        CUR_MONTH
+      ) JS
+
+      LEFT JOIN
+      (
+        SELECT
+        PROJECT_ID,
+        CUR_YEAR,
+        CUR_MONTH,
+        SUM(SJXZ) SJXZ
+        FROM
+        (
+          SELECT
+          T.PRM_PROJECT_MAIN_ID PROJECT_ID,
+          TO_CHAR(T.REVISE_TAX_DATE, 'YYYY') CUR_YEAR,
+          TO_CHAR(T.REVISE_TAX_DATE, 'MM') CUR_MONTH,
+          T.TAX_CORRECTION SJXZ --税金修正
+          FROM
+          PRM_FINAL_ESTIMATE T
+          WHERE
+          T.REVISE_TAX_DATE IS NOT NULL
+          AND (T.IS_VOID = 0 OR T.IS_VOID IS NULL)
+        ) R
+        GROUP BY
+        PROJECT_ID,
+        CUR_YEAR,
+        CUR_MONTH
+      ) XZ
+      ON
+      JS. PROJECT_ID = XZ.PROJECT_ID
+      AND
+      JS. CUR_YEAR = XZ.CUR_YEAR
+      AND
+      JS. CUR_MONTH = XZ.CUR_MONTH
+
+      LEFT JOIN
+      (SELECT * FROM PRM_PROJECT_MAIN WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PPM
+      ON
+      PPM.UUID = JS.PROJECT_ID
+
+      GROUP BY
+      PPM.CONTRACTOR_OFFICE,
+      JS.CUR_YEAR,
+      JS.CUR_MONTH
+
+      UNION ALL
+
+      SELECT
+      R.ORG_CODE,
+      TO_CHAR(R.CUR_YEAR) CUR_YEAR,
+      TO_CHAR(R.CUR_MONTH) CUR_MONTH,
+      '收支盈余' TARGET,
+      SUM(MONEY) MONEY
+      FROM
+      (
+        SELECT
+        NVL(QTCB.ORG_CODE, JSLR.ORG_CODE) ORG_CODE,
+        NVL(QTCB.CUR_YEAR, JSLR.CUR_YEAR) CUR_YEAR,
+        NVL(QTCB.CUR_MONTH, JSLR.CUR_MONTH) CUR_MONTH,
+        '收支盈余',
+        NVL(JSLR.JSLR, 0) - NVL(QTCB.MONEY, 0) MONEY
+        FROM
+        (
+          SELECT
+          R.ORG_CODE,
+          TO_CHAR(R.CUR_YEAR) CUR_YEAR,
+          (CASE WHEN R.CUR_MONTH>=10 THEN TO_CHAR(R.CUR_MONTH) ELSE '0'||TO_CHAR(R.CUR_MONTH) END) CUR_MONTH,
+          '其他成本',
+          SUM(MONEY) MONEY
+          FROM
+          (
+            --人工费
+            SELECT
+            MLC.OFFICE_ID ORG_CODE,
+            MLC.YEAR CUR_YEAR,
+            MLC.MONTH CUR_MONTH,
+            SUM(MONEY) / 10000 MONEY
+            FROM
+            MONITOR_LABOR_COST MLC
+            WHERE (IS_VOID = 0 OR IS_VOID IS NULL)
+            GROUP BY
+            OFFICE_ID,
+            MLC.YEAR,
+            MLC.MONTH
+
+            UNION ALL
+
+            --其他分摊费用
+            SELECT
+            MOS.OFFICE_ID ORG_CODE,
+            MOS.YEAR CUR_YEAR,
+            MOS.MONTH CUR_MONTH,
+            SUM(MONEY) / 10000 MONEY
+            FROM
+            MONITOR_OTHER_SHARE MOS
+            WHERE (IS_VOID = 0 OR IS_VOID IS NULL)
+            GROUP BY
+            OFFICE_ID,
+            MOS.YEAR,
+            MOS.MONTH
+
+            UNION ALL
+
+            --非项目费用
+            SELECT
+            ORG_CODE,
+            TO_NUMBER(CUR_YEAR) CUR_YEAR,
+            TO_NUMBER(CUR_MONTH) CUR_MONTH,
+            SUM(MONEY) / 10000 MONEY
+            FROM
+            (
+              SELECT
+              NPBH.OFFICE_ID ORG_CODE,
+              TO_CHAR(VBD48.CERTIFICATE_CREATE_TIME, 'yyyy') CUR_YEAR,
+              TO_CHAR(VBD48.CERTIFICATE_CREATE_TIME, 'mm') CUR_MONTH,
+              VBD48.MONEY
+              FROM
+              (
+                SELECT
+                NVL(NVL(FAD_CASH_REQ_INVOICE.FAD_INVOICE_ID, SCM_CONTRACT_INVOICE.FAD_INVOICE_ID), VBD48.UUID) UUID,
+                VBD48.CERTIFICATE_CREATE_TIME,
+                VBD48.BUDGET_C_UUID,
+                VBD48.SUBJECT_NAME,
+                NVL(VBD48.MONEY, 0) MONEY
+                FROM
+                VW_BUDGET_DETAIL48 VBD48
+
+                LEFT JOIN
+                (SELECT * FROM FAD_CASH_REQ_INVOICE WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) FAD_CASH_REQ_INVOICE
+                ON
+                VBD48.UUID = FAD_CASH_REQ_INVOICE.UUID
+
+                LEFT JOIN
+                (SELECT * FROM SCM_CONTRACT_INVOICE WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) SCM_CONTRACT_INVOICE
+                ON
+                VBD48.UUID = SCM_CONTRACT_INVOICE.UUID
+
+                WHERE
+                NVL(VBD48.IS_PROJECT, 0) != 1
+                AND
+                VBD48.BUDGET_C_UUID IS NOT NULL
+              ) VBD48
+
+              LEFT JOIN
+              (SELECT * FROM NON_PROJECT_BUDGET_C WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) NPBC
+              ON
+              VBD48.BUDGET_C_UUID = NPBC.UUID
+
+              LEFT JOIN
+              (SELECT * FROM NON_PROJECT_BUDGET_H WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) NPBH
+              ON
+              NPBC.HID = NPBH.UUID
+            ) R
+            GROUP BY
+            R.ORG_CODE,
+            R.CUR_YEAR,
+            R.CUR_MONTH
+          ) R
+          WHERE
+          EXISTS
+          (
+            SELECT
+            1
+            FROM
+            OPERATE_COMPANY_PLAN_H H
+
+            LEFT JOIN
+            (SELECT * FROM OPERATE_COMPANY_PLAN_C WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) C
+            ON
+            H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+            WHERE
+            H.START_YEAR = R.CUR_YEAR
+            AND
+            C.OBJECT_ID = R.ORG_CODE
+            AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+          )
+          GROUP BY
+          R.ORG_CODE,
+          R.CUR_YEAR,
+          R.CUR_MONTH
+        ) QTCB
+
+        --结算利润
+        FULL JOIN
+        (
+          SELECT
+          PPM.CONTRACTOR_OFFICE ORG_CODE,
+          JS.CUR_YEAR,
+          JS.CUR_MONTH CUR_MONTH,
+          '结算利润' TARGET,
+          SUM(NVL(JSLR, 0) - NVL(SJXZ, 0)) / 10000 JSLR
+          FROM
+          (
+            SELECT
+            PROJECT_ID,
+            CUR_YEAR,
+            CUR_MONTH,
+            SUM(JSLR) JSLR
+            FROM
+            (
+              SELECT
+              T.PRM_PROJECT_MAIN_ID PROJECT_ID,
+              TO_CHAR(T.SQUARE_DATE, 'YYYY') CUR_YEAR,
+              TO_CHAR(T.SQUARE_DATE, 'MM') CUR_MONTH,
+              NVL(T.SQUARE_GROSS_PROFIT, 0) + NVL(T.TAX_CORRECTION, 0) JSLR --利润
+              FROM
+              PRM_FINAL_ESTIMATE T,
+              PRM_PROJECT_MAIN M
+              WHERE
+              T.SQUARE_DATE IS NOT NULL
+              AND
+              T.PRM_PROJECT_MAIN_ID = M.UUID
+              AND
+              M.PROJECT_CODE NOT LIKE '研%'
+              AND (T.IS_VOID = 0 OR T.IS_VOID IS NULL)
+              AND (M.IS_VOID = 0 OR M.IS_VOID IS NULL)
+            ) R
+            GROUP BY
+            PROJECT_ID,
+            CUR_YEAR,
+            CUR_MONTH
+          ) JS
+
+          LEFT JOIN
+          (
+            SELECT
+            PROJECT_ID,
+            CUR_YEAR,
+            CUR_MONTH,
+            SUM(SJXZ) SJXZ
+            FROM
+            (
+              SELECT
+              T.PRM_PROJECT_MAIN_ID PROJECT_ID,
+              TO_CHAR(T.REVISE_TAX_DATE, 'YYYY') CUR_YEAR,
+              TO_CHAR(T.REVISE_TAX_DATE, 'MM') CUR_MONTH,
+              T.TAX_CORRECTION SJXZ --税金修正
+              FROM
+              PRM_FINAL_ESTIMATE T
+              WHERE
+              T.REVISE_TAX_DATE IS NOT NULL
+              AND (T.IS_VOID = 0 OR T.IS_VOID IS NULL)
+            ) R
+            GROUP BY
+            PROJECT_ID,
+            CUR_YEAR,
+            CUR_MONTH
+          ) XZ
+          ON
+          JS. PROJECT_ID = XZ.PROJECT_ID
+          AND
+          JS. CUR_YEAR = XZ.CUR_YEAR
+          AND
+          JS. CUR_MONTH = XZ.CUR_MONTH
+
+          LEFT JOIN
+          (SELECT * FROM PRM_PROJECT_MAIN WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PPM
+          ON
+          PPM.UUID = JS.PROJECT_ID
+
+          GROUP BY
+          PPM.CONTRACTOR_OFFICE,
+          JS.CUR_YEAR,
+          JS.CUR_MONTH
+        )
+        JSLR
+        ON
+        JSLR.ORG_CODE = QTCB.ORG_CODE
+        AND
+        JSLR.CUR_YEAR = QTCB.CUR_YEAR
+        AND
+        JSLR.CUR_MONTH = QTCB.CUR_MONTH
+      ) R
+      WHERE
+      EXISTS
+      (
+        SELECT
+        1
+        FROM
+        OPERATE_COMPANY_PLAN_H H
+
+        LEFT JOIN
+        (SELECT * FROM OPERATE_COMPANY_PLAN_C WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) C
+        ON
+        H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+
+        WHERE
+        H.START_YEAR = R.CUR_YEAR
+        AND
+        C.OBJECT_ID = R.ORG_CODE
+        AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+      )
+      GROUP BY
+      R.ORG_CODE,
+      R.CUR_YEAR,
+      R.CUR_MONTH
+    ) R
+    GROUP BY
+    R.ORG_CODE,
+    R.CUR_YEAR,
+    R.CUR_MONTH,
+    R.TARGET
+  ) R
+  WHERE
+  R.CUR_YEAR = NVL('${year}', TO_CHAR(SYSDATE,'yyyy'))
+  AND
+  TO_NUMBER(R.CUR_MONTH) = TO_NUMBER(NVL('${month}', TO_CHAR(SYSDATE,'mm')))
+) R
+
+LEFT JOIN
+--指标
+(
+  SELECT
+  JH.ORG_CODE,
+  JH.CUR_YEAR,
+  '01' CUR_MONTH,
+  JH.TARGET,
+  SUM(JH.MONEY_JH) MONEY_JH,
+  SUM(JH.JZ) JZ
+  FROM
+  (
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '合同额' TARGET,
+    NVL(C.JHHTE, 0) MONEY_JH, --合同额(万元)
+    NVL(C.JZHTE, 0) + NVL(C.HTEXZ, 0) JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+    AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+
+    UNION ALL
+
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '立项利润' TARGET,
+    NVL(C.JHLXLR, 0) MONEY_JH,
+    NVL(C.JZLR, 0) + NVL(C.lxlrxz, 0) JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+    AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+
+    UNION ALL
+
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '收款' TARGET,
+    NVL(C.JHSR, 0) MONEY_JH,
+    NVL(JZSR,0)+NVL(BMSRXZ,0) JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+    AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+
+    UNION ALL
+
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '结算收入' TARGET,
+    NVL(C.JHJSSR, 0) MONEY_JH,
+    BMJSSRXZ JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+    AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+
+    UNION ALL
+
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '结算利润' TARGET,
+    NVL(C.JHJSLR, 0) MONEY_JH,
+    BMJSLRXZ JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+    AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+
+    UNION ALL
+
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '收支盈余' TARGET,
+    NVL(C.JHSZYY, 0) MONEY_JH,
+    BMJSLRXZ JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+    AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+  ) JH
+  GROUP BY
+  JH.ORG_CODE,
+  JH.CUR_YEAR,
+  JH.TARGET
+) JH
+ON
+R.ORG_CODE = JH.ORG_CODE
+AND
+R.CUR_YEAR = JH.CUR_YEAR
+AND
+R.CUR_MONTH = JH.CUR_MONTH
+AND
+R.TARGET = JH.TARGET
+
+RIGHT JOIN
+(
+  SELECT
+  SCDP_ORG.SEQ_NO,
+  SCDP_ORG.ORG_CODE,
+  SCDP_ORG.ORG_NAME,
+  T.TARGET,
+  DECODE(T.TARGET, '合同额', '1', '立项利润', '2', '结算利润', '3', '收款', '4', '结算收入', '5', '6') AS FLAG
+  FROM
+  (SELECT * FROM SCDP_ORG WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) SCDP_ORG
+  INNER JOIN
+  (SELECT * FROM SCDP_EXPAND_ROW WHERE EXPAND_CODE = 'DEPT_PROP' AND EXPAND_VALUE = '事业部' AND (IS_VOID = 0 OR IS_VOID IS NULL)) SCDP_EXPAND_ROW
+  ON
+  SCDP_ORG.UUID = SCDP_EXPAND_ROW.DATA_UUID
+  LEFT JOIN
+  (
+    SELECT '合同额' TARGET FROM DUAL
+    UNION ALL
+    SELECT '立项利润' TARGET FROM DUAL
+    UNION ALL
+    SELECT '结算利润' TARGET FROM DUAL
+    UNION ALL
+    SELECT '收款' TARGET FROM DUAL
+    UNION ALL
+    SELECT '结算收入' TARGET FROM DUAL
+  ) T
+  ON 1=1
+) O
+ON
+R.ORG_CODE = O.ORG_CODE
+AND
+R.TARGET = O.TARGET
+
+ORDER BY
+O.SEQ_NO ASC,
+O.ORG_CODE ASC,
+O.FLAG ASC]]></Query>
+</TableData>
+<TableData name="T2" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="year"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="month"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--T2
+--今年累计
+SELECT
+O.SEQ_NO,
+O.ORG_CODE,
+O.ORG_NAME,
+O.TARGET,
+O.FLAG,
+NVL(NVL(R.CUR_YEAR, '${year}'), TO_CHAR(SYSDATE,'yyyy')) CUR_YEAR,
+NVL(SUM(NVL(R.MONEY, 0) + NVL(JH.JZ, 0)), 0) MONEY
+FROM
+(
+  SELECT
+  *
+  FROM 
+  (
+    SELECT
+    R.ORG_CODE,
+    R.CUR_YEAR,
+    R.CUR_MONTH,
+    R.TARGET,
+    SUM(R.MONEY) MONEY
+    FROM
+    (
+      SELECT
+      D.ORG_CODE,
+      D.CUR_YEAR,
+      D.CUR_MONTH,
+      '合同额' TARGET,
+      NVL2(SUM(D.CONTRACT_MONEY), SUM(D.CONTRACT_MONEY) / 10000, 0) MONEY --合同额
+      FROM
+      (
+        SELECT
+        P.CONFIRMED_DATE,
+        P.CONTRACT_SIGN_MONEY CONTRACT_MONEY,
+        P.CONTRACTOR_OFFICE ORG_CODE,
+        TO_CHAR(NVL(CONFIRMED_DATE, CREATE_TIME), 'yyyy') CUR_YEAR,
+        TO_CHAR(NVL(CONFIRMED_DATE, CREATE_TIME), 'mm') CUR_MONTH
+        FROM
+        PRM_CONTRACT P
+        WHERE
+        NVL(P.PROJECT_SOURCE_TYPE, 0) <> '4' AND (IS_VOID = 0 OR IS_VOID IS NULL)
+      ) D
+      GROUP BY
+      D.ORG_CODE,
+      D.CUR_YEAR,
+      D. CUR_MONTH
+
+      UNION ALL
+
+      SELECT
+      D.ORG_CODE,
+      D.CUR_YEAR,
+      D. CUR_MONTH,
+      '立项利润' TARGET,
+      NVL2(SUM(D.PROFIT_MONEY), SUM(D.PROFIT_MONEY) / 10000, 0) MONEY --立项利润
+      FROM
+      (
+        SELECT
+        R.ORG_CODE,
+        R.PRM_PROJECT_MAIN_ID,
+        R.CUR_YEAR,
+        R.CUR_MONTH,
+        NVL(R.PROFIT, 0) - NVL(R.PROFIT_L, 0) PROFIT_MONEY
+        FROM
+        (
+          SELECT
+          R.UUID,
+          R.ORG_CODE,
+          R.PRM_PROJECT_MAIN_ID,
+          R.CUR_YEAR,
+          R.CUR_MONTH,
+          PROFIT,
+          LEAD(R.PROFIT) OVER(PARTITION BY R.PRM_PROJECT_MAIN_ID ORDER BY R.CUR_YEAR DESC, R.CUR_MONTH DESC) PROFIT_L
+          FROM
+          (
+            SELECT
+            R.*,
+            ROW_NUMBER() OVER(PARTITION BY R.PRM_PROJECT_MAIN_ID, R.CUR_YEAR, R.CUR_MONTH ORDER BY R.CUR_TIME DESC) ROW_NUM
+            FROM
+            (
+              SELECT
+              PPMC.UUID,
+              PPMC.CONTRACTOR_OFFICE ORG_CODE,
+              PPMC.PRM_PROJECT_MAIN_ID,
+              TO_CHAR(NVL(AHP.END_TIME_, PPMC.ESTABLISH_DATE), 'yyyy') CUR_YEAR,
+              TO_CHAR(NVL(AHP.END_TIME_, PPMC.ESTABLISH_DATE), 'mm') CUR_MONTH,
+              AHP.END_TIME_ CUR_TIME,
+              NVL(PPMC.PROJECT_MONEY, 0) - NVL(PPMC.COST_CONTROL_MONEY, 0) PROFIT
+              FROM
+              PRM_PROJECT_MAIN_C PPMC
+
+              LEFT JOIN
+              ACT_HI_PROCINST AHP
+              ON
+              PPMC.UUID = AHP.BUSINESS_KEY_
+
+              WHERE
+              (
+                PROC_DEF_ID_ LIKE 'Prm_Main%'
+                OR
+                PROC_DEF_ID_ LIKE 'Prm_Revise%'
+                OR
+                PPMC.TBL_VERSION = 'old'
+              )
+              AND
+              (
+                AHP.END_ACT_ID_ IS NOT NULL
+                OR
+                PPMC.TBL_VERSION = 'old'
+              )
+              AND
+              PPMC.STATE = 2
+              AND
+              (
+                SUBSTR(PPMC.PROJECT_CODE, 1, 1)<> '研'
+                OR
+                SUBSTR(PPMC.PROJECT_CODE, 7, 2) = 'KY'
+              )--不含外部研发
+              AND
+              NVL(PPMC.IS_PRE_PROJECT, 0) = 0
+              AND
+              PPMC.ESTABLISH_DATE >= TO_DATE('2014-06-01', 'yyyy-MM-dd')
+              AND (PPMC.IS_VOID = 0 OR PPMC.IS_VOID IS NULL)
+            ) R
+          ) R
+          WHERE
+          R.ROW_NUM = 1
+        ) R
+      ) D
+      GROUP BY
+      D.ORG_CODE,
+      D.CUR_YEAR,
+      D. CUR_MONTH
+
+      UNION ALL
+       
+      SELECT
+      R.ORG_CODE,
+      R.CUR_YEAR,
+      R.CUR_MONTH,
+      '收款' TARGET,
+      NVL2(SUM(R.ACTUAL_MONEY), SUM(R.ACTUAL_MONEY) / 10000, 0) MONEY --收款
+      FROM
+      (
+        SELECT
+        M.CONTRACTOR_OFFICE ORG_CODE,
+        T.ACTUAL_MONEY,
+        T.ACTUAL_DATE,
+        TO_CHAR(T.ACTUAL_DATE, 'yyyy') CUR_YEAR,
+        TO_CHAR(T.ACTUAL_DATE, 'mm') CUR_MONTH
+        FROM
+        PRM_RECEIPTS T,
+        PRM_PROJECT_MAIN M
+        WHERE
+        T.PRM_PROJECT_MAIN_ID = M.UUID
+        AND
+        T.STATE IN ('2','4','8')
+        AND (T.IS_VOID = 0 OR T.IS_VOID IS NULL)
+        AND (M.IS_VOID = 0 OR M.IS_VOID IS NULL)
+      ) R
+      GROUP BY
+      R.ORG_CODE,
+      R.CUR_YEAR,
+      R.CUR_MONTH
+
+      UNION ALL
+
+      SELECT
+      PPM.CONTRACTOR_OFFICE ORG_CODE,
+      JS.CUR_YEAR,
+      JS.CUR_MONTH,
+      '结算收入' TARGET,
+      SUM(JSSR) / 10000 MONEY
+      FROM
+      (
+        SELECT
+        PROJECT_ID,
+        CUR_YEAR,
+        CUR_MONTH,
+        SUM(JSSR) JSSR
+        FROM
+        (
+          SELECT
+          T.PRM_PROJECT_MAIN_ID PROJECT_ID,
+          TO_CHAR(T.SQUARE_DATE, 'YYYY') CUR_YEAR,
+          TO_CHAR(T.SQUARE_DATE, 'MM') CUR_MONTH,
+          T.SQUARE_PROJECT_MONEY JSSR --收入
+          FROM
+          PRM_FINAL_ESTIMATE T,
+          PRM_PROJECT_MAIN M
+          WHERE
+          T.SQUARE_DATE IS NOT NULL
+          AND
+          T.PRM_PROJECT_MAIN_ID = M.UUID
+          AND
+          M.PROJECT_CODE NOT LIKE '研%'
+          AND (T.IS_VOID = 0 OR T.IS_VOID IS NULL)
+          AND (M.IS_VOID = 0 OR M.IS_VOID IS NULL)
+        ) R
+        GROUP BY
+        PROJECT_ID,
+        CUR_YEAR,
+        CUR_MONTH
+      ) JS
+
+      LEFT JOIN
+      (SELECT * FROM PRM_PROJECT_MAIN WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PPM
+      ON
+      PPM.UUID = JS.PROJECT_ID
+
+      GROUP BY
+      PPM.CONTRACTOR_OFFICE,
+      JS.CUR_YEAR,
+      JS.CUR_MONTH
+
+      UNION ALL
+
+      SELECT
+      PPM.CONTRACTOR_OFFICE ORG_CODE,
+      JS.CUR_YEAR,
+      JS.CUR_MONTH,
+      '结算利润' TARGET,
+      SUM(NVL(JSLR, 0) - NVL(SJXZ, 0)) / 10000 JSLR
+      FROM
+      (
+        SELECT
+        PROJECT_ID,
+        CUR_YEAR,
+        CUR_MONTH,
+        SUM(JSLR) JSLR
+        FROM
+        (
+          SELECT
+          T.PRM_PROJECT_MAIN_ID PROJECT_ID,
+          TO_CHAR(T.SQUARE_DATE, 'YYYY') CUR_YEAR,
+          TO_CHAR(T.SQUARE_DATE, 'MM') CUR_MONTH,
+          NVL(T. SQUARE_GROSS_PROFIT, 0) + NVL(T.TAX_CORRECTION, 0) JSLR --利润
+          FROM
+          PRM_FINAL_ESTIMATE T,
+          PRM_PROJECT_MAIN M
+          WHERE
+          T.SQUARE_DATE IS NOT NULL
+          AND
+          T.PRM_PROJECT_MAIN_ID = M.UUID
+          AND
+          M.PROJECT_CODE NOT LIKE '研%'
+          AND (T.IS_VOID = 0 OR T.IS_VOID IS NULL)
+          AND (M.IS_VOID = 0 OR M.IS_VOID IS NULL)
+        ) R
+        GROUP BY
+        PROJECT_ID,
+        CUR_YEAR,
+        CUR_MONTH
+      ) JS
+
+      LEFT JOIN
+      (
+        SELECT
+        PROJECT_ID,
+        CUR_YEAR,
+        CUR_MONTH,
+        SUM(SJXZ) SJXZ
+        FROM
+        (
+          SELECT
+          T.PRM_PROJECT_MAIN_ID PROJECT_ID,
+          TO_CHAR(T.REVISE_TAX_DATE, 'YYYY') CUR_YEAR,
+          TO_CHAR(T.REVISE_TAX_DATE, 'MM') CUR_MONTH,
+          T.TAX_CORRECTION SJXZ --税金修正
+          FROM
+          PRM_FINAL_ESTIMATE T
+          WHERE
+          T.REVISE_TAX_DATE IS NOT NULL
+          AND (T.IS_VOID = 0 OR T.IS_VOID IS NULL)
+        ) R
+        GROUP BY
+        PROJECT_ID,
+        CUR_YEAR,
+        CUR_MONTH
+      ) XZ
+      ON
+      JS. PROJECT_ID = XZ.PROJECT_ID
+      AND
+      JS. CUR_YEAR = XZ.CUR_YEAR
+      AND
+      JS. CUR_MONTH = XZ.CUR_MONTH
+
+      LEFT JOIN
+      (SELECT * FROM PRM_PROJECT_MAIN WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PPM
+      ON
+      PPM.UUID = JS.PROJECT_ID
+      GROUP BY
+      PPM.CONTRACTOR_OFFICE,
+      JS.CUR_YEAR,
+      JS.CUR_MONTH
+
+      UNION ALL
+
+      SELECT
+      R.ORG_CODE,
+      TO_CHAR(R.CUR_YEAR) CUR_YEAR,
+      TO_CHAR(R.CUR_MONTH) CUR_MONTH,
+      '收支盈余' TARGET,
+      SUM(MONEY) MONEY
+      FROM
+      (
+        SELECT
+        NVL(QTCB.ORG_CODE, JSLR.ORG_CODE) ORG_CODE,
+        NVL(QTCB.CUR_YEAR, JSLR.CUR_YEAR) CUR_YEAR,
+        NVL(QTCB.CUR_MONTH, JSLR.CUR_MONTH) CUR_MONTH,
+        '收支盈余',
+        NVL(JSLR.JSLR, 0) - NVL(QTCB.MONEY, 0) MONEY
+        FROM
+        (
+          SELECT
+          R.ORG_CODE,
+          TO_CHAR(R.CUR_YEAR) CUR_YEAR,
+          (CASE WHEN R.CUR_MONTH>=10 THEN TO_CHAR(R.CUR_MONTH) ELSE '0'||TO_CHAR(R.CUR_MONTH) END) CUR_MONTH,
+          '其他成本',
+          SUM(MONEY) MONEY
+          FROM
+          (
+            --人工费
+            SELECT
+            MLC.OFFICE_ID ORG_CODE,
+            MLC.YEAR CUR_YEAR,
+            MLC.MONTH CUR_MONTH,
+            SUM(MONEY) / 10000 MONEY
+            FROM
+            MONITOR_LABOR_COST MLC
+            WHERE (IS_VOID = 0 OR IS_VOID IS NULL)
+            GROUP BY
+            OFFICE_ID,
+            MLC.YEAR,
+            MLC.MONTH
+
+            UNION ALL
+
+            --其他分摊费用
+            SELECT
+            MOS.OFFICE_ID ORG_CODE,
+            MOS.YEAR CUR_YEAR,
+            MOS.MONTH CUR_MONTH,
+            SUM(MONEY) / 10000 MONEY
+            FROM
+            MONITOR_OTHER_SHARE MOS
+            WHERE (IS_VOID = 0 OR IS_VOID IS NULL)
+            GROUP BY
+            OFFICE_ID,
+            MOS.YEAR,
+            MOS.MONTH
+
+            UNION ALL
+
+            --非项目费用
+            SELECT
+            ORG_CODE,
+            TO_NUMBER(CUR_YEAR) CUR_YEAR,
+            TO_NUMBER(CUR_MONTH) CUR_MONTH,
+            SUM(MONEY) / 10000 MONEY
+            FROM
+            (
+              SELECT
+              NPBH.OFFICE_ID ORG_CODE,
+              TO_CHAR(VBD48.CERTIFICATE_CREATE_TIME, 'yyyy') CUR_YEAR,
+              TO_CHAR(VBD48.CERTIFICATE_CREATE_TIME, 'mm') CUR_MONTH,
+              VBD48.MONEY
+              FROM
+              (
+                SELECT
+                NVL(NVL(FAD_CASH_REQ_INVOICE.FAD_INVOICE_ID, SCM_CONTRACT_INVOICE.FAD_INVOICE_ID), VBD48.UUID) UUID,
+                VBD48.CERTIFICATE_CREATE_TIME,
+                VBD48.BUDGET_C_UUID,
+                VBD48.SUBJECT_NAME,
+                NVL(VBD48.MONEY, 0) MONEY
+                FROM
+                VW_BUDGET_DETAIL48 VBD48
+
+                LEFT JOIN
+                (SELECT * FROM FAD_CASH_REQ_INVOICE WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) FAD_CASH_REQ_INVOICE
+                ON
+                VBD48.UUID = FAD_CASH_REQ_INVOICE.UUID
+
+                LEFT JOIN
+                (SELECT * FROM SCM_CONTRACT_INVOICE WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) SCM_CONTRACT_INVOICE
+                ON
+                VBD48.UUID = SCM_CONTRACT_INVOICE.UUID
+
+                WHERE
+                NVL(VBD48.IS_PROJECT, 0) != 1
+                AND
+                VBD48.BUDGET_C_UUID IS NOT NULL
+              ) VBD48
+
+              LEFT JOIN
+              (SELECT * FROM NON_PROJECT_BUDGET_C WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) NPBC
+              ON
+              VBD48.BUDGET_C_UUID = NPBC.UUID
+
+              LEFT JOIN
+              (SELECT * FROM NON_PROJECT_BUDGET_H WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) NPBH
+              ON
+              NPBC.HID = NPBH.UUID
+            ) R
+            GROUP BY
+            R.ORG_CODE,
+            R.CUR_YEAR,
+            R.CUR_MONTH
+          ) R
+          WHERE
+          EXISTS
+          (
+            SELECT
+            1
+            FROM
+            OPERATE_COMPANY_PLAN_H H
+            LEFT JOIN
+            (SELECT * FROM OPERATE_COMPANY_PLAN_C WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) C
+            ON
+            H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+            WHERE
+            H.START_YEAR = R.CUR_YEAR
+            AND
+            C.OBJECT_ID = R.ORG_CODE
+            AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+          )
+          GROUP BY
+          R.ORG_CODE,
+          R.CUR_YEAR,
+          R.CUR_MONTH
+        ) QTCB
+
+        --结算利润
+        FULL JOIN
+        (
+          SELECT
+          PPM.CONTRACTOR_OFFICE ORG_CODE,
+          JS.CUR_YEAR,
+          JS.CUR_MONTH CUR_MONTH,
+          '结算利润' TARGET,
+          SUM(NVL(JSLR, 0) - NVL(SJXZ, 0)) / 10000 JSLR
+          FROM
+          (
+            SELECT
+            PROJECT_ID,
+            CUR_YEAR,
+            CUR_MONTH,
+            SUM(JSLR) JSLR
+            FROM
+            (
+              SELECT
+              T.PRM_PROJECT_MAIN_ID PROJECT_ID,
+              TO_CHAR(T.SQUARE_DATE, 'YYYY') CUR_YEAR,
+              TO_CHAR(T.SQUARE_DATE, 'MM') CUR_MONTH,
+              NVL(T.SQUARE_GROSS_PROFIT, 0) + NVL(T.TAX_CORRECTION, 0) JSLR --利润
+              FROM
+              PRM_FINAL_ESTIMATE T,
+              PRM_PROJECT_MAIN M
+              WHERE
+              T.SQUARE_DATE IS NOT NULL
+              AND
+              T.PRM_PROJECT_MAIN_ID = M.UUID
+              AND
+              M.PROJECT_CODE NOT LIKE '研%'
+              AND (T.IS_VOID = 0 OR T.IS_VOID IS NULL)
+              AND (M.IS_VOID = 0 OR M.IS_VOID IS NULL)
+            ) R
+            GROUP BY
+            PROJECT_ID,
+            CUR_YEAR,
+            CUR_MONTH
+          ) JS
+
+          LEFT JOIN
+          (
+            SELECT
+            PROJECT_ID,
+            CUR_YEAR,
+            CUR_MONTH,
+            SUM(SJXZ) SJXZ
+            FROM
+            (
+              SELECT
+              T.PRM_PROJECT_MAIN_ID PROJECT_ID,
+              TO_CHAR(T.REVISE_TAX_DATE, 'YYYY') CUR_YEAR,
+              TO_CHAR(T.REVISE_TAX_DATE, 'MM') CUR_MONTH,
+              T.TAX_CORRECTION SJXZ --税金修正
+              FROM
+              PRM_FINAL_ESTIMATE T
+              WHERE
+              T.REVISE_TAX_DATE IS NOT NULL
+              AND (T.IS_VOID = 0 OR T.IS_VOID IS NULL)
+            ) R
+            GROUP BY
+            PROJECT_ID,
+            CUR_YEAR,
+            CUR_MONTH
+          ) XZ
+          ON
+          JS. PROJECT_ID = XZ.PROJECT_ID
+          AND
+          JS. CUR_YEAR = XZ.CUR_YEAR
+          AND
+          JS. CUR_MONTH = XZ.CUR_MONTH
+
+          LEFT JOIN
+          (SELECT * FROM PRM_PROJECT_MAIN WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PPM
+          ON
+          PPM.UUID = JS.PROJECT_ID
+
+          GROUP BY
+          PPM.CONTRACTOR_OFFICE,
+          JS.CUR_YEAR,
+          JS.CUR_MONTH
+        )
+        JSLR
+        ON
+        JSLR.ORG_CODE = QTCB.ORG_CODE
+        AND
+        JSLR.CUR_YEAR = QTCB.CUR_YEAR
+        AND
+        JSLR.CUR_MONTH = QTCB.CUR_MONTH
+      ) R
+      WHERE
+      EXISTS
+      (
+        SELECT
+        1
+        FROM
+        OPERATE_COMPANY_PLAN_H H
+        LEFT JOIN
+        (SELECT * FROM OPERATE_COMPANY_PLAN_C WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) C
+        ON
+        H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+        WHERE
+        H.START_YEAR = R.CUR_YEAR
+        AND
+        C.OBJECT_ID = R.ORG_CODE
+        AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+      )
+      GROUP BY
+      R.ORG_CODE,
+      R.CUR_YEAR,
+      R.CUR_MONTH
+    ) R
+    GROUP BY
+    R.ORG_CODE,
+    R.CUR_YEAR,
+    R.CUR_MONTH,
+    R.TARGET
+  ) R
+  WHERE
+  R.CUR_YEAR = NVL('${year}', TO_CHAR(SYSDATE,'yyyy'))
+  AND
+  TO_NUMBER(R.CUR_MONTH) <= TO_NUMBER(NVL('${month}', TO_CHAR(SYSDATE,'mm')))
+) R
+
+LEFT JOIN
+--指标
+(
+  SELECT
+  JH.ORG_CODE,
+  JH.CUR_YEAR,
+  '01' CUR_MONTH,
+  JH.TARGET,
+  SUM(JH.MONEY_JH) MONEY_JH,
+  SUM(JH.JZ) JZ
+  FROM
+  (
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '合同额' TARGET,
+    NVL(C.JHHTE, 0) MONEY_JH, --合同额(万元)
+    NVL(C.JZHTE, 0) + NVL(C.HTEXZ, 0) JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+    AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+
+    UNION ALL
+
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '立项利润' TARGET,
+    NVL(C.JHLXLR, 0) MONEY_JH,
+    NVL(C.JZLR, 0) + NVL(C.lxlrxz, 0) JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+    AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+
+    UNION ALL
+
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '收款' TARGET,
+    NVL(C.JHSR, 0) MONEY_JH,
+    NVL(JZSR,0)+NVL(BMSRXZ,0) JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+    AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+
+    UNION ALL
+
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '结算收入' TARGET,
+    NVL(C.JHJSSR, 0) MONEY_JH,
+    BMJSSRXZ JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+    AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+
+    UNION ALL
+
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '结算利润' TARGET,
+    NVL(C.JHJSLR, 0) MONEY_JH,
+    BMJSLRXZ JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+    AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+
+    UNION ALL
+
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '收支盈余' TARGET,
+    NVL(C.JHSZYY, 0) MONEY_JH,
+    BMJSLRXZ JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+    AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+  ) JH
+  GROUP BY
+  JH.ORG_CODE,
+  JH.CUR_YEAR,
+  JH.TARGET
+) JH
+ON
+R.ORG_CODE = JH.ORG_CODE
+AND
+R.CUR_YEAR = JH.CUR_YEAR
+AND
+R.CUR_MONTH = JH.CUR_MONTH
+AND
+R.TARGET = JH.TARGET
+
+RIGHT JOIN
+(
+  SELECT
+  SCDP_ORG.SEQ_NO,
+  SCDP_ORG.ORG_CODE,
+  SCDP_ORG.ORG_NAME,
+  T.TARGET,
+  DECODE(T.TARGET, '合同额', '1', '立项利润', '2', '结算利润', '3', '收款', '4', '结算收入', '5', '6') AS FLAG
+  FROM
+  (SELECT * FROM SCDP_ORG WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) SCDP_ORG
+  INNER JOIN
+  (SELECT * FROM SCDP_EXPAND_ROW WHERE EXPAND_CODE = 'DEPT_PROP' AND EXPAND_VALUE = '事业部' AND (IS_VOID = 0 OR IS_VOID IS NULL)) SCDP_EXPAND_ROW
+  ON
+  SCDP_ORG.UUID = SCDP_EXPAND_ROW.DATA_UUID
+  LEFT JOIN
+  (
+    SELECT '合同额' TARGET FROM DUAL
+    UNION ALL
+    SELECT '立项利润' TARGET FROM DUAL
+    UNION ALL
+    SELECT '结算利润' TARGET FROM DUAL
+    UNION ALL
+    SELECT '收款' TARGET FROM DUAL
+    UNION ALL
+    SELECT '结算收入' TARGET FROM DUAL
+  ) T
+  ON 1=1
+) O
+ON
+R.ORG_CODE = O.ORG_CODE
+AND
+R.TARGET = O.TARGET
+
+GROUP BY
+O.SEQ_NO,
+O.ORG_CODE,
+O.ORG_NAME,
+O.TARGET,
+O.FLAG,
+NVL(NVL(R.CUR_YEAR, '${year}'), TO_CHAR(SYSDATE,'yyyy'))
+
+ORDER BY
+O.SEQ_NO ASC,
+O.ORG_CODE ASC,
+O.FLAG ASC]]></Query>
+</TableData>
+<TableData name="T3" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="month"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="year"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--T3
+--去年当月
+SELECT
+O.SEQ_NO,
+O.ORG_CODE,
+O.ORG_NAME,
+O.TARGET,
+O.FLAG,
+NVL(NVL(R.CUR_YEAR, '${year}'), TO_CHAR(SYSDATE,'yyyy')) CUR_YEAR,
+NVL(NVL(R.CUR_MONTH, '${month}'), TO_CHAR(SYSDATE,'mm')) CUR_MONTH,
+NVL(R.MONEY, 0) + NVL(JH.JZ, 0) MONEY
+FROM
+(
+  SELECT
+  *
+  FROM 
+  (
+    SELECT
+    R.ORG_CODE,
+    R.CUR_YEAR,
+    R.CUR_MONTH,
+    R.TARGET,
+    SUM(R.MONEY) MONEY
+    FROM
+    (
+      SELECT
+      D.ORG_CODE,
+      D.CUR_YEAR,
+      D.CUR_MONTH,
+      '合同额' TARGET,
+      NVL2(SUM(D.CONTRACT_MONEY), SUM(D.CONTRACT_MONEY) / 10000, 0) MONEY --合同额
+      FROM
+      (
+        SELECT
+        P.CONFIRMED_DATE,
+        P.CONTRACT_SIGN_MONEY CONTRACT_MONEY,
+        P.CONTRACTOR_OFFICE ORG_CODE,
+        TO_CHAR(NVL(CONFIRMED_DATE, CREATE_TIME), 'yyyy') CUR_YEAR,
+        TO_CHAR(NVL(CONFIRMED_DATE, CREATE_TIME), 'mm') CUR_MONTH
+        FROM
+        PRM_CONTRACT P
+        WHERE
+        NVL(P.PROJECT_SOURCE_TYPE, 0) <> '4' AND (IS_VOID = 0 OR IS_VOID IS NULL)
+      ) D
+      GROUP BY
+      D.ORG_CODE,
+      D.CUR_YEAR,
+      D. CUR_MONTH
+
+      UNION ALL
+
+      SELECT
+      D.ORG_CODE,
+      D.CUR_YEAR,
+      D. CUR_MONTH,
+      '立项利润' TARGET,
+      NVL2(SUM(D.PROFIT_MONEY), SUM(D.PROFIT_MONEY) / 10000, 0) MONEY --立项利润
+      FROM
+      (
+        SELECT
+        R.ORG_CODE,
+        R.PRM_PROJECT_MAIN_ID,
+        R.CUR_YEAR,
+        R.CUR_MONTH,
+        NVL(R.PROFIT, 0) - NVL(R.PROFIT_L, 0) PROFIT_MONEY
+        FROM
+        (
+          SELECT
+          R.UUID,
+          R.ORG_CODE,
+          R.PRM_PROJECT_MAIN_ID,
+          R.CUR_YEAR,
+          R.CUR_MONTH,
+          PROFIT,
+          LEAD(R.PROFIT) OVER(PARTITION BY R.PRM_PROJECT_MAIN_ID ORDER BY R.CUR_YEAR DESC, R.CUR_MONTH DESC) PROFIT_L
+          FROM
+          (
+            SELECT
+            R.*,
+            ROW_NUMBER() OVER(PARTITION BY R.PRM_PROJECT_MAIN_ID, R.CUR_YEAR, R.CUR_MONTH ORDER BY R.CUR_TIME DESC) ROW_NUM
+            FROM
+            (
+              SELECT
+              PPMC.UUID,
+              PPMC.CONTRACTOR_OFFICE ORG_CODE,
+              PPMC.PRM_PROJECT_MAIN_ID,
+              TO_CHAR(NVL(AHP.END_TIME_, PPMC.ESTABLISH_DATE), 'yyyy') CUR_YEAR,
+              TO_CHAR(NVL(AHP.END_TIME_, PPMC.ESTABLISH_DATE), 'mm') CUR_MONTH,
+              AHP.END_TIME_ CUR_TIME,
+              NVL(PPMC.PROJECT_MONEY, 0) - NVL(PPMC.COST_CONTROL_MONEY, 0) PROFIT
+              FROM
+              PRM_PROJECT_MAIN_C PPMC
+
+              LEFT JOIN
+              ACT_HI_PROCINST AHP
+              ON
+              PPMC.UUID = AHP.BUSINESS_KEY_
+
+              WHERE
+              (
+                PROC_DEF_ID_ LIKE 'Prm_Main%'
+                OR
+                PROC_DEF_ID_ LIKE 'Prm_Revise%'
+                OR
+                PPMC.TBL_VERSION = 'old'
+              )
+              AND
+              (
+                AHP.END_ACT_ID_ IS NOT NULL
+                OR
+                PPMC.TBL_VERSION = 'old'
+              )
+              AND
+              PPMC.STATE = 2
+              AND
+              (
+                SUBSTR(PPMC.PROJECT_CODE, 1, 1)<> '研'
+                OR
+                SUBSTR(PPMC.PROJECT_CODE, 7, 2) = 'KY'
+              )--不含外部研发
+              AND
+              NVL(PPMC.IS_PRE_PROJECT, 0) = 0
+              AND
+              PPMC.ESTABLISH_DATE >= TO_DATE('2014-06-01', 'yyyy-MM-dd')
+              AND (PPMC.IS_VOID = 0 OR PPMC.IS_VOID IS NULL)
+            ) R
+          ) R
+          WHERE
+          R.ROW_NUM = 1
+        ) R
+      ) D
+      GROUP BY
+      D.ORG_CODE,
+      D.CUR_YEAR,
+      D.CUR_MONTH
+
+      UNION ALL
+       
+      SELECT
+      R.ORG_CODE,
+      R.CUR_YEAR,
+      R.CUR_MONTH,
+      '收款' TARGET,
+      NVL2(SUM(R.ACTUAL_MONEY), SUM(R.ACTUAL_MONEY) / 10000, 0) MONEY --收款
+      FROM
+      (
+        SELECT
+        M.CONTRACTOR_OFFICE ORG_CODE,
+        T.ACTUAL_MONEY,
+        T.ACTUAL_DATE,
+        TO_CHAR(T.ACTUAL_DATE, 'yyyy') CUR_YEAR,
+        TO_CHAR(T.ACTUAL_DATE, 'mm') CUR_MONTH
+        FROM
+        PRM_RECEIPTS T,
+        PRM_PROJECT_MAIN M
+        WHERE
+        T.PRM_PROJECT_MAIN_ID = M.UUID
+        AND
+        T.STATE IN ('2','4','8')
+        AND (T.IS_VOID = 0 OR T.IS_VOID IS NULL)
+        AND (M.IS_VOID = 0 OR M.IS_VOID IS NULL)
+      ) R
+      GROUP BY
+      R.ORG_CODE,
+      R.CUR_YEAR,
+      R.CUR_MONTH
+
+      UNION ALL
+
+      SELECT
+      PPM.CONTRACTOR_OFFICE ORG_CODE,
+      JS.CUR_YEAR,
+      JS.CUR_MONTH,
+      '结算收入' TARGET,
+      SUM(JSSR) / 10000 MONEY
+      FROM
+      (
+        SELECT
+        PROJECT_ID,
+        CUR_YEAR,
+        CUR_MONTH,
+        SUM(JSSR) JSSR
+        FROM
+        (
+          SELECT
+          T.PRM_PROJECT_MAIN_ID PROJECT_ID,
+          TO_CHAR(T.SQUARE_DATE, 'YYYY') CUR_YEAR,
+          TO_CHAR(T.SQUARE_DATE, 'MM') CUR_MONTH,
+          T.SQUARE_PROJECT_MONEY JSSR --收入
+          FROM
+          PRM_FINAL_ESTIMATE T,
+          PRM_PROJECT_MAIN M
+          WHERE
+          T.SQUARE_DATE IS NOT NULL
+          AND
+          T.PRM_PROJECT_MAIN_ID = M.UUID
+          AND
+          M.PROJECT_CODE NOT LIKE '研%'
+          AND (T.IS_VOID = 0 OR T.IS_VOID IS NULL)
+          AND (M.IS_VOID = 0 OR M.IS_VOID IS NULL)
+        ) R
+        GROUP BY
+        PROJECT_ID,
+        CUR_YEAR,
+        CUR_MONTH
+      ) JS
+      LEFT JOIN
+      (SELECT * FROM PRM_PROJECT_MAIN WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PPM
+      ON
+      PPM.UUID = JS.PROJECT_ID
+      GROUP BY
+      PPM.CONTRACTOR_OFFICE,
+      JS.CUR_YEAR,
+      JS.CUR_MONTH
+
+      UNION ALL
+
+      SELECT
+      PPM.CONTRACTOR_OFFICE ORG_CODE,
+      JS.CUR_YEAR,
+      JS.CUR_MONTH,
+      '结算利润' TARGET,
+      SUM(NVL(JSLR, 0) - NVL(SJXZ, 0)) / 10000 JSLR
+      FROM
+      (
+        SELECT
+        PROJECT_ID,
+        CUR_YEAR,
+        CUR_MONTH,
+        SUM(JSLR) JSLR
+        FROM
+        (
+          SELECT
+          T.PRM_PROJECT_MAIN_ID PROJECT_ID,
+          TO_CHAR(T.SQUARE_DATE, 'YYYY') CUR_YEAR,
+          TO_CHAR(T.SQUARE_DATE, 'MM') CUR_MONTH,
+          NVL(T. SQUARE_GROSS_PROFIT, 0) + NVL(T.TAX_CORRECTION, 0) JSLR --利润
+          FROM
+          PRM_FINAL_ESTIMATE T,
+          PRM_PROJECT_MAIN M
+          WHERE
+          T.SQUARE_DATE IS NOT NULL
+          AND
+          T.PRM_PROJECT_MAIN_ID = M.UUID
+          AND
+          M.PROJECT_CODE NOT LIKE '研%'
+          AND (T.IS_VOID = 0 OR T.IS_VOID IS NULL)
+          AND (M.IS_VOID = 0 OR M.IS_VOID IS NULL)
+        ) R
+        GROUP BY
+        PROJECT_ID,
+        CUR_YEAR,
+        CUR_MONTH
+      ) JS
+
+      LEFT JOIN
+      (
+        SELECT
+        PROJECT_ID,
+        CUR_YEAR,
+        CUR_MONTH,
+        SUM(SJXZ) SJXZ
+        FROM
+        (
+          SELECT
+          T.PRM_PROJECT_MAIN_ID PROJECT_ID,
+          TO_CHAR(T.REVISE_TAX_DATE, 'YYYY') CUR_YEAR,
+          TO_CHAR(T.REVISE_TAX_DATE, 'MM') CUR_MONTH,
+          T.TAX_CORRECTION SJXZ --税金修正
+          FROM
+          PRM_FINAL_ESTIMATE T
+          WHERE
+          T.REVISE_TAX_DATE IS NOT NULL
+          AND (T.IS_VOID = 0 OR T.IS_VOID IS NULL)
+        ) R
+        GROUP BY
+        PROJECT_ID,
+        CUR_YEAR,
+        CUR_MONTH
+      ) XZ
+      ON
+      JS. PROJECT_ID = XZ.PROJECT_ID
+      AND
+      JS. CUR_YEAR = XZ.CUR_YEAR
+      AND
+      JS. CUR_MONTH = XZ.CUR_MONTH
+      LEFT JOIN
+      (SELECT * FROM PRM_PROJECT_MAIN WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PPM
+      ON
+      PPM.UUID = JS.PROJECT_ID
+      GROUP BY
+      PPM.CONTRACTOR_OFFICE,
+      JS.CUR_YEAR,
+      JS.CUR_MONTH
+
+      UNION ALL
+
+      SELECT
+      R.ORG_CODE,
+      TO_CHAR(R.CUR_YEAR) CUR_YEAR,
+      TO_CHAR(R.CUR_MONTH) CUR_MONTH,
+      '收支盈余' TARGET,
+      SUM(MONEY) MONEY
+      FROM
+      (
+        SELECT
+        NVL(QTCB.ORG_CODE, JSLR.ORG_CODE) ORG_CODE,
+        NVL(QTCB.CUR_YEAR, JSLR.CUR_YEAR) CUR_YEAR,
+        NVL(QTCB.CUR_MONTH, JSLR.CUR_MONTH) CUR_MONTH,
+        '收支盈余',
+        NVL(JSLR.JSLR, 0) - NVL(QTCB.MONEY, 0) MONEY
+        FROM
+        (
+          SELECT
+          R.ORG_CODE,
+          TO_CHAR(R.CUR_YEAR) CUR_YEAR,
+          (CASE WHEN R.CUR_MONTH>=10 THEN TO_CHAR(R.CUR_MONTH) ELSE '0'||TO_CHAR(R.CUR_MONTH) END) CUR_MONTH,
+          '其他成本',
+          SUM(MONEY) MONEY
+          FROM
+          (
+            --人工费
+            SELECT
+            MLC.OFFICE_ID ORG_CODE,
+            MLC.YEAR CUR_YEAR,
+            MLC.MONTH CUR_MONTH,
+            SUM(MONEY) / 10000 MONEY
+            FROM
+            MONITOR_LABOR_COST MLC
+            WHERE (IS_VOID = 0 OR IS_VOID IS NULL)
+            GROUP BY
+            OFFICE_ID,
+            MLC.YEAR,
+            MLC.MONTH
+
+            UNION ALL
+
+            --其他分摊费用
+            SELECT
+            MOS.OFFICE_ID ORG_CODE,
+            MOS.YEAR CUR_YEAR,
+            MOS.MONTH CUR_MONTH,
+            SUM(MONEY) / 10000 MONEY
+            FROM
+            MONITOR_OTHER_SHARE MOS
+            WHERE (IS_VOID = 0 OR IS_VOID IS NULL)
+            GROUP BY
+            OFFICE_ID,
+            MOS.YEAR,
+            MOS.MONTH
+
+            UNION ALL
+
+            --非项目费用
+            SELECT
+            ORG_CODE,
+            TO_NUMBER(CUR_YEAR) CUR_YEAR,
+            TO_NUMBER(CUR_MONTH) CUR_MONTH,
+            SUM(MONEY) / 10000 MONEY
+            FROM
+            (
+              SELECT
+              NPBH.OFFICE_ID ORG_CODE,
+              TO_CHAR(VBD48.CERTIFICATE_CREATE_TIME, 'yyyy') CUR_YEAR,
+              TO_CHAR(VBD48.CERTIFICATE_CREATE_TIME, 'mm') CUR_MONTH,
+              VBD48.MONEY
+              FROM
+              (
+                SELECT
+                NVL(NVL(FAD_CASH_REQ_INVOICE.FAD_INVOICE_ID, SCM_CONTRACT_INVOICE.FAD_INVOICE_ID), VBD48.UUID) UUID,
+                VBD48.CERTIFICATE_CREATE_TIME,
+                VBD48.BUDGET_C_UUID,
+                VBD48.SUBJECT_NAME,
+                NVL(VBD48.MONEY, 0) MONEY
+                FROM
+                VW_BUDGET_DETAIL48 VBD48
+                LEFT JOIN
+                (SELECT * FROM FAD_CASH_REQ_INVOICE WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) FAD_CASH_REQ_INVOICE
+                ON
+                VBD48.UUID = FAD_CASH_REQ_INVOICE.UUID
+                LEFT JOIN
+                (SELECT * FROM SCM_CONTRACT_INVOICE WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) SCM_CONTRACT_INVOICE
+                ON
+                VBD48.UUID = SCM_CONTRACT_INVOICE.UUID
+                WHERE
+                NVL(VBD48.IS_PROJECT, 0) != 1
+                AND
+                VBD48.BUDGET_C_UUID IS NOT NULL
+              ) VBD48
+              LEFT JOIN
+              (SELECT * FROM NON_PROJECT_BUDGET_C WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) NPBC
+              ON
+              VBD48.BUDGET_C_UUID = NPBC.UUID
+              LEFT JOIN
+              (SELECT * FROM NON_PROJECT_BUDGET_H WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) NPBH
+              ON
+              NPBC.HID = NPBH.UUID
+            ) R
+            GROUP BY
+            R.ORG_CODE,
+            R.CUR_YEAR,
+            R.CUR_MONTH
+          ) R
+          WHERE
+          EXISTS
+          (
+            SELECT
+            1
+            FROM
+            OPERATE_COMPANY_PLAN_H H
+            LEFT JOIN
+            (SELECT * FROM OPERATE_COMPANY_PLAN_C WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) C
+            ON
+            H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+            WHERE
+            H.START_YEAR = R.CUR_YEAR
+            AND
+            C.OBJECT_ID = R.ORG_CODE
+            AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+          )
+          GROUP BY
+          R.ORG_CODE,
+          R.CUR_YEAR,
+          R.CUR_MONTH
+        ) QTCB
+
+        --结算利润
+        FULL JOIN
+        (
+          SELECT
+          PPM.CONTRACTOR_OFFICE ORG_CODE,
+          JS.CUR_YEAR,
+          JS.CUR_MONTH CUR_MONTH,
+          '结算利润' TARGET,
+          SUM(NVL(JSLR, 0) - NVL(SJXZ, 0)) / 10000 JSLR
+          FROM
+          (
+            SELECT
+            PROJECT_ID,
+            CUR_YEAR,
+            CUR_MONTH,
+            SUM(JSLR) JSLR
+            FROM
+            (
+              SELECT
+              T.PRM_PROJECT_MAIN_ID PROJECT_ID,
+              TO_CHAR(T.SQUARE_DATE, 'YYYY') CUR_YEAR,
+              TO_CHAR(T.SQUARE_DATE, 'MM') CUR_MONTH,
+              NVL(T.SQUARE_GROSS_PROFIT, 0) + NVL(T.TAX_CORRECTION, 0) JSLR --利润
+              FROM
+              PRM_FINAL_ESTIMATE T,
+              PRM_PROJECT_MAIN M
+              WHERE
+              T.SQUARE_DATE IS NOT NULL
+              AND
+              T.PRM_PROJECT_MAIN_ID = M.UUID
+              AND
+              M.PROJECT_CODE NOT LIKE '研%'
+              AND (T.IS_VOID = 0 OR T.IS_VOID IS NULL)
+              AND (M.IS_VOID = 0 OR M.IS_VOID IS NULL)
+            ) R
+            GROUP BY
+            PROJECT_ID,
+            CUR_YEAR,
+            CUR_MONTH
+          ) JS
+
+          LEFT JOIN
+          (
+            SELECT
+            PROJECT_ID,
+            CUR_YEAR,
+            CUR_MONTH,
+            SUM(SJXZ) SJXZ
+            FROM
+            (
+              SELECT
+              T.PRM_PROJECT_MAIN_ID PROJECT_ID,
+              TO_CHAR(T.REVISE_TAX_DATE, 'YYYY') CUR_YEAR,
+              TO_CHAR(T.REVISE_TAX_DATE, 'MM') CUR_MONTH,
+              T.TAX_CORRECTION SJXZ --税金修正
+              FROM
+              PRM_FINAL_ESTIMATE T
+              WHERE
+              T.REVISE_TAX_DATE IS NOT NULL
+              AND (T.IS_VOID = 0 OR T.IS_VOID IS NULL)
+            ) R
+            GROUP BY
+            PROJECT_ID,
+            CUR_YEAR,
+            CUR_MONTH
+          ) XZ
+          ON
+          JS. PROJECT_ID = XZ.PROJECT_ID
+          AND
+          JS. CUR_YEAR = XZ.CUR_YEAR
+          AND
+          JS. CUR_MONTH = XZ.CUR_MONTH
+          LEFT JOIN
+          (SELECT * FROM PRM_PROJECT_MAIN WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PPM
+          ON
+          PPM.UUID = JS.PROJECT_ID
+          GROUP BY
+          PPM.CONTRACTOR_OFFICE,
+          JS.CUR_YEAR,
+          JS.CUR_MONTH
+        )
+        JSLR
+        ON
+        JSLR.ORG_CODE = QTCB.ORG_CODE
+        AND
+        JSLR.CUR_YEAR = QTCB.CUR_YEAR
+        AND
+        JSLR.CUR_MONTH = QTCB.CUR_MONTH
+      ) R
+      WHERE
+      EXISTS
+      (
+        SELECT
+        1
+        FROM
+        OPERATE_COMPANY_PLAN_H H
+        LEFT JOIN
+        (SELECT * FROM OPERATE_COMPANY_PLAN_C WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) C
+        ON
+        H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+        WHERE
+        H.START_YEAR = R.CUR_YEAR
+        AND
+        C.OBJECT_ID = R.ORG_CODE
+        AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+      )
+      GROUP BY
+      R.ORG_CODE,
+      R.CUR_YEAR,
+      R.CUR_MONTH
+    ) R
+    GROUP BY
+    R.ORG_CODE,
+    R.CUR_YEAR,
+    R.CUR_MONTH,
+    R.TARGET
+  ) R
+  WHERE
+  R.CUR_YEAR = TO_CHAR(TO_NUMBER(NVL('${year}', TO_CHAR(SYSDATE,'yyyy'))) - 1)
+  AND
+  TO_NUMBER(R.CUR_MONTH) = TO_NUMBER(NVL('${month}', TO_CHAR(SYSDATE,'mm')))
+) R
+
+LEFT JOIN
+--指标
+(
+  SELECT
+  JH.ORG_CODE,
+  JH.CUR_YEAR,
+  '01' CUR_MONTH,
+  JH.TARGET,
+  SUM(JH.MONEY_JH) MONEY_JH,
+  SUM(JH.JZ) JZ
+  FROM
+  (
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '合同额' TARGET,
+    NVL(C.JHHTE, 0) MONEY_JH, --合同额(万元)
+    NVL(C.JZHTE, 0) + NVL(C.HTEXZ, 0) JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+    AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+
+    UNION ALL
+
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '立项利润' TARGET,
+    NVL(C.JHLXLR, 0) MONEY_JH,
+    NVL(C.JZLR, 0) + NVL(C.lxlrxz, 0) JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+    AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+
+    UNION ALL
+
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '收款' TARGET,
+    NVL(C.JHSR, 0) MONEY_JH,
+    NVL(JZSR,0)+NVL(BMSRXZ,0) JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+    AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+
+    UNION ALL
+
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '结算收入' TARGET,
+    NVL(C.JHJSSR, 0) MONEY_JH,
+    BMJSSRXZ JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+    AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+
+    UNION ALL
+
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '结算利润' TARGET,
+    NVL(C.JHJSLR, 0) MONEY_JH,
+    BMJSLRXZ JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+    AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+
+    UNION ALL
+
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '收支盈余' TARGET,
+    NVL(C.JHSZYY, 0) MONEY_JH,
+    BMJSLRXZ JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+    AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+  ) JH
+  GROUP BY
+  JH.ORG_CODE,
+  JH.CUR_YEAR,
+  JH.TARGET
+) JH
+ON
+R.ORG_CODE = JH.ORG_CODE
+AND
+R.CUR_YEAR = JH.CUR_YEAR
+AND
+R.CUR_MONTH = JH.CUR_MONTH
+AND
+R.TARGET = JH.TARGET
+
+RIGHT JOIN
+(
+  SELECT
+  SCDP_ORG.SEQ_NO,
+  SCDP_ORG.ORG_CODE,
+  SCDP_ORG.ORG_NAME,
+  T.TARGET,
+  DECODE(T.TARGET, '合同额', '1', '立项利润', '2', '结算利润', '3', '收款', '4', '结算收入', '5', '6') AS FLAG
+  FROM
+  (SELECT * FROM SCDP_ORG WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) SCDP_ORG
+  INNER JOIN
+  (SELECT * FROM SCDP_EXPAND_ROW WHERE EXPAND_CODE = 'DEPT_PROP' AND EXPAND_VALUE = '事业部' AND (IS_VOID = 0 OR IS_VOID IS NULL)) SCDP_EXPAND_ROW
+  ON
+  SCDP_ORG.UUID = SCDP_EXPAND_ROW.DATA_UUID
+  LEFT JOIN
+  (
+    SELECT '合同额' TARGET FROM DUAL
+    UNION ALL
+    SELECT '立项利润' TARGET FROM DUAL
+    UNION ALL
+    SELECT '结算利润' TARGET FROM DUAL
+    UNION ALL
+    SELECT '收款' TARGET FROM DUAL
+    UNION ALL
+    SELECT '结算收入' TARGET FROM DUAL
+  ) T
+  ON 1=1
+) O
+ON
+R.ORG_CODE = O.ORG_CODE
+AND
+R.TARGET = O.TARGET
+
+ORDER BY
+O.SEQ_NO ASC,
+O.ORG_CODE ASC,
+O.FLAG ASC]]></Query>
+</TableData>
+<TableData name="T4" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="month"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="year"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--T4
+--去年累计
+SELECT
+O.SEQ_NO,
+O.ORG_CODE,
+O.ORG_NAME,
+O.TARGET,
+O.FLAG,
+NVL(NVL(R.CUR_YEAR, '${year}'), TO_CHAR(SYSDATE,'yyyy')) CUR_YEAR,
+NVL(SUM(NVL(R.MONEY, 0) + NVL(JH.JZ, 0)), 0) MONEY
+FROM
+(
+  SELECT
+  *
+  FROM 
+  (
+    SELECT
+    R.ORG_CODE,
+    R.CUR_YEAR,
+    R.CUR_MONTH,
+    R.TARGET,
+    SUM(R.MONEY) MONEY
+    FROM
+    (
+      SELECT
+      D.ORG_CODE,
+      D.CUR_YEAR,
+      D.CUR_MONTH,
+      '合同额' TARGET,
+      NVL2(SUM(D.CONTRACT_MONEY), SUM(D.CONTRACT_MONEY) / 10000, 0) MONEY --合同额
+      FROM
+      (
+        SELECT
+        P.CONFIRMED_DATE,
+        P.CONTRACT_SIGN_MONEY CONTRACT_MONEY,
+        P.CONTRACTOR_OFFICE ORG_CODE,
+        TO_CHAR(NVL(CONFIRMED_DATE, CREATE_TIME), 'yyyy') CUR_YEAR,
+        TO_CHAR(NVL(CONFIRMED_DATE, CREATE_TIME), 'mm') CUR_MONTH
+        FROM
+        PRM_CONTRACT P
+        WHERE
+        NVL(P.PROJECT_SOURCE_TYPE, 0) <> '4' AND (IS_VOID = 0 OR IS_VOID IS NULL)
+      ) D
+      GROUP BY
+      D.ORG_CODE,
+      D.CUR_YEAR,
+      D. CUR_MONTH
+
+      UNION ALL
+
+      SELECT
+      D.ORG_CODE,
+      D.CUR_YEAR,
+      D. CUR_MONTH,
+      '立项利润' TARGET,
+      NVL2(SUM(D.PROFIT_MONEY), SUM(D.PROFIT_MONEY) / 10000, 0) MONEY --立项利润
+      FROM
+      (
+        SELECT
+        R.ORG_CODE,
+        R.PRM_PROJECT_MAIN_ID,
+        R.CUR_YEAR,
+        R.CUR_MONTH,
+        NVL(R.PROFIT, 0) - NVL(R.PROFIT_L, 0) PROFIT_MONEY
+        FROM
+        (
+          SELECT
+          R.UUID,
+          R.ORG_CODE,
+          R.PRM_PROJECT_MAIN_ID,
+          R.CUR_YEAR,
+          R.CUR_MONTH,
+          PROFIT,
+          LEAD(R.PROFIT) OVER(PARTITION BY R.PRM_PROJECT_MAIN_ID ORDER BY R.CUR_YEAR DESC, R.CUR_MONTH DESC) PROFIT_L
+          FROM
+          (
+            SELECT
+            R.*,
+            ROW_NUMBER() OVER(PARTITION BY R.PRM_PROJECT_MAIN_ID, R.CUR_YEAR, R.CUR_MONTH ORDER BY R.CUR_TIME DESC) ROW_NUM
+            FROM
+            (
+              SELECT
+              PPMC.UUID,
+              PPMC.CONTRACTOR_OFFICE ORG_CODE,
+              PPMC.PRM_PROJECT_MAIN_ID,
+              TO_CHAR(NVL(AHP.END_TIME_, PPMC.ESTABLISH_DATE), 'yyyy') CUR_YEAR,
+              TO_CHAR(NVL(AHP.END_TIME_, PPMC.ESTABLISH_DATE), 'mm') CUR_MONTH,
+              AHP.END_TIME_ CUR_TIME,
+              NVL(PPMC.PROJECT_MONEY, 0) - NVL(PPMC.COST_CONTROL_MONEY, 0) PROFIT
+              FROM
+              PRM_PROJECT_MAIN_C PPMC
+
+              LEFT JOIN
+              ACT_HI_PROCINST AHP
+              ON
+              PPMC.UUID = AHP.BUSINESS_KEY_
+
+              WHERE
+              (
+                PROC_DEF_ID_ LIKE 'Prm_Main%'
+                OR
+                PROC_DEF_ID_ LIKE 'Prm_Revise%'
+                OR
+                PPMC.TBL_VERSION = 'old'
+              )
+              AND
+              (
+                AHP.END_ACT_ID_ IS NOT NULL
+                OR
+                PPMC.TBL_VERSION = 'old'
+              )
+              AND
+              PPMC.STATE = 2
+              AND
+              (
+                SUBSTR(PPMC.PROJECT_CODE, 1, 1)<> '研'
+                OR
+                SUBSTR(PPMC.PROJECT_CODE, 7, 2) = 'KY'
+              )--不含外部研发
+              AND
+              NVL(PPMC.IS_PRE_PROJECT, 0) = 0
+              AND
+              PPMC.ESTABLISH_DATE >= TO_DATE('2014-06-01', 'yyyy-MM-dd')
+              AND (PPMC.IS_VOID = 0 OR PPMC.IS_VOID IS NULL)
+            ) R
+          ) R
+          WHERE
+          R.ROW_NUM = 1
+        ) R
+      ) D
+      GROUP BY
+      D.ORG_CODE,
+      D.CUR_YEAR,
+      D. CUR_MONTH
+
+      UNION ALL
+       
+      SELECT
+      R.ORG_CODE,
+      R.CUR_YEAR,
+      R.CUR_MONTH,
+      '收款' TARGET,
+      NVL2(SUM(R.ACTUAL_MONEY), SUM(R.ACTUAL_MONEY) / 10000, 0) MONEY --收款
+      FROM
+      (
+        SELECT
+        M.CONTRACTOR_OFFICE ORG_CODE,
+        T.ACTUAL_MONEY,
+        T.ACTUAL_DATE,
+        TO_CHAR(T.ACTUAL_DATE, 'yyyy') CUR_YEAR,
+        TO_CHAR(T.ACTUAL_DATE, 'mm') CUR_MONTH
+        FROM
+        PRM_RECEIPTS T,
+        PRM_PROJECT_MAIN M
+        WHERE
+        T.PRM_PROJECT_MAIN_ID = M.UUID
+        AND
+        T.STATE IN ('2','4','8')
+        AND (T.IS_VOID = 0 OR T.IS_VOID IS NULL)
+        AND (M.IS_VOID = 0 OR M.IS_VOID IS NULL)
+      ) R
+      GROUP BY
+      R.ORG_CODE,
+      R.CUR_YEAR,
+      R.CUR_MONTH
+
+      UNION ALL
+
+      SELECT
+      PPM.CONTRACTOR_OFFICE ORG_CODE,
+      JS.CUR_YEAR,
+      JS.CUR_MONTH,
+      '结算收入' TARGET,
+      SUM(JSSR) / 10000 MONEY
+      FROM
+      (
+        SELECT
+        PROJECT_ID,
+        CUR_YEAR,
+        CUR_MONTH,
+        SUM(JSSR) JSSR
+        FROM
+        (
+          SELECT
+          T.PRM_PROJECT_MAIN_ID PROJECT_ID,
+          TO_CHAR(T.SQUARE_DATE, 'YYYY') CUR_YEAR,
+          TO_CHAR(T.SQUARE_DATE, 'MM') CUR_MONTH,
+          T.SQUARE_PROJECT_MONEY JSSR --收入
+          FROM
+          PRM_FINAL_ESTIMATE T,
+          PRM_PROJECT_MAIN M
+          WHERE
+          T.SQUARE_DATE IS NOT NULL
+          AND
+          T.PRM_PROJECT_MAIN_ID = M.UUID
+          AND
+          M.PROJECT_CODE NOT LIKE '研%'
+          AND (T.IS_VOID = 0 OR T.IS_VOID IS NULL)
+          AND (M.IS_VOID = 0 OR M.IS_VOID IS NULL)
+        ) R
+        GROUP BY
+        PROJECT_ID,
+        CUR_YEAR,
+        CUR_MONTH
+      ) JS
+
+      LEFT JOIN
+      (SELECT * FROM PRM_PROJECT_MAIN WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PPM
+      ON
+      PPM.UUID = JS.PROJECT_ID
+
+      GROUP BY
+      PPM.CONTRACTOR_OFFICE,
+      JS.CUR_YEAR,
+      JS.CUR_MONTH
+
+      UNION ALL
+
+      SELECT
+      PPM.CONTRACTOR_OFFICE ORG_CODE,
+      JS.CUR_YEAR,
+      JS.CUR_MONTH,
+      '结算利润' TARGET,
+      SUM(NVL(JSLR, 0) - NVL(SJXZ, 0)) / 10000 JSLR
+      FROM
+      (
+        SELECT
+        PROJECT_ID,
+        CUR_YEAR,
+        CUR_MONTH,
+        SUM(JSLR) JSLR
+        FROM
+        (
+          SELECT
+          T.PRM_PROJECT_MAIN_ID PROJECT_ID,
+          TO_CHAR(T.SQUARE_DATE, 'YYYY') CUR_YEAR,
+          TO_CHAR(T.SQUARE_DATE, 'MM') CUR_MONTH,
+          NVL(T. SQUARE_GROSS_PROFIT, 0) + NVL(T.TAX_CORRECTION, 0) JSLR --利润
+          FROM
+          PRM_FINAL_ESTIMATE T,
+          PRM_PROJECT_MAIN M
+          WHERE
+          T.SQUARE_DATE IS NOT NULL
+          AND
+          T.PRM_PROJECT_MAIN_ID = M.UUID
+          AND
+          M.PROJECT_CODE NOT LIKE '研%'
+          AND (T.IS_VOID = 0 OR T.IS_VOID IS NULL)
+          AND (M.IS_VOID = 0 OR M.IS_VOID IS NULL)
+        ) R
+        GROUP BY
+        PROJECT_ID,
+        CUR_YEAR,
+        CUR_MONTH
+      ) JS
+
+      LEFT JOIN
+      (
+        SELECT
+        PROJECT_ID,
+        CUR_YEAR,
+        CUR_MONTH,
+        SUM(SJXZ) SJXZ
+        FROM
+        (
+          SELECT
+          T.PRM_PROJECT_MAIN_ID PROJECT_ID,
+          TO_CHAR(T.REVISE_TAX_DATE, 'YYYY') CUR_YEAR,
+          TO_CHAR(T.REVISE_TAX_DATE, 'MM') CUR_MONTH,
+          T.TAX_CORRECTION SJXZ --税金修正
+          FROM
+          PRM_FINAL_ESTIMATE T
+          WHERE
+          T.REVISE_TAX_DATE IS NOT NULL
+          AND (T.IS_VOID = 0 OR T.IS_VOID IS NULL)
+        ) R
+        GROUP BY
+        PROJECT_ID,
+        CUR_YEAR,
+        CUR_MONTH
+      ) XZ
+      ON
+      JS. PROJECT_ID = XZ.PROJECT_ID
+      AND
+      JS. CUR_YEAR = XZ.CUR_YEAR
+      AND
+      JS. CUR_MONTH = XZ.CUR_MONTH
+
+      LEFT JOIN
+      (SELECT * FROM PRM_PROJECT_MAIN WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PPM
+      ON
+      PPM.UUID = JS.PROJECT_ID
+
+      GROUP BY
+      PPM.CONTRACTOR_OFFICE,
+      JS.CUR_YEAR,
+      JS.CUR_MONTH
+
+      UNION ALL
+
+      SELECT
+      R.ORG_CODE,
+      TO_CHAR(R.CUR_YEAR) CUR_YEAR,
+      TO_CHAR(R.CUR_MONTH) CUR_MONTH,
+      '收支盈余' TARGET,
+      SUM(MONEY) MONEY
+      FROM
+      (
+        SELECT
+        NVL(QTCB.ORG_CODE, JSLR.ORG_CODE) ORG_CODE,
+        NVL(QTCB.CUR_YEAR, JSLR.CUR_YEAR) CUR_YEAR,
+        NVL(QTCB.CUR_MONTH, JSLR.CUR_MONTH) CUR_MONTH,
+        '收支盈余',
+        NVL(JSLR.JSLR, 0) - NVL(QTCB.MONEY, 0) MONEY
+        FROM
+        (
+          SELECT
+          R.ORG_CODE,
+          TO_CHAR(R.CUR_YEAR) CUR_YEAR,
+          (CASE WHEN R.CUR_MONTH>=10 THEN TO_CHAR(R.CUR_MONTH) ELSE '0'||TO_CHAR(R.CUR_MONTH) END) CUR_MONTH,
+          '其他成本',
+          SUM(MONEY) MONEY
+          FROM
+          (
+            --人工费
+            SELECT
+            MLC.OFFICE_ID ORG_CODE,
+            MLC.YEAR CUR_YEAR,
+            MLC.MONTH CUR_MONTH,
+            SUM(MONEY) / 10000 MONEY
+            FROM
+            MONITOR_LABOR_COST MLC
+            WHERE (IS_VOID = 0 OR IS_VOID IS NULL)
+            GROUP BY
+            OFFICE_ID,
+            MLC.YEAR,
+            MLC.MONTH
+
+            UNION ALL
+
+            --其他分摊费用
+            SELECT
+            MOS.OFFICE_ID ORG_CODE,
+            MOS.YEAR CUR_YEAR,
+            MOS.MONTH CUR_MONTH,
+            SUM(MONEY) / 10000 MONEY
+            FROM
+            MONITOR_OTHER_SHARE MOS
+            WHERE (IS_VOID = 0 OR IS_VOID IS NULL)
+            GROUP BY
+            OFFICE_ID,
+            MOS.YEAR,
+            MOS.MONTH
+
+            UNION ALL
+
+            --非项目费用
+            SELECT
+            ORG_CODE,
+            TO_NUMBER(CUR_YEAR) CUR_YEAR,
+            TO_NUMBER(CUR_MONTH) CUR_MONTH,
+            SUM(MONEY) / 10000 MONEY
+            FROM
+            (
+              SELECT
+              NPBH.OFFICE_ID ORG_CODE,
+              TO_CHAR(VBD48.CERTIFICATE_CREATE_TIME, 'yyyy') CUR_YEAR,
+              TO_CHAR(VBD48.CERTIFICATE_CREATE_TIME, 'mm') CUR_MONTH,
+              VBD48.MONEY
+              FROM
+              (
+                SELECT
+                NVL(NVL(FAD_CASH_REQ_INVOICE.FAD_INVOICE_ID, SCM_CONTRACT_INVOICE.FAD_INVOICE_ID), VBD48.UUID) UUID,
+                VBD48.CERTIFICATE_CREATE_TIME,
+                VBD48.BUDGET_C_UUID,
+                VBD48.SUBJECT_NAME,
+                NVL(VBD48.MONEY, 0) MONEY
+                FROM
+                VW_BUDGET_DETAIL48 VBD48
+
+                LEFT JOIN
+                (SELECT * FROM FAD_CASH_REQ_INVOICE WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) FAD_CASH_REQ_INVOICE
+                ON
+                VBD48.UUID = FAD_CASH_REQ_INVOICE.UUID
+
+                LEFT JOIN
+                (SELECT * FROM SCM_CONTRACT_INVOICE WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) SCM_CONTRACT_INVOICE
+                ON
+                VBD48.UUID = SCM_CONTRACT_INVOICE.UUID
+
+                WHERE
+                NVL(VBD48.IS_PROJECT, 0) != 1
+                AND
+                VBD48.BUDGET_C_UUID IS NOT NULL
+              ) VBD48
+
+              LEFT JOIN
+              (SELECT * FROM NON_PROJECT_BUDGET_C WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) NPBC
+              ON
+              VBD48.BUDGET_C_UUID = NPBC.UUID
+
+              LEFT JOIN
+              (SELECT * FROM NON_PROJECT_BUDGET_H WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) NPBH
+              ON
+              NPBC.HID = NPBH.UUID
+            ) R
+            GROUP BY
+            R.ORG_CODE,
+            R.CUR_YEAR,
+            R.CUR_MONTH
+          ) R
+          WHERE
+          EXISTS
+          (
+            SELECT
+            1
+            FROM
+            OPERATE_COMPANY_PLAN_H H
+            LEFT JOIN
+            (SELECT * FROM OPERATE_COMPANY_PLAN_C WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) C
+            ON
+            H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+            WHERE
+            H.START_YEAR = R.CUR_YEAR
+            AND
+            C.OBJECT_ID = R.ORG_CODE
+            AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+          )
+          GROUP BY
+          R.ORG_CODE,
+          R.CUR_YEAR,
+          R.CUR_MONTH
+        ) QTCB
+
+        --结算利润
+        FULL JOIN
+        (
+          SELECT
+          PPM.CONTRACTOR_OFFICE ORG_CODE,
+          JS.CUR_YEAR,
+          JS.CUR_MONTH CUR_MONTH,
+          '结算利润' TARGET,
+          SUM(NVL(JSLR, 0) - NVL(SJXZ, 0)) / 10000 JSLR
+          FROM
+          (
+            SELECT
+            PROJECT_ID,
+            CUR_YEAR,
+            CUR_MONTH,
+            SUM(JSLR) JSLR
+            FROM
+            (
+              SELECT
+              T.PRM_PROJECT_MAIN_ID PROJECT_ID,
+              TO_CHAR(T.SQUARE_DATE, 'YYYY') CUR_YEAR,
+              TO_CHAR(T.SQUARE_DATE, 'MM') CUR_MONTH,
+              NVL(T.SQUARE_GROSS_PROFIT, 0) + NVL(T.TAX_CORRECTION, 0) JSLR --利润
+              FROM
+              PRM_FINAL_ESTIMATE T,
+              PRM_PROJECT_MAIN M
+              WHERE
+              T.SQUARE_DATE IS NOT NULL
+              AND
+              T.PRM_PROJECT_MAIN_ID = M.UUID
+              AND
+              M.PROJECT_CODE NOT LIKE '研%'
+              AND (T.IS_VOID = 0 OR T.IS_VOID IS NULL)
+              AND (M.IS_VOID = 0 OR M.IS_VOID IS NULL)
+            ) R
+            GROUP BY
+            PROJECT_ID,
+            CUR_YEAR,
+            CUR_MONTH
+          ) JS
+          LEFT JOIN
+          (
+            SELECT
+            PROJECT_ID,
+            CUR_YEAR,
+            CUR_MONTH,
+            SUM(SJXZ) SJXZ
+            FROM
+            (
+              SELECT
+              T.PRM_PROJECT_MAIN_ID PROJECT_ID,
+              TO_CHAR(T.REVISE_TAX_DATE, 'YYYY') CUR_YEAR,
+              TO_CHAR(T.REVISE_TAX_DATE, 'MM') CUR_MONTH,
+              T.TAX_CORRECTION SJXZ --税金修正
+              FROM
+              PRM_FINAL_ESTIMATE T
+              WHERE
+              T.REVISE_TAX_DATE IS NOT NULL
+              AND (T.IS_VOID = 0 OR T.IS_VOID IS NULL)
+            ) R
+            GROUP BY
+            PROJECT_ID,
+            CUR_YEAR,
+            CUR_MONTH
+          ) XZ
+          ON
+          JS. PROJECT_ID = XZ.PROJECT_ID
+          AND
+          JS. CUR_YEAR = XZ.CUR_YEAR
+          AND
+          JS. CUR_MONTH = XZ.CUR_MONTH
+          LEFT JOIN
+          (SELECT * FROM PRM_PROJECT_MAIN WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PPM
+          ON
+          PPM.UUID = JS.PROJECT_ID
+          GROUP BY
+          PPM.CONTRACTOR_OFFICE,
+          JS.CUR_YEAR,
+          JS.CUR_MONTH
+        )
+        JSLR
+        ON
+        JSLR.ORG_CODE = QTCB.ORG_CODE
+        AND
+        JSLR.CUR_YEAR = QTCB.CUR_YEAR
+        AND
+        JSLR.CUR_MONTH = QTCB.CUR_MONTH
+      ) R
+      WHERE
+      EXISTS
+      (
+        SELECT
+        1
+        FROM
+        OPERATE_COMPANY_PLAN_H H
+        LEFT JOIN
+        (SELECT * FROM OPERATE_COMPANY_PLAN_C WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) C
+        ON
+        H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+        WHERE
+        H.START_YEAR = R.CUR_YEAR
+        AND
+        C.OBJECT_ID = R.ORG_CODE
+        AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+      )
+      GROUP BY
+      R.ORG_CODE,
+      R.CUR_YEAR,
+      R.CUR_MONTH
+    ) R
+    GROUP BY
+    R.ORG_CODE,
+    R.CUR_YEAR,
+    R.CUR_MONTH,
+    R.TARGET
+  ) R
+  WHERE
+  R.CUR_YEAR = TO_CHAR(TO_NUMBER(NVL('${year}', TO_CHAR(SYSDATE,'yyyy'))) - 1)
+  AND
+  TO_NUMBER(R.CUR_MONTH) <= TO_NUMBER(NVL('${month}', TO_CHAR(SYSDATE,'mm')))
+) R
+
+LEFT JOIN
+--指标
+(
+  SELECT
+  JH.ORG_CODE,
+  JH.CUR_YEAR,
+  '01' CUR_MONTH,
+  JH.TARGET,
+  SUM(JH.MONEY_JH) MONEY_JH,
+  SUM(JH.JZ) JZ
+  FROM
+  (
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '合同额' TARGET,
+    NVL(C.JHHTE, 0) MONEY_JH, --合同额(万元)
+    NVL(C.JZHTE, 0) + NVL(C.HTEXZ, 0) JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+    AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+
+    UNION ALL
+
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '立项利润' TARGET,
+    NVL(C.JHLXLR, 0) MONEY_JH,
+    NVL(C.JZLR, 0) + NVL(C.lxlrxz, 0) JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+    AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+
+    UNION ALL
+
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '收款' TARGET,
+    NVL(C.JHSR, 0) MONEY_JH,
+    NVL(JZSR,0)+NVL(BMSRXZ,0) JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+    AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+
+    UNION ALL
+
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '结算收入' TARGET,
+    NVL(C.JHJSSR, 0) MONEY_JH,
+    BMJSSRXZ JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+    AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+
+    UNION ALL
+
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '结算利润' TARGET,
+    NVL(C.JHJSLR, 0) MONEY_JH,
+    BMJSLRXZ JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+    AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+
+    UNION ALL
+
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '收支盈余' TARGET,
+    NVL(C.JHSZYY, 0) MONEY_JH,
+    BMJSLRXZ JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    AND (H.IS_VOID = 0 OR H.IS_VOID IS NULL)
+    AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+  ) JH
+  GROUP BY
+  JH.ORG_CODE,
+  JH.CUR_YEAR,
+  JH.TARGET
+) JH
+ON
+R.ORG_CODE = JH.ORG_CODE
+AND
+R.CUR_YEAR = JH.CUR_YEAR
+AND
+R.CUR_MONTH = JH.CUR_MONTH
+AND
+R.TARGET = JH.TARGET
+
+RIGHT JOIN
+(
+  SELECT
+  SCDP_ORG.SEQ_NO,
+  SCDP_ORG.ORG_CODE,
+  SCDP_ORG.ORG_NAME,
+  T.TARGET,
+  DECODE(T.TARGET, '合同额', '1', '立项利润', '2', '结算利润', '3', '收款', '4', '结算收入', '5', '6') AS FLAG
+  FROM
+  (SELECT * FROM SCDP_ORG WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) SCDP_ORG
+  INNER JOIN
+  (SELECT * FROM SCDP_EXPAND_ROW WHERE EXPAND_CODE = 'DEPT_PROP' AND EXPAND_VALUE = '事业部' AND (IS_VOID = 0 OR IS_VOID IS NULL)) SCDP_EXPAND_ROW
+  ON
+  SCDP_ORG.UUID = SCDP_EXPAND_ROW.DATA_UUID
+  LEFT JOIN
+  (
+    SELECT '合同额' TARGET FROM DUAL
+    UNION ALL
+    SELECT '立项利润' TARGET FROM DUAL
+    UNION ALL
+    SELECT '结算利润' TARGET FROM DUAL
+    UNION ALL
+    SELECT '收款' TARGET FROM DUAL
+    UNION ALL
+    SELECT '结算收入' TARGET FROM DUAL
+  ) T
+  ON 1=1
+) O
+ON
+R.ORG_CODE = O.ORG_CODE
+AND
+R.TARGET = O.TARGET
+
+GROUP BY
+O.SEQ_NO,
+O.ORG_CODE,
+O.ORG_NAME,
+O.TARGET,
+O.FLAG,
+NVL(NVL(R.CUR_YEAR, '${year}'), TO_CHAR(SYSDATE,'yyyy'))
+
+ORDER BY
+O.SEQ_NO ASC,
+O.ORG_CODE ASC,
+O.FLAG ASC]]></Query>
+</TableData>
+</TableDataMap>
+<ReportWebAttr>
+<ServerPrinter/>
+<WebPageContent>
+<ToolBars>
+<ToolBarManager>
+<Location>
+<Embed position="1"/>
+</Location>
+<ToolBar>
+<Widget class="com.fr.report.web.button.page.First">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-First')}]]></Text>
+<IconName>
+<![CDATA[first]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Previous">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-Previous')}]]></Text>
+<IconName>
+<![CDATA[previous]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.PageNavi">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Next">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-Next')}]]></Text>
+<IconName>
+<![CDATA[next]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Last">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-Last')}]]></Text>
+<IconName>
+<![CDATA[last]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.FlashPrint">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Utils-Print[Client]A')}]]></Text>
+<IconName>
+<![CDATA[flashprint]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.Print">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Print')}]]></Text>
+<IconName>
+<![CDATA[print]]></IconName>
+<PrintButtons/>
+</Widget>
+<Widget class="com.fr.report.web.button.Export">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Export')}]]></Text>
+<IconName>
+<![CDATA[export]]></IconName>
+<Buttons pdf="true" excelP="true" excelO="true" excelS="true" word="true" image="true" html="true"/>
+</Widget>
+<Widget class="com.fr.report.web.button.Email">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Email')}]]></Text>
+<IconName>
+<![CDATA[email]]></IconName>
+</Widget>
+</ToolBar>
+</ToolBarManager>
+</ToolBars>
+<WebPage isPage="true" isShowAsImage="false" isAutoScale="false" isTDHeavy="false"/>
+</WebPageContent>
+</ReportWebAttr>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR F="1" T="2"/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[720000,720000,723900,720000,723900,720000,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[1440000,5040000,3600000,3124800,3124800,3124800,3124800,3124800,3124800,3124800,3124800,3124800,3124800,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" cs="13" s="0">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=year + "年" + month + "月公司指标完成情况同比报表"]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="0"/>
+<CellPageAttr repeat="false" breakOnPaginate="false"/>
+<Expand/>
+</C>
+<C c="0" r="1" rs="2" s="1">
+<O>
+<![CDATA[序号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" rs="2" s="1">
+<O>
+<![CDATA[计划对象]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="1" rs="2" s="1">
+<O>
+<![CDATA[统计时间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="1" cs="2" s="1">
+<O>
+<![CDATA[合同额(万元)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="1" cs="2" s="1">
+<O>
+<![CDATA[计划利润(万元)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="1" cs="2" s="1">
+<O>
+<![CDATA[结算利润(万元)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="1" cs="2" s="1">
+<O>
+<![CDATA[收款(万元)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="1" cs="2" s="1">
+<O>
+<![CDATA[结算收入(万元)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="2" s="2">
+<O>
+<![CDATA[当月]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="2" s="2">
+<O>
+<![CDATA[累计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="2" s="2">
+<O>
+<![CDATA[当月]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="2" s="2">
+<O>
+<![CDATA[累计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="2" s="2">
+<O>
+<![CDATA[当月]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="2" s="2">
+<O>
+<![CDATA[累计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="2" s="2">
+<O>
+<![CDATA[当月]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="2" s="2">
+<O>
+<![CDATA[累计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="2" s="2">
+<O>
+<![CDATA[当月]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="2" s="2">
+<O>
+<![CDATA[累计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="3" rs="3" s="2">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SEQ()]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand leftParentDefault="false" left="B4"/>
+</C>
+<C c="1" r="3" rs="3" s="2">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="ORG_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="3" s="2">
+<O>
+<![CDATA[今年实绩]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[TARGET]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[合同额]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="4" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="T2" columnName="MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[TARGET]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[合同额]]></O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[ORG_CODE]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="T1" columnName="ORG_CODE"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="5" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[TARGET]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[立项利润]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="6" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="T2" columnName="MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[TARGET]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[立项利润]]></O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[ORG_CODE]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="T1" columnName="ORG_CODE"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="7" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[TARGET]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[结算利润]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="8" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="T2" columnName="MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[TARGET]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[结算利润]]></O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[ORG_CODE]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="T1" columnName="ORG_CODE"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="9" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[TARGET]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[收款]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="10" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="T2" columnName="MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[TARGET]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[收款]]></O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[ORG_CODE]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="T1" columnName="ORG_CODE"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="11" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[TARGET]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[结算收入]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="12" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="T2" columnName="MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[TARGET]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[结算收入]]></O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[ORG_CODE]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="T1" columnName="ORG_CODE"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="2" r="4" s="2">
+<O>
+<![CDATA[去年同期]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="4" s="3">
+<O t="DSColumn">
+<Attributes dsName="T3" columnName="MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[TARGET]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[合同额]]></O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[ORG_CODE]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="T1" columnName="ORG_CODE"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="4" r="4" s="3">
+<O t="DSColumn">
+<Attributes dsName="T4" columnName="MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[TARGET]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[合同额]]></O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[ORG_CODE]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="T1" columnName="ORG_CODE"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="5" r="4" s="3">
+<O t="DSColumn">
+<Attributes dsName="T3" columnName="MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[TARGET]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[立项利润]]></O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[ORG_CODE]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="T1" columnName="ORG_CODE"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="6" r="4" s="3">
+<O t="DSColumn">
+<Attributes dsName="T4" columnName="MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[TARGET]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[立项利润]]></O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[ORG_CODE]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="T1" columnName="ORG_CODE"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="7" r="4" s="3">
+<O t="DSColumn">
+<Attributes dsName="T3" columnName="MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[TARGET]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[结算利润]]></O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[ORG_CODE]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="T1" columnName="ORG_CODE"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="8" r="4" s="3">
+<O t="DSColumn">
+<Attributes dsName="T4" columnName="MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[TARGET]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[结算利润]]></O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[ORG_CODE]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="T1" columnName="ORG_CODE"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="9" r="4" s="3">
+<O t="DSColumn">
+<Attributes dsName="T3" columnName="MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[TARGET]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[收款]]></O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[ORG_CODE]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="T1" columnName="ORG_CODE"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="10" r="4" s="3">
+<O t="DSColumn">
+<Attributes dsName="T4" columnName="MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[TARGET]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[收款]]></O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[ORG_CODE]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="T1" columnName="ORG_CODE"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="11" r="4" s="3">
+<O t="DSColumn">
+<Attributes dsName="T3" columnName="MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[TARGET]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[结算收入]]></O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[ORG_CODE]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="T1" columnName="ORG_CODE"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="12" r="4" s="3">
+<O t="DSColumn">
+<Attributes dsName="T4" columnName="MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[TARGET]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[结算收入]]></O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[ORG_CODE]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="T1" columnName="ORG_CODE"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="2" r="5" s="2">
+<O>
+<![CDATA[同期比%]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="5" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=(D4-D5)/D5]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="5" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=(E4-E5)/E5]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="5" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=(F4-F5)/F5]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="6" r="5" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=(G4-G5)/G5]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="7" r="5" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=(H4-H5)/H5]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="8" r="5" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=(I4-I5)/I5]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="9" r="5" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=(J4-J5)/J5]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="10" r="5" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=(K4-K5)/K5]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="11" r="5" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=(L4-L5)/L5]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+<C c="12" r="5" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=(M4-M5)/M5]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="B4"/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting orientation="1">
+<Margin top="986400" left="720000" bottom="986400" right="720000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="96"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.00%]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

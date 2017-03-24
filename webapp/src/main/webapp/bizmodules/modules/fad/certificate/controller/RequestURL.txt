@@ -1,0 +1,8 @@
+ERP正式库(10.18.18.155): http://10.18.7.36:9080/service/XChangeServlet?account=0001&receiver=9137A00
+                         http://10.18.7.36:9080/service/XChangeServlet?account=0001&receiver=9137A00
+
+ERP测试库(10.28.2.226):  http://10.18.7.35:9081/service/XChangeServlet?account=0001&receiver=9137A00
+                         http://10.18.7.35:9081/service/XChangeServlet?account=0001&receiver=9137A00
+
+ERP测试库(10.18.18.150): http://10.18.7.35:9081/service/XChangeServlet?account=0001&receiver=9137A00
+                         http://10.18.7.35:9081/service/XChangeServlet?account=0001&receiver=9137A00

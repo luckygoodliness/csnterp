@@ -1,0 +1,656 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20141222" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="main" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="createBy"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="lastBegin"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="nowBegin"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="lastEnd"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="fadSubjectCode"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="office"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="nowEnd"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="isProject"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT T.*, MOD(ROWNUM, 2) AS FOR_COLOUR
+FROM(SELECT SUBSTR(T.CUR_TIME_T, 0, 2) || '年' || SUBSTR(T.CUR_TIME_T, 3) || '月' AS YEAS_DATE,
+       NVL(T.QUANTITY_L_T, 0) AS QUANTITY_L_T,
+       NVL(T.QUANTITY_S_T, 0) AS QUANTITY_S_T,
+       NVL(T.QUANTITY_W_T, 0) AS QUANTITY_W_T,
+       NVL(L.QUANTITY_L_L, 0) AS QUANTITY_L_L,
+       NVL(L.QUANTITY_S_L, 0) AS QUANTITY_S_L,
+       NVL(L.QUANTITY_W_L, 0) AS QUANTITY_W_L
+  FROM (SELECT T.CUR_TIME AS CUR_TIME_T,
+               TO_NUMBER(T.CUR_TIME) AS CUR_TIME_NUM_T,
+               SUM(T.QUANTITY) AS QUANTITY_T,
+               SUM(T.QUANTITY_L) AS QUANTITY_L_T,
+               SUM(T.QUANTITY_S) AS QUANTITY_S_T,
+               SUM(T.QUANTITY_W) AS QUANTITY_W_T
+          FROM (SELECT TO_CHAR(S.EFFECTIVE_DATE, 'YYMM') AS CUR_TIME,
+                       DECODE(NVL(S.IS_PROJECT, 0),
+                              0,
+                              S.SUBJECT_CODE,
+                              PPM.PROJECT_CODE) AS PROJECT_CODE,
+                       DECODE(S.PURCHASE_TYPES, '00', 1, 0) AS QUANTITY_L,
+                       CASE
+                         WHEN (S.PURCHASE_TYPES != '00' AND
+                              S.CONTRACT_NATURE = '0') THEN
+                          1
+                         ELSE
+                          0
+                       END AS QUANTITY_S,
+                       CASE
+                         WHEN (S.PURCHASE_TYPES != '00' AND
+                              S.CONTRACT_NATURE = '1') THEN
+                          1
+                         ELSE
+                          0
+                       END AS QUANTITY_W,
+                       1 AS QUANTITY
+                  FROM SCM_CONTRACT S
+                  LEFT JOIN (SELECT PROJECT_CODE, PROJECT_NAME, UUID
+                              FROM PRM_PROJECT_MAIN PM) PPM ON S.PROJECT_ID =
+                                                               PPM.UUID
+                 WHERE ('${nowBegin}' IS NULL OR
+                       S.EFFECTIVE_DATE >=
+                       TO_DATE('${nowBegin}', 'yyyy-mm-dd'))
+                   AND ('${nowEnd}' IS NULL OR
+                       S.EFFECTIVE_DATE <=
+                       TO_DATE('${nowEnd}', 'yyyy-mm-dd'))
+                      
+                   AND ('${office}' IS NULL OR S.OFFICE_ID = '${office}')
+                   AND ('${isProject}' IS NULL OR
+                       NVL(S.IS_PROJECT, 0) = '${isProject}')
+                   AND ('${createBy}' IS NULL OR
+                       NVL(S.CREATE_BY, 0) = '${createBy}')
+                   AND S.STATE = 2) T
+         WHERE T.PROJECT_CODE LIKE '${fadSubjectCode}%'
+         GROUP BY T.CUR_TIME) T
+  LEFT JOIN (SELECT T.CUR_TIME AS CUR_TIME_L,
+                    TO_NUMBER(T.CUR_TIME) + 100 AS CUR_TIME_NUM_L,
+                    SUM(T.QUANTITY) AS QUANTITY_L,
+                    SUM(T.QUANTITY_L) AS QUANTITY_L_L,
+                    SUM(T.QUANTITY_S) AS QUANTITY_S_L,
+                    SUM(T.QUANTITY_W) AS QUANTITY_W_L
+               FROM (SELECT TO_CHAR(S.EFFECTIVE_DATE, 'YYMM') AS CUR_TIME,
+                            DECODE(NVL(S.IS_PROJECT, 0),
+                                   0,
+                                   S.SUBJECT_CODE,
+                                   PPM.PROJECT_CODE) AS PROJECT_CODE,
+                            DECODE(S.PURCHASE_TYPES, '00', S.QUANTITY, 0) AS QUANTITY_L,
+                            CASE
+                              WHEN (S.PURCHASE_TYPES != '00' AND
+                                   S.CONTRACT_NATURE = '0') THEN
+                               S.QUANTITY
+                              ELSE
+                               0
+                            END AS QUANTITY_S,
+                            CASE
+                              WHEN (S.PURCHASE_TYPES != '00' AND
+                                   S.CONTRACT_NATURE = '1') THEN
+                               S.QUANTITY
+                              ELSE
+                               0
+                            END AS QUANTITY_W,
+                            1 AS QUANTITY
+                       FROM SCM_CONTRACT S
+                       LEFT JOIN (SELECT PROJECT_CODE, PROJECT_NAME, UUID
+                                   FROM PRM_PROJECT_MAIN PM) PPM ON S.PROJECT_ID =
+                                                                    PPM.UUID
+                      WHERE ('${lastBegin}' IS NULL OR
+                            S.EFFECTIVE_DATE >=
+                            TO_DATE('${lastBegin}', 'yyyy-mm-dd'))
+                        AND ('${lastEnd}' IS NULL OR
+                            S.EFFECTIVE_DATE <=
+                            TO_DATE('${lastEnd}', 'yyyy-mm-dd'))
+                           
+                        AND ('${office}' IS NULL OR S.OFFICE_ID = '${office}')
+                        AND ('${isProject}' IS NULL OR
+                            NVL(S.IS_PROJECT, 0) = '${isProject}')
+                        AND ('${createBy}' IS NULL OR
+                            NVL(S.CREATE_BY, 0) = '${createBy}')
+                        AND S.STATE = 2) T
+              WHERE T.PROJECT_CODE LIKE '${fadSubjectCode}%'
+              GROUP BY T.CUR_TIME) L ON T.CUR_TIME_NUM_T = L.CUR_TIME_NUM_L
+ ORDER BY CUR_TIME_NUM_T DESC)T
+]]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR F="0" T="2"/>
+<FR/>
+<HC/>
+<FC/>
+<UPFCR COLUMN="false" ROW="true"/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1257300,990600,1219200,1152000,1152000,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[3600000,3600000,3600000,1872000,3600000,3600000,1872000,3600000,3600000,1872000,4191000,3924300,1872000,0,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" cs="13" s="0">
+<O>
+<![CDATA[采购合同数量统计分析表]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" s="1">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" cs="4" s="1">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[="当期时间：" + if(nowBegin = null, "最早", nowBegin) + "至" + if(nowEnd = null, "今", nowEnd)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="1" s="1">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="1" cs="5" s="1">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[="同期时间：" + if(lastBegin = null, "最早", lastBegin) + "至" + if(lastEnd = null, "去年同期", lastEnd)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="1" cs="2" s="2">
+<O>
+<![CDATA[单位：（个）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="2" s="3">
+<O t="BiasTextPainter">
+<IsBackSlash value="false"/>
+<![CDATA[类型|时间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="2" s="3">
+<O>
+<![CDATA[采购]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="2" s="3">
+<O>
+<![CDATA[同期采购]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="2" s="3">
+<O>
+<![CDATA[增幅]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="2" s="3">
+<O>
+<![CDATA[外协]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="2" s="3">
+<O>
+<![CDATA[同期外协]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="2" s="3">
+<O>
+<![CDATA[增幅]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="2" s="3">
+<O>
+<![CDATA[零星]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="2" s="3">
+<O>
+<![CDATA[同期零星]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="2" s="3">
+<O>
+<![CDATA[增幅]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="2" s="3">
+<O>
+<![CDATA[合计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="2" s="3">
+<O>
+<![CDATA[同期合计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="2" s="3">
+<O>
+<![CDATA[增幅]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="2" s="4">
+<PrivilegeControl/>
+</C>
+<C c="0" r="3" s="5">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="YEAS_DATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="3" s="6">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="QUANTITY_S_T"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="3" s="6">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="QUANTITY_S_L"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="3" s="7">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=if(or(C4 = "", C4 = 0, C4 = null), "-", B4 / C4 - 1)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="3" s="6">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="QUANTITY_W_T"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="3" s="6">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="QUANTITY_W_L"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="3" s="7">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=if(or(F4 = "", F4 = 0, F4 = null), "-", E4 / F4 - 1)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="3" s="6">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="QUANTITY_L_T"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="3" s="6">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="QUANTITY_L_L"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="3" s="7">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=if(or(I4 = "", I4 = 0, I4 = null), "-", H4 / I4 - 1)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="3" s="6">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=B4 + E4 + H4]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="3" s="6">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=C4 + F4 + I4]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="3" s="7">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=if(or(L4 = "", L4 = 0), 0, K4 / L4 - 1)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="3">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="FOR_COLOUR"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[backgroundColour]]></Name>
+<Condition class="com.fr.data.condition.ObjectCondition">
+<Compare op="0">
+<O>
+<![CDATA[1]]></O>
+</Compare>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Scope val="1"/>
+<Background name="ColorBackground" color="-4144960"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="0" r="4" s="5">
+<O>
+<![CDATA[累计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="4" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(B4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="4" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(C4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="4" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=if(or(C5 = "", C5 = 0, C5 = null), "-", B5 / C5 - 1)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="4" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(E4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="4" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(F4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="4" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=if(or(F5 = "", F5 = 0, F5 = null), "-", E5 / F5 - 1)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="4" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(H4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="4" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(I4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="4" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=if(or(I5 = "", I5 = 0, I5 = null), "-", H5 / I5 - 1)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="4" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(K4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="4" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(L4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="4" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=if(or(L5 = "", L5 = 0), 0, K5 / L5 - 1)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting orientation="1">
+<PaperSize width="302400000" height="42768000"/>
+<Margin top="144000" left="144000" bottom="144000" right="144000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="144"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="2" imageLayout="1">
+<FRFont name="SimSun" style="0" size="96"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<FRFont name="SimSun" style="1" size="96"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="104"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="104"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="96"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0]]></Format>
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0%]]></Format>
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0]]></Format>
+<FRFont name="SimSun" style="1" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0%]]></Format>
+<FRFont name="SimSun" style="1" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

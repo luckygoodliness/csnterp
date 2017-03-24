@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>collectionmeasure-dao</daotype>
+        <daokey>common_query_department</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JProject pos="A1:A1" cid="prmProjectMainId_query" fieldLabel_s="prmProjectMainId"
+                  refer_j='[{"refField":"prmProjectMainId","valueField":"uuid"}]'/>
+        <JHidden pos="A1:A1" cid="prmProjectMainId" field="c.prm_project_main_Id"/>
+        <JHidden cid="departmentCodeDesc"/>
+        <JErpDepartMent pos="B1:B1" fieldLabel_s="departmentCode" cid="departmentCode"
+                      field="department_code" labelWidth_n="100"/>
+        <!--<JOrg pos="B1:B1" cid="departmentCode" fieldLabel_s="departmentCode" field="department_code"/>-->
+        <JUserGrid pos="C1:C1" fieldLabel_s="principal" cid="principal_query" refer_j='[{"refField":"principal","valueField":"uuid"}]'/>
+        <JHidden pos="C2:C2" cid="principal" field="principal"/>
+        <JText pos="D1:D1" cid="periods" fieldLabel_s="periods" field="periods"/>
+        <!--<JText pos="A2:A2" cid="report" fieldLabel_s="report" field="report"/>-->
+        <JCombo pos="A2:A2" cid="report" fieldLabel_s="report" allowBlank_b="true"
+                comboType="scdp_fmcode"   field="report"
+                codeType="PRM_MEASURE_REPORT" displayDesc_b="true" fullInfo_b="false" multiSelect_b="false"/>
+        <JFromTo pos="B2:C2" subXtype="JDate" fieldLabel_s="actualReceiptsDate" cid="actualReceiptsDate" field="actualReceiptsDate"/>
+        <!--<JDate pos="B2:B2" cid="actualReceiptsDate" fieldLabel_s="actualReceiptsDate" field="actualReceiptsDate"/>-->
+        <JCombo pos="D2:D2" cid="sign" fieldLabel_s="sign" allowBlank_b="true"
+                comboType="scdp_fmcode"  field="sign"
+                codeType="PRM_MEASURE_SIGN" displayDesc_b="true" fullInfo_b="false" multiSelect_b="false"/>
+        <!--<JText pos="C2:C2" fieldLabel_s="createBy" cid="createBy" field="create_by"/>-->
+        <!--<JText pos="D2:D2" fieldLabel_s="updateBy" cid="updateby" field="update_by"/>-->
+        <!--<JFromTo pos="A3:B3" subXtype="JDatetime" fieldLabel_s="createTime" cid="createTime" field="create_time"/>-->
+        <!--<JFromTo pos="C3:D3" subXtype="JDatetime" fieldLabel_s="updateTime" cid="updateTime" field="update_time"/>-->
+    </conditions>
+    <results>
+
+
+        <JTextCol text_s="prmProjectMainId" dataIndex="projectName" width_n="300"/>
+        <JTextCol text_s="departmentCode" dataIndex="orgName" width_n="120"/>
+            <JTextCol text_s="periods" dataIndex="periods" width_n="120"/>
+            <JTextCol text_s="report" dataIndex="prmMeasureReportCombo" width_n="120"/>
+            <JTextCol text_s="principal" dataIndex="principalName" width_n="120"/>
+        <JDecCol text_s="measureMoney" dataIndex="measureMoney" width_n="150"/>
+            <JTextCol text_s="sign" dataIndex="prmMeasureSignCombo" width_n="120"/>
+        <JDateCol text_s="actualReceiptsDate" dataIndex="actualReceiptsDate" width_n="150"/>
+            <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+        <!--<JTextCol text_s="projectId" dataIndex="projectName" width_n="120"/>-->
+            <!--<JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120"/>-->
+        <!--<JTextCol text_s="state" dataIndex="state" width_n="120"/>-->
+            <!-- <JTextCol text_s="departmentCode" dataIndex="orgName" width_n="120"/>-->
+            <!--<JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>-->
+            <!--<JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>-->
+            <!--<JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>-->
+            <!--<JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>-->
+    </results>
+</commonquery>

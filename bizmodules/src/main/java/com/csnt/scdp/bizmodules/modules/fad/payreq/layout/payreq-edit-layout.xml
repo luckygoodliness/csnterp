@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JPanel pos="A1:A1" row="100,300,flex" col="1*1" title_s="" border_n="1">
+        <JForm pos="A1:A1" cid="fadPayReqHDto" row="23*5" col="0.25*4" title_s="" border_n="1">
+            <JHidden cid="uuid"/>
+            <JHidden cid="tblVersion"/>
+            <JHidden cid="reqType"/>
+            <JText pos="A1:A1" cid="reqno" fieldLabel_s="reqno" allowBlank_b="true" readOnly_b="true"
+                   adaptable_b="false"/>
+            <JCur pos="B1:B1" cid="approveMoney" minValue_n="0.01" fieldLabel_s="approveMoney" allowBlank_b="false" />
+            <JTextArea pos="A2:C3" cid="remark" fieldLabel_s="remark" allowBlank_b="true"/>
+            <JText pos="A4:A4" cid="createBy" fieldLabel_s="createBy" readOnly_b="true" adaptable_b="false"
+                   allowBlank_b="true"/>
+            <JDate pos="B4:B4" cid="createTime" fieldLabel_s="createTime" readOnly_b="true" adaptable_b="false"
+                   allowBlank_b="true"/>
+        </JForm>
+        <JEGrid pos="A2:A2" store="Payreq.store.FadPayReqCStore"  cid="fadPayReqCDto">
+            <JComboCol text_s="projectMainId" width_n="180" dataIndex="projectMainId" >
+                <JCombo comboType="fm_prm_project_main" displayDesc_b="true"  readOnly_b="true"/>
+            </JComboCol>
+            <JComboCol text_s="supplierId" width_n="150" dataIndex="supplierId">
+                <JCombo comboType="fm_scm_supplier_self" displayDesc_b="true" readOnly_b="true"/>
+            </JComboCol>
+            <JComboCol text_s="scmContractId" width_n="150" dataIndex="scmContractId">
+                <JCombo comboType="fm_scm_contract_self" displayDesc_b="true" readOnly_b="true"/>
+            </JComboCol>
+            <JCurCol text_s="accountsPayable" dataIndex="accountsPayable" width_n="100"/>
+            <JCurCol text_s="paidMoney" dataIndex="paidMoney" width_n="90"/>
+            <JCurCol text_s="reqMoney" dataIndex="reqMoney" width_n="100"/>
+            <JCurCol text_s="approveMoney" dataIndex="approveMoney" width_n="90"/>
+            <JCurCol text_s="purchaseManagerMoney" dataIndex="purchaseManagerMoney" width_n="150"/>
+            <JCurCol text_s="purchaseChiefMoney" dataIndex="purchaseChiefMoney" width_n="150"/>
+            <JCurCol text_s="auditMoney" dataIndex="auditMoney" width_n="150"/>
+            <JTextCol text_s="payReason" dataIndex="payReason" width_n="140"/>
+            <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+            <JTextCol text_s="payType" dataIndex="payType" width_n="120"/>
+            <JDateCol text_s="expectDate" dataIndex="expectDate" width_n="150"/>
+        </JEGrid>
+        <JForm  col="0.25*4" pos="A3:A3" title_s="" row="23*8" border_n="1"
+               bcid="fadPayReqCDto.bind" isBind_b="true">
+            <JCombo pos="B1:B1" comboType="fm_scm_supplier" cid="supplierId"
+                    displayDesc_b="true" fieldLabel_s="supplierId"
+                    allowBlank_b="false" filterFields="projectMainId" />
+            <JCombo pos="A1:A1" comboType="fm_prm_project_main" cid="projectMainId"
+                    displayDesc_b="true"  fieldLabel_s="projectMainId" cascadeField="supplierId,scmContractId"  allowBlank_b="false" />
+            <JCombo pos="B1:B1" comboType="fm_scm_supplier" cid="supplierId"
+                    displayDesc_b="true" fieldLabel_s="supplierId"
+                    allowBlank_b="false" filterFields="projectMainId" />
+            <JCombo  pos="C1:C1" comboType="fm_scm_contract" cid="scmContractId"
+                     fieldLabel_s="scmContractId"  displayDesc_b="true"
+                     allowBlank_b="false" filterFields="supplierId,projectMainId"/>
+
+            <JCur readOnly_b="false" allowBlank_b="true" upperCase_b="false" maxLength_n="" pos="D1:D1"
+                   fieldLabel_s="accountsPayable" minLength_n="" cid="accountsPayable"/>
+            <JCur readOnly_b="false" allowBlank_b="true" upperCase_b="false" maxLength_n="" pos="A2:A2"
+                   fieldLabel_s="paidMoney" minLength_n="" cid="paidMoney"/>
+            <JCur readOnly_b="false" allowBlank_b="true" upperCase_b="false" maxLength_n="" pos="B2:B2"
+                   fieldLabel_s="reqMoney" minLength_n="" cid="reqMoney"/>
+            <JCur readOnly_b="false" allowBlank_b="true" upperCase_b="false" maxLength_n="" pos="C2:C2"
+                   fieldLabel_s="approveMoney" minLength_n="" cid="approveMoney"/>
+
+            <JText readOnly_b="false" allowBlank_b="true" upperCase_b="false" maxLength_n="" pos="D2:D2"
+                   fieldLabel_s="payReason" minLength_n="" cid="payReason"/>
+            <JTextArea readOnly_b="false" allowBlank_b="true" upperCase_b="false" maxLength_n="" pos="A3:D4"
+                   fieldLabel_s="remark" minLength_n="" cid="remark"/>
+            <JText readOnly_b="false" allowBlank_b="true" upperCase_b="false" maxLength_n="" pos="A5:A5"
+                       fieldLabel_s="payType" minLength_n="" cid="payType"/>
+            <JDate readOnly_b="false" allowBlank_b="true" upperCase_b="false" maxLength_n="" pos="B5:B5"
+                       fieldLabel_s="expectDate" minLength_n="" cid="expectDate"/>
+        </JForm>
+    </JPanel>
+</view>

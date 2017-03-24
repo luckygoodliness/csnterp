@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JPanel col="0.495*1,0.01,0.495*1" pos="A1:A1" title_s="" row="40,flex" border_n="1" cid="generalTab">
+        <JForm pos="A1:C1" cid="nonPrmMainDto" row="23*2" col="0.25*4" title_s="" border_n="1">
+            <JText pos="A1:A1" cid="year" fieldLabel_s="year" allowBlank_b="true"
+                   allowEdit_b="false" adaptable_b="false"/>
+            <JText pos="B1:B1" cid="month" fieldLabel_s="month" allowBlank_b="true"
+                   allowEdit_b="false" adaptable_b="false"/>
+        </JForm>
+        <JFieldSet row="flex" col="1*1" pos="A2:A2" title_s="operateAgreementDto" border_n="1" cid="">
+            <JEGrid pos="A1:A1" cid="operateAgreementDto" store="Monitorm.store.NonProjectIncomeMonStore"
+                    title_s="" withToolbar_b="false">
+                <JHidden dataIndex="uuid"/>
+                <JHidden dataIndex="puuid"/>
+                <JHidden dataIndex="month"/>
+                <JTextCol text_s="subject" dataIndex="subject" width_n="150"/>
+                <JCurCol text_s="assignedValue" dataIndex="assignedValue" width_n="100">
+                    <JCur allowBlank_b="true" minValue_n="0"/>
+                </JCurCol>
+
+                <JCurCol text_s="occurredValue" dataIndex="occurredValue" width_n="120">
+                    <JCur allowBlank_b="true" minValue_n="0"/>
+                </JCurCol>
+            </JEGrid>
+        </JFieldSet>
+        <JFieldSet row="flex" col="1*1" pos="C2:C2" title_s="otherNoPrmOutDto" border_n="1" cid="">
+            <JEGrid pos="A1:A1" cid="otherNoPrmOutDto" store="Monitorm.store.NonProjectIncomeMonStore"
+                    title_s="" withToolbar_b="false">
+                <JHidden dataIndex="uuid"/>
+                <JHidden dataIndex="puuid"/>
+                <JHidden dataIndex="month"/>
+                <JTextCol text_s="subject" dataIndex="subject" width_n="150"/>
+                <JCurCol text_s="assignedValue" dataIndex="assignedValue" width_n="100">
+                    <JCur allowBlank_b="true" minValue_n="0"/>
+                </JCurCol>
+                <JCurCol text_s="occurredValue" dataIndex="occurredValue" width_n="120">
+                    <JCur allowBlank_b="true" minValue_n="0"/>
+                </JCurCol>
+            </JEGrid>
+        </JFieldSet>
+    </JPanel>
+</view>

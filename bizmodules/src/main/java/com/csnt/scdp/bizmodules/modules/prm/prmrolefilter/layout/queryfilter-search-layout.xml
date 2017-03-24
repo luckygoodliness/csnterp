@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>queryfilter-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="A1:A1" cid="tableNames" fieldLabel_s="tableNames" allowBlank_b="true" upperCase_b="true"
+               field="table_names"/>
+        <JHidden cid="beanName" field="bean_name"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="tableNames" dataIndex="tableNames" upperCase_b="true" width_n="250"/>
+        <JTextCol text_s="beanName" dataIndex="beanName" width_n="200"/>
+        <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+        <JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>
+        <JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>
+    </results>
+</commonquery>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>materialitem-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="A1:A1" fieldLabel_s="code" cid="code" field="code"/>
+        <JText pos="B1:B1" fieldLabel_s="name" cid="name" field="name"/>
+        <JCombo pos="C1:C1" cid="available" fieldLabel_s="available" allowBlank_b="true"
+                comboType="scdp_fmcode"
+                codeType="CDM_YES_OR_NO" displayDesc_b="true" field="available"/>
+        <JText pos="D1:D1" fieldLabel_s="description" field="remark"/>
+        <!--<JText pos="C2:C2" fieldLabel_s="createBy" description="createBy" field="create_by"/>-->
+        <!--<JText pos="D2:D2" fieldLabel_s="updateBy" cid="updateby" field="update_by"/>-->
+        <JFromTo pos="A2:B2" subXtype="JDate" fieldLabel_s="createTime" cid="createTime" field="create_time"/>
+        <JFromTo pos="C2:D2" subXtype="JDate" fieldLabel_s="updateTime" cid="updateTime" field="update_time"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="code" dataIndex="code" width_n="120"/>
+        <JTextCol text_s="name" dataIndex="name" width_n="120"/>
+        <JRCheckCol text_s="available" dataIndex="available" width_n="80"/>
+        <JTextCol text_s="description" dataIndex="remark" width_n="120"/>
+        <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+        <JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>
+        <JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>
+    </results>
+</commonquery>

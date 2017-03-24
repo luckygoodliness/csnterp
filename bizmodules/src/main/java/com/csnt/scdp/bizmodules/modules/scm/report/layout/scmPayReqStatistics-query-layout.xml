@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonreport version="1.0">
+    <report>
+        <reporttype>L</reporttype>
+        <reporttemplate>erp/scm/ScmPayReqStatistics.cpt</reporttemplate>
+        <reportcache>false</reportcache>
+    </report>
+    <conditions columns="4">
+        <JHidden cid="officeDesc"/>
+        <JErpDepartMent pos="A1:A1" fieldLabel_s="office" cid="office" field="office"/>
+        <JText pos="B1:B1" cid="fadSubjectCode" fieldLabel_s="fadSubjectCode" field="fadSubjectCode"/>
+        <JCombo pos="C1:C1" cid="isProject" fieldLabel_s="isProject"
+                comboType="scdp_fmcode"
+                codeType="CDM_YES_OR_NO" displayDesc_b="true" field="isProject"/>
+
+        <JDate pos="A2:A2" cid="beginDate" fieldLabel_s="beginDate" field="beginDate"/>
+        <JDate pos="B2:B2" cid="endDate" fieldLabel_s="endDate" field="endDate"/>
+
+        <!--<JSupplierGrid pos="C2:C2" fieldLabel_s="supplier" cid="supplierName_query"
+                       refer_j='[{"refField":"supplierCode","valueField":"uuid"}]'/>
+        <JHidden cid="supplierCode" field="supplierCode"/>-->
+        <JText pos="C2:C2" cid="supplierName" fieldLabel_s="supplier" field="supplierName"/>
+    </conditions>
+</commonreport>

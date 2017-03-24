@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonreport version="1.0">
+    <report>
+        <reporttype>L</reporttype>
+        <reporttemplate>erp/nonprm/NonBudgetMonitorS.cpt</reporttemplate>
+        <reportcache>false</reportcache>
+    </report>
+    <conditions columns="4">
+        <JInt pos="A1:A1" fieldLabel_s="year" cid="year" field="year" minValue_n="1949" maxValue_n="2200"/>
+        <JInt pos="B1:B1" fieldLabel_s="month" cid="month" field="month" minValue_n="1" maxValue_n="12"/>
+        <JCheck pos="C1:C1" fieldLabel_s="isRealTime" cid="isRealTime" field="is_real_time"/>
+    </conditions>
+</commonreport>

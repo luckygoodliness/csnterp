@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="VW_PRM_BILLING_MONEY" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStart"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateOver"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--2.以我方项目表、我方发票表为主体的报表
+--FineReport_VW_PRM_BILLING_MONEY
+SELECT
+(SELECT SCDP_ORG.ORG_NAME FROM SCDP_ORG WHERE SCDP_ORG.ORG_CODE = PRM_PROJECT_MAIN.CONTRACTOR_OFFICE AND (IS_VOID = 0 OR IS_VOID IS NULL)) AS ORG_NAME,--部门
+PRM_PROJECT_MAIN.PROJECT_CODE,--项目代号
+PRM_PROJECT_MAIN.PROJECT_NAME,--项目名称
+NVL(PRM_CONTRACT.CUSTOMER_NAME, (SELECT PRM_CUSTOMER.CUSTOMER_NAME FROM PRM_CUSTOMER WHERE PRM_CUSTOMER.UUID = PRM_PROJECT_MAIN.CUSTOMER_ID AND (IS_VOID = 0 OR IS_VOID IS NULL))) CUSTOMER_NAME,--业主单位
+NVL(PRM_PROJECT_MAIN.PROJECT_MONEY, 0) PROJECT_MONEY,--合同额
+INVOICE_MONEY_NO_DATE,--开票额发票号开票日期
+NVL(PRM_BILLING.SUM_INVOICE_MONEY, 0) SUM_INVOICE_MONEY,--开票额合计
+NVL(PRM_RECEIPTS.SUM_ACTUAL_MONEY, 0) SUM_ACTUAL_MONEY,--已收款额合计
+PRM_PROJECT_MAIN.REMARK--备注
+FROM
+PRM_PROJECT_MAIN
+
+LEFT JOIN
+(
+     SELECT
+     PRM_PROJECT_MAIN_ID,
+     SUM(NVL(ACTUAL_MONEY, 0)) SUM_ACTUAL_MONEY
+     FROM PRM_RECEIPTS
+     WHERE STATE IN ('2','4','8')
+     AND (IS_VOID = 0 OR IS_VOID IS NULL)
+     GROUP BY PRM_PROJECT_MAIN_ID
+) PRM_RECEIPTS
+ON PRM_PROJECT_MAIN.UUID = PRM_RECEIPTS.PRM_PROJECT_MAIN_ID
+
+LEFT JOIN
+(
+     SELECT
+     PRM_PROJECT_MAIN_ID,
+     REPLACE
+     (
+       ZH_CONCAT
+       (
+         CASE WHEN INVOICE_NO IS NOT NULL THEN '发票号:[' || INVOICE_NO || ']A' ELSE '发票号:[财务未填]A' END
+         || '\n' ||
+         CASE WHEN INVOICE_DATE IS NOT NULL THEN '开票日期:[' || TO_CHAR(INVOICE_DATE, 'yyyy-mm-dd') || ']A' ELSE '开票日期:[财务未填]A' END
+         || '\n' || 
+         '开票金额:[' || TO_CHAR(NVL(INVOICE_MONEY, 0)) || '元]A'
+       ),
+       ',',
+       '\n\n'
+     )
+     INVOICE_MONEY_NO_DATE,--开票额发票号开票日期
+     SUM(NVL(INVOICE_MONEY, 0)) SUM_INVOICE_MONEY,--开票小计
+     MAX(INVOICE_DATE) INVOICE_DATE--开票日期
+     FROM PRM_BILLING
+     WHERE
+     STATE IN ('2','4','8')
+     AND
+     REQ_OFFICE = '${officeId}'
+     AND
+     (
+         --当月第一天00时00分00秒
+         ('${dateStart}' IS NULL OR TO_DATE(TO_CHAR(INVOICE_DATE,'yyyy-mm-dd'),'yyyy-mm-dd') >= TO_DATE('${dateStart}','yyyy-mm-dd'))
+         AND
+         --当月当天当时当分当秒
+         ('${dateOver}' IS NULL OR TO_DATE(TO_CHAR(INVOICE_DATE,'yyyy-mm-dd'),'yyyy-mm-dd') <= TO_DATE('${dateOver}','yyyy-mm-dd'))
+     )
+     AND (IS_VOID = 0 OR IS_VOID IS NULL)
+     GROUP BY PRM_PROJECT_MAIN_ID
+) PRM_BILLING
+ON PRM_PROJECT_MAIN.UUID = PRM_BILLING.PRM_PROJECT_MAIN_ID
+
+LEFT JOIN
+(
+  SELECT NVL(PRM_CONTRACT_DETAIL.PRM_PROJECT_MAIN_ID, PRM_CONTRACT.PRM_PROJECT_MAIN_ID) PRM_PROJECT_MAIN_ID,REPLACE(TO_CHAR(WM_CONCAT(PRM_CUSTOMER.CUSTOMER_NAME)),',','、') CUSTOMER_NAME
+  FROM
+  PRM_CONTRACT
+  LEFT JOIN
+  (SELECT * FROM PRM_CONTRACT_DETAIL WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PRM_CONTRACT_DETAIL
+  ON PRM_CONTRACT.UUID = PRM_CONTRACT_DETAIL.PRM_CONTRACT_ID
+  LEFT JOIN 
+  (SELECT * FROM PRM_CUSTOMER WHERE (IS_VOID = 0 OR IS_VOID IS NULL))  PRM_CUSTOMER
+  ON NVL(PRM_CONTRACT_DETAIL.CUSTOMER_ID, PRM_CONTRACT.CUSTOMER_ID) = PRM_CUSTOMER.UUID
+  WHERE (PRM_CONTRACT.IS_VOID = 0 OR PRM_CONTRACT.IS_VOID IS NULL)
+  GROUP BY NVL(PRM_CONTRACT_DETAIL.PRM_PROJECT_MAIN_ID, PRM_CONTRACT.PRM_PROJECT_MAIN_ID)
+) PRM_CONTRACT
+ON PRM_PROJECT_MAIN.UUID = PRM_CONTRACT.PRM_PROJECT_MAIN_ID
+
+WHERE
+PRM_PROJECT_MAIN.CONTRACTOR_OFFICE = '${officeId}'
+AND
+PRM_BILLING.PRM_PROJECT_MAIN_ID IS NOT NULL
+AND (PRM_PROJECT_MAIN.IS_VOID = 0 OR PRM_PROJECT_MAIN.IS_VOID IS NULL)
+ORDER BY PRM_PROJECT_MAIN.ESTABLISH_DATE ASC,PRM_PROJECT_MAIN.PROJECT_CODE ASC]]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR F="2" T="2"/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[720000,720000,720000,720000,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[3600000,5760000,5760000,3600000,5760000,3600000,3600000,3600000,5760000,2743200,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" cs="9" s="0">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=$officeIdDesc + " 应收账款明细表(单位:元)"]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" cs="9" s="1">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=$dateStart + " 至 " + $dateOver]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="2" s="2">
+<O>
+<![CDATA[项目代号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="2" s="2">
+<O>
+<![CDATA[项目名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="2" s="2">
+<O>
+<![CDATA[业主单位]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="2" s="2">
+<O>
+<![CDATA[合同额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="2" s="2">
+<O>
+<![CDATA[开票]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="2" s="2">
+<O>
+<![CDATA[开票小计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="2" s="2">
+<O>
+<![CDATA[已收款额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="2" s="2">
+<O>
+<![CDATA[应收款额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="2" s="2">
+<O>
+<![CDATA[备注]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="3" s="2">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_BILLING_MONEY" columnName="PROJECT_CODE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_BILLING_MONEY" columnName="PROJECT_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_BILLING_MONEY" columnName="CUSTOMER_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="3" s="4">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_BILLING_MONEY" columnName="PROJECT_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="3" s="2">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_BILLING_MONEY" columnName="INVOICE_MONEY_NO_DATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="3" s="4">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_BILLING_MONEY" columnName="SUM_INVOICE_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="3" s="4">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_BILLING_MONEY" columnName="SUM_ACTUAL_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="3" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=F4 - G4]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_BILLING_MONEY" columnName="REMARK"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting orientation="1">
+<Margin top="986400" left="720000" bottom="986400" right="720000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="96"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

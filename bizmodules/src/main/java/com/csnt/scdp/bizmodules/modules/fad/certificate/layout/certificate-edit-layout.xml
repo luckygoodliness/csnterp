@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JPanel pos="A1:A1" row="125,200,flex" col="1*1">
+        <JFieldSet pos="A1:A1" row="flex" col="1*1" title_s="fadCertificate" border_n="1">
+            <JForm pos="A1:A1" cid="fadCertificateDto" row="23*4" col="0.20*5" title_s="" border_n="0">
+                <JHidden cid="uuid"/>
+                <JHidden cid="businessId"/>
+                <JHidden cid="free2"/>
+                <JHidden cid="tblVersion"/>
+                <JHidden cid="free3"/>
+                <JText pos="A1:A1" cid="certificateNo" fieldLabel_s="certificateNo" allowBlank_b="true"
+                       readOnly_b="true" adaptable_b="false"/>
+                <JText pos="A2:A2" cid="abstracts" fieldLabel_s="abstracts" allowBlank_b="true" readOnly_b="true"
+                       adaptable_b="false"/>
+                <JCombo pos="A3:A3" cid="state" fieldLabel_s="state" field="state" comboType="scdp_fmcode"
+                        codeType="FAD_CERTIFICATE_STATE" displayDesc_b="true" allowBlank_b="true" readOnly_b="true"
+                        adaptable_b="false"/>
+                <JText pos="A4:A4" cid="feedback" fieldLabel_s="feedback" allowBlank_b="true" readOnly_b="true"
+                       adaptable_b="false"/>
+
+                <JText pos="B1:B1" cid="years" fieldLabel_s="years" allowBlank_b="false" maxLength_n="4"/>
+                <JText pos="B2:B2" cid="months" fieldLabel_s="months" allowBlank_b="false" maxLength_n="2"/>
+                <JDatetime pos="B3:B3" cid="certificateDate" fieldLabel_s="certificateDate" allowBlank_b="true"
+                           readOnly_b="true"
+                           adaptable_b="false"/>
+                <JDatetime pos="B4:B4" cid="makeDate" fieldLabel_s="makeDate" allowBlank_b="true" readOnly_b="true"
+                           adaptable_b="false"/>
+
+                <JUser pos="C1:C1" cid="makerName" fieldLabel_s="maker" allowBlank_b="true" readOnly_b="true"
+                       adaptable_b="false" refer_j='[{"refField":"maker","valueField":"uuid"}]'/>
+                <JHidden cid="maker"/>
+
+                <JInt pos="C2:C2" cid="attachmentNumber" fieldLabel_s="attachmentNumber" allowBlank_b="true"/>
+
+                <JReceiverOrPayerGrid pos="C3:C3" cid="receiverOrPayerName" fieldLabel_s="receiverOrPayerName"
+                                      allowBlank_b="true"
+                                      refer_j='[{"refField":"receiverOrPayerId","valueField":"uuid"},{"refField":"receiverOrPayerCode","valueField":"receiverOrPayerCode"},{"refField":"receiverOrPayerType","valueField":"receiverOrPayerType"}]'
+                                      upperCase_b="true"/>
+                <JHidden cid="receiverOrPayerId"/>
+                <JHidden cid="receiverOrPayerCode"/>
+                <JHidden cid="receiverOrPayerType"/>
+
+                <JText pos="C4:C4" cid="remark" fieldLabel_s="remark" allowBlank_b="true"/>
+
+                <JDec pos="D1:D1" cid="debtor" fieldLabel_s="debtor" allowBlank_b="true" readOnly_b="true"
+                      adaptable_b="false"/>
+                <JDec pos="D2:D2" cid="creditor" fieldLabel_s="creditor" allowBlank_b="true" readOnly_b="true"
+                      adaptable_b="false"/>
+                <JText pos="D3:D3" cid="originalFormCode" fieldLabel_s="originalFormCode" allowBlank_b="true"
+                       readOnly_b="true" adaptable_b="false"/>
+                <JCombo pos="D4:D4" cid="originalFormType" fieldLabel_s="originalFormType" field="original_form_type"
+                        comboType="fm_fad_certificate_detail_originalformtype" displayDesc_b="true"
+                        allowBlank_b="false"/>
+
+                <JText pos="E1:E1" cid="ncrequestUrl" fieldLabel_s="ncrequestUrl" allowBlank_b="true" readOnly_b="true"
+                       adaptable_b="false"/>
+                <JText pos="E2:E2" cid="ncrequestXml" fieldLabel_s="ncrequestXml" allowBlank_b="true" readOnly_b="true"
+                       adaptable_b="false"/>
+                <JText pos="E3:E3" cid="ncresponseXml" fieldLabel_s="ncresponseXml" allowBlank_b="true"
+                       readOnly_b="true"
+                       adaptable_b="false"/>
+                <JCheck pos="E4:E4" cid="free4" fieldLabel_s="free4" allowBlank_b="true"/>
+            </JForm>
+        </JFieldSet>
+        <JFieldSet pos="A2:A2" row="flex,flex" col="1*1" title_s="fadCertificateDetail" border_n="1">
+            <JEGrid pos="A1:A1" cid="fadCertificateDetailDto" store="Certificate.store.FadCertificateDetailStore">
+                <JTextCol text_s="orderNo" dataIndex="orderNo" width_n="55"/>
+                <JTextCol text_s="abstracts" dataIndex="abstracts" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+
+                <JQueryFieldCol text_s="subjectCode" dataIndex="subjectName" width_n="200">
+                    <JAccsubjRtfreevalueGrid allowBlank_b="false"
+                                             refer_j='[{"refField":"subjectCode","valueField":"subjectCode"}]'
+                                             upperCase_b="true"/>
+                </JQueryFieldCol>
+                <JHidden cid="subjectCode"/>
+
+                <JQueryFieldCol text_s="currency" dataIndex="currtypename" width_n="100">
+                    <JCurrencyGrid allowBlank_b="false" refer_j='[{"refField":"currency","valueField":"currencyCode"}]'
+                                   upperCase_b="true"/>
+                </JQueryFieldCol>
+                <JHidden cid="currency"/>
+
+                <JDecCol text_s="primary" dataIndex="primary" width_n="100">
+                    <JDec allowBlank_b="false"/>
+                </JDecCol>
+
+                <JDecCol text_s="fadCertificateDetailFree2" dataIndex="free2" width_n="100">
+                    <JDec allowBlank_b="false"/>
+                </JDecCol>
+                <JDecCol text_s="fadCertificateDetailFree3" dataIndex="free3" width_n="100">
+                    <JDec allowBlank_b="false"/>
+                </JDecCol>
+
+                <JDecCol text_s="local" dataIndex="local" width_n="100" hidden_b="false">
+                    <!--<JDec allowBlank_b="false"/>-->
+                </JDecCol>
+                <JComboCol text_s="debtorOrCreditor" dataIndex="debtorOrCreditor" width_n="70" hidden_b="false">
+                    <JCombo allowBlank_b="false" comboType="fm_fad_certificate_detail_debtor_or_creditor"
+                            displayDesc_b="true" readOnly_b="true"/>
+                </JComboCol>
+                <JTextCol text_s="originalFormCode" dataIndex="originalFormCode" width_n="235"/>
+                <JComboCol text_s="originalFormType" dataIndex="originalFormType" width_n="160">
+                    <JCombo comboType="fm_fad_certificate_detail_originalformtype" displayDesc_b="true"
+                            readOnly_b="true"/>
+                </JComboCol>
+                <!--<JTextCol text_s="remark" dataIndex="remark" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>-->
+                <JTextCol dataIndex="seqNo" width_n="0" hidden_b="true"/>
+            </JEGrid>
+        </JFieldSet>
+        <JFieldSet pos="A3:A3" row="flex,flex" col="1*1" title_s="fadCertificateAccount" border_n="1">
+            <JEGrid pos="A1:A1" cid="fadCertificateAccountDto" store="Certificate.store.FadCertificateAccountStore"
+                    bcid="fadCertificateDetailDto.bind" isBind_b="true">
+                <JTextCol text_s="accountNo" dataIndex="accountNo" width_n="100"/>
+                <JTextCol text_s="accountType" dataIndex="accountType" width_n="100"/>
+
+                <JQueryFieldCol text_s="accountInfo" dataIndex="accountInfoName" width_n="200">
+                    <JRtfreevalue allowBlank_b="true"
+                                  refer_j='[{"refField":"accountInfoId","valueField":"uuid"},{"refField":"accountInfoCode","valueField":"accountInfoCode"}]'
+                                  upperCase_b="true"/>
+                </JQueryFieldCol>
+                <JHidden cid="accountInfoId"/>
+                <JHidden cid="accountInfoCode"/>
+            </JEGrid>
+        </JFieldSet>
+    </JPanel>
+</view>

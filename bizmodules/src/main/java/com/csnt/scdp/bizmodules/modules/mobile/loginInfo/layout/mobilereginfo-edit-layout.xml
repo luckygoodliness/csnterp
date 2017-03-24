@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="Dto" row="23*1" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JText pos="A1:A1" cid="regId" fieldLabel_s="regId" allowBlank_b="true"/>
+        <JText pos="A1:A1" cid="loginUserName" fieldLabel_s="loginUserName" allowBlank_b="true"/>
+        <JText pos="A1:A1" cid="deviceType" fieldLabel_s="deviceType" allowBlank_b="true"/>
+        <JText pos="A1:A1" cid="remark" fieldLabel_s="remark" allowBlank_b="true"/>
+        <JText pos="A1:A1" cid="departmentCode" fieldLabel_s="departmentCode" allowBlank_b="true"/>
+    </JForm>
+</view>

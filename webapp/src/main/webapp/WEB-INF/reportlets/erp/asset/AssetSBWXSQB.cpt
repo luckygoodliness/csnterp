@@ -1,0 +1,430 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="ds1" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="uuid"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--ds1
+SELECT
+       AC.ASSET_HANDOVER_UUID,
+       AM.UUID,
+       SO.ORG_NAME,
+       AC.LOCAL_VALUE,
+       AC.ASSET_NAME,
+       AC.ASSET_CODE,
+       AC.PURCHASE_TIME,
+       AC.MODEL,
+       AM.SCHEDULED_TIME,
+       AM.PROJECTED_EXPENDITURE,
+       AM.MALFUNCTION,
+       AM.CONTENT,
+       AM.REMARK || '\n' || DECODE(WORKFLOW7.USER_NAME, '','公司总经理：' || WORKFLOW9.USER_NAME,'公司分管领导：' || WORKFLOW7.USER_NAME) REMARK,
+       
+       WORKFLOW6.USER_NAME DEPARTMENT_SUPERVISOR,--使用部门主管
+       WORKFLOW3.USER_NAME MANAGE_DEPARTMENT_SUPERVISOR,--管理部门主管
+       NVL(WORKFLOW8.USER_NAME,WORKFLOW4.USER_NAME) EQUIPMENT_MANAGER,--管理部门设备主管
+       SCDP_USER.USER_NAME OPERATER--使用部门设备员
+       
+  FROM ASSET_MAINTAIN AM
+  LEFT JOIN ASSET_CARD AC ON AM.CARD_UUID = AC.UUID
+  LEFT JOIN SCDP_ORG SO ON SO.ORG_CODE = AM.DEPARTMENT_CODE
+    
+  LEFT JOIN (SELECT SCDP_USER.USER_NAME,VW_ASSET_REGISTER_WORKFLOW.UUID FROM (SELECT USER_ID,UUID FROM VW_ASSET_REGISTER_WORKFLOW WHERE NODE = '申请部门领导') VW_ASSET_REGISTER_WORKFLOW LEFT JOIN SCDP_USER ON VW_ASSET_REGISTER_WORKFLOW.USER_ID = SCDP_USER.USER_ID) WORKFLOW1 ON AC.ASSET_HANDOVER_UUID = WORKFLOW1.UUID
+  LEFT JOIN (SELECT SCDP_USER.USER_NAME,VW_ASSET_REGISTER_WORKFLOW.UUID FROM (SELECT USER_ID,UUID FROM VW_ASSET_REGISTER_WORKFLOW WHERE NODE = '设备管理员') VW_ASSET_REGISTER_WORKFLOW LEFT JOIN SCDP_USER ON VW_ASSET_REGISTER_WORKFLOW.USER_ID = SCDP_USER.USER_ID) WORKFLOW2 ON AC.ASSET_HANDOVER_UUID = WORKFLOW2.UUID
+  LEFT JOIN (SELECT SCDP_USER.USER_NAME,VW_ASSET_REGISTER_WORKFLOW.UUID FROM (SELECT USER_ID,UUID FROM VW_ASSET_REGISTER_WORKFLOW WHERE NODE = '资产部主任') VW_ASSET_REGISTER_WORKFLOW LEFT JOIN SCDP_USER ON VW_ASSET_REGISTER_WORKFLOW.USER_ID = SCDP_USER.USER_ID) WORKFLOW3 ON AC.ASSET_HANDOVER_UUID = WORKFLOW3.UUID
+  LEFT JOIN (SELECT SCDP_USER.USER_NAME,VW_ASSET_REGISTER_WORKFLOW.UUID FROM (SELECT USER_ID,UUID FROM VW_ASSET_REGISTER_WORKFLOW WHERE NODE = '资产部专员') VW_ASSET_REGISTER_WORKFLOW LEFT JOIN SCDP_USER ON VW_ASSET_REGISTER_WORKFLOW.USER_ID = SCDP_USER.USER_ID) WORKFLOW4 ON AC.ASSET_HANDOVER_UUID = WORKFLOW4.UUID
+  LEFT JOIN (SELECT SCDP_USER.USER_NAME,VW_ASSET_REGISTER_WORKFLOW.UUID FROM (SELECT USER_ID,UUID FROM VW_ASSET_REGISTER_WORKFLOW WHERE NODE = '设备领用人') VW_ASSET_REGISTER_WORKFLOW LEFT JOIN SCDP_USER ON VW_ASSET_REGISTER_WORKFLOW.USER_ID = SCDP_USER.USER_ID) WORKFLOW5 ON AC.ASSET_HANDOVER_UUID = WORKFLOW5.UUID
+
+  LEFT JOIN (SELECT SCDP_USER.USER_NAME,VW_ASSET_MAINTAIN_WORKFLOW.UUID FROM (SELECT USER_ID,UUID FROM VW_ASSET_MAINTAIN_WORKFLOW WHERE NODE = '申请部门领导') VW_ASSET_MAINTAIN_WORKFLOW LEFT JOIN SCDP_USER ON VW_ASSET_MAINTAIN_WORKFLOW.USER_ID = SCDP_USER.USER_ID) WORKFLOW6 ON AM.UUID = WORKFLOW6.UUID
+  LEFT JOIN (SELECT SCDP_USER.USER_NAME,VW_ASSET_MAINTAIN_WORKFLOW.UUID FROM (SELECT USER_ID,UUID FROM VW_ASSET_MAINTAIN_WORKFLOW WHERE NODE = '公司分管领导') VW_ASSET_MAINTAIN_WORKFLOW LEFT JOIN SCDP_USER ON VW_ASSET_MAINTAIN_WORKFLOW.USER_ID = SCDP_USER.USER_ID) WORKFLOW7 ON AM.UUID = WORKFLOW7.UUID
+  LEFT JOIN (SELECT SCDP_USER.USER_NAME,VW_ASSET_MAINTAIN_WORKFLOW.UUID FROM (SELECT USER_ID,UUID FROM VW_ASSET_MAINTAIN_WORKFLOW WHERE NODE = '资产部设备主管') VW_ASSET_MAINTAIN_WORKFLOW LEFT JOIN SCDP_USER ON VW_ASSET_MAINTAIN_WORKFLOW.USER_ID = SCDP_USER.USER_ID) WORKFLOW8 ON AM.UUID = WORKFLOW8.UUID
+  LEFT JOIN (SELECT SCDP_USER.USER_NAME,VW_ASSET_MAINTAIN_WORKFLOW.UUID FROM (SELECT USER_ID,UUID FROM VW_ASSET_MAINTAIN_WORKFLOW WHERE NODE = '公司总经理') VW_ASSET_MAINTAIN_WORKFLOW LEFT JOIN SCDP_USER ON VW_ASSET_MAINTAIN_WORKFLOW.USER_ID = SCDP_USER.USER_ID) WORKFLOW9 ON AM.UUID = WORKFLOW9.UUID
+   
+  LEFT JOIN SCDP_USER ON AM.OPERATER = SCDP_USER.USER_ID
+  
+WHERE AM.UUID = '${uuid}']]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1828800,1371600,1728000,1728000,1728000,9360000,9360000,4320000,4320000,4320000,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[1295400,1600200,2857500,4953000,2743200,3733800,2743200,8001000,2743200,2743200,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" cs="8" s="0">
+<O>
+<![CDATA[中海网络科技股份有限公司]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" cs="8" s="1">
+<O>
+<![CDATA[设备维修申请表]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="2" cs="2" s="2">
+<O>
+<![CDATA[申请部门]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="2" cs="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="ORG_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="2" s="2">
+<O>
+<![CDATA[设备原值]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="LOCAL_VALUE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="2" s="2">
+<O>
+<![CDATA[设备名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="ASSET_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="3" cs="2" s="2">
+<O>
+<![CDATA[资产编号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="3" cs="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="ASSET_CODE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="3" s="2">
+<O>
+<![CDATA[启用日期]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="3" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="PURCHASE_TIME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="3" s="2">
+<O>
+<![CDATA[规格型号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="3" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="MODEL"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="4" cs="3" s="2">
+<O>
+<![CDATA[预计维修时间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="4" cs="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SCHEDULED_TIME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="4" cs="2" s="5">
+<O>
+<![CDATA[预计维修费用]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="4" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="PROJECTED_EXPENDITURE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="5" s="5">
+<O>
+<![CDATA[设备故障情况]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="5" cs="7" s="6">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="MALFUNCTION"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="6" s="5">
+<O>
+<![CDATA[维修内容]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="6" cs="7" s="6">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="CONTENT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="7" cs="3" s="5">
+<O>
+<![CDATA[使用部门设备员]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="7" cs="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="OPERATER"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="7" cs="2" s="5">
+<O>
+<![CDATA[管理部门设备主管]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="7" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="EQUIPMENT_MANAGER"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="8" cs="3" s="5">
+<O>
+<![CDATA[使用部门领导]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="8" cs="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="DEPARTMENT_SUPERVISOR"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="8" cs="2" s="5">
+<O>
+<![CDATA[管理部门领导]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="8" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="MANAGE_DEPARTMENT_SUPERVISOR"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="9" s="5">
+<O>
+<![CDATA[备注]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="9" cs="7" s="6">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="REMARK"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting>
+<Margin top="986400" left="1152000" bottom="986400" right="1152000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="144"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="128"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="96"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="Times New Roman" style="0" size="96"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="Times New Roman" style="0" size="96"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="96"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="2" vertical_alignment="1" imageLayout="1">
+<FRFont name="SimSun" style="0" size="96"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

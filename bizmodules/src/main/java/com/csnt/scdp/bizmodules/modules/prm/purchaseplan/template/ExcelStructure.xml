@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<excel>
+    <entity name="ERP采购分包清单" code="PrmPurchasePlanDetail">
+        <column name="序号" code="serialNumber" type="String"/>
+        <column name="立项预算类别（主材/辅材/外协）" code="prmBudgetType" type="String"/>
+        <column name="名称" code="name" type="String"/>
+        <column name="型号规格" code="model" type="String"/>
+        <column name="生产厂家" code="factory" type="String"/>
+        <column name="计划到货日期" code="arriveDate" type="Date">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+        <column name="供应商" code="supplierId" type="String"/>
+        <column name="供应商属性" code="supplierProperty" type="String"/>
+        <column name="单位" code="unit" type="String"/>
+        <column name="数量" code="amount" type="BigDecimal">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+        <column name="预算单价" code="budgetPrice" type="BigDecimal">\
+            <!--<rules>-->
+            <!--<rule name="nullable" message="不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+        <column name="预算总价" code="purchaseBudgetMoney" type="BigDecimal">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+        <column name="备注" code="remark" type="String"/>
+    </entity>
+</excel>

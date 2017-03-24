@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[
+             SELECT (SELECT A.NAME
+                      FROM SCM_MATERIAL_CLASS A
+                     WHERE A.CODE = T.RESPONSIBLE_CLASS) AS RESPONSIBLE_CLASS_NAME,
+                   (SELECT A.USER_NAME FROM SCDP_USER A WHERE A.USER_ID = T.PRINCIPAL) AS PRINCIPAL_NAME,
+                   (SELECT CODE_DESC
+                      FROM SCDP_CODE A
+                     WHERE A.CODE_TYPE = 'SCM_MATERIAL_CLASS_LEVEL'
+                       AND A.SYS_CODE = T.CLASS_LEVEL) AS CLASS_LEVEL_COMBO,
+                   (SELECT CODE_DESC
+                      FROM SCDP_CODE A
+                     WHERE A.CODE_TYPE = 'PRM_OPERATIVE_SEGMENTS'
+                       AND A.SYS_CODE = T.OPERATIVE_SEGMENTS) AS OPERATIVE_SEGMENTS_COMBO,
+                   (SELECT CODE_DESC
+                      FROM SCDP_CODE A
+                     WHERE A.CODE_TYPE = 'SCM_DEFAULTPROPERTY'
+                       AND A.SYS_CODE = T.IS_RIGID) AS IS_RIGID_COMBO,T.*
+              FROM SCM_RESPONSIBLE_CLASS T
+             where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+    <update_principalname>
+        <common>
+            UPDATE SCM_RESPONSIBLE_CLASS SET PRINCIPAL=?,UPDATE_BY=?,UPDATE_TIME=SYSDATE WHERE ${selfConditions}
+        </common>
+    </update_principalname>
+</DAO>

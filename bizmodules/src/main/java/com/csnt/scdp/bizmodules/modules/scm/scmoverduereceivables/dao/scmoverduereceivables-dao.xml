@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[SELECT T.*,
+               (SELECT SCM_CONTRACT_CODE
+                  FROM SCM_CONTRACT A
+                 WHERE A.UUID = T.SCM_CONTRACT) AS SCM_CONTRACT_NAME,
+               (SELECT COMPLETE_NAME FROM SCM_SUPPLIER A WHERE A.UUID = T.SUPPLIER) AS SUPPLIER_NAME
+          FROM SCM_OVERDUE_RECEIVABLES T
+            where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+</DAO>

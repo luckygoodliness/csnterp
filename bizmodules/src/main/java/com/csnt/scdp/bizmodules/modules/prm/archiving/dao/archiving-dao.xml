@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select * from prm_archiving where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+
+    <common_query_department>
+        <common>
+            <!--<![CDATA[select     a.uuid,
+                                a.prm_project_main_id,
+                                a.archiving_date,
+                                a.archiving_req_date,
+                                a.state,
+                                a.company_code,
+                                a.project_id,
+                                a.department_code,
+                                a.create_by,
+                                a.create_office,
+                                a.create_time,
+                                a.update_by,
+                                a.update_office,
+                                a.update_time,
+                                a.loc_timezone,
+                                a.tbl_version,
+                                a.is_void,
+                               o.org_name,
+                               (select b.project_name  from (select ppm.*,pc.contract_name
+                                                                from prm_project_main ppm
+                                                                 left join PRM_CONTRACT  pc
+                                                               on ppm.prm_contract_id = pc.uuid ) b
+                                where b.uuid=a.project_id) as project_name
+                        from   prm_archiving a
+                        left join scdp_org o
+                        on     a.department_code = o.uuid
+                        where 1=1 and ${conditions}]]>-->
+            <![CDATA[select * from (select distinct
+                                        a.uuid,
+                                        a.prm_project_main_id,
+                                        a.archiving_date,
+                                        a.archiving_req_date,
+                                        (select code_desc from scdp_code c where c.code_type='CDM_BILL_STATE' and c.sys_code=a.state) as state,
+                                        a.company_code,
+                                        a.project_id,
+                                        a.department_code,
+                                        a.create_by,
+                                        a.create_time,
+                                        a.update_by,
+                                        a.update_time,
+                                        a.loc_timezone,
+                                        a.tbl_version,
+                                        a.is_void,
+                                        a.seq_no,
+                                        ppm.project_name,
+                                        ppm.project_code,
+                                        o.org_name from prm_archiving a left join prm_archiving_detail b
+                                                    on a.uuid = b.prm_archiving_id
+                                        left join prm_project_main ppm on ppm.uuid=a.PRM_PROJECT_MAIN_ID
+                                                    left join scdp_org o
+                                                     on a.department_code = o.org_code
+                                                     where ${conditions}) where 1=1 and ${voidfilter}]]>
+        </common>
+    </common_query_department>
+</DAO>

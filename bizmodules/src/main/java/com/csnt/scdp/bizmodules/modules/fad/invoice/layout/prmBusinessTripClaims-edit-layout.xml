@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <!--<JTab col="1*1" pos="A1:A1" row="flex" border_n="1" cid="tab">-->
+        <!--<JPanel col="1*1" pos="A1:A1" title_s="table1" row="flex" border_n="1" cid="generalTab">-->
+            <!--<JFieldSet pos="A1:A1" title_s="44444" border_n="0"></JFieldSet>-->
+            <JPanel pos="A1:A1" title_s="" row="flex" col="0.5*2">
+                <JForm pos="A1:B1" title_s="" col="0.25*4" row="23*4,10,196,flex" border_n="0"
+                       cid="fadInvoiceDto">
+                    <!--<JFieldSet pos="A1:A2" title_s="333" col="0.38*1,0.27*1,0.15*1,0.2*1" row="23*11,flex"-->
+                    <!--border_n="1" cid="">-->
+                    <JHidden cid="uuid"/>
+                    <JHidden cid="tblVersion"/>
+                    <JHidden cid="notInRow"/>
+                    <JHidden cid="expensesType"/>
+                    <JHidden cid="supplierId" cascadeField="bankId"/>
+                    <JHidden cid="prmProjectMainId"/>
+                    <!--<JHidden cid="renderPerson"/>-->
+                    <JHidden cid="renderPersonDesc"/>
+                    <JHidden cid="officeIdDesc"/>
+                    <JHidden pos="A4:A4" cid="subjectId"/>
+                    <JText pos="A1:A1" cid="invoiceReqNo" fieldLabel_s="invoiceReqNo" allowBlank_b="true"
+                           readOnly_b="true" adaptable_b="false"/>
+                    <!--<JText pos="B1:B1" cid="state" fieldLabel_s="state" allowBlank_b="true"/>-->
+                    <JCombo pos="B1:B1" cid="state" fieldLabel_s="state"
+                            comboType="scdp_fmcode" codeType="FAD_BILL_STATE" displayDesc_b="true" allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+                    <!--<JHidden pos="B1:B1" cid="tripName" fieldLabel_s="tripName" allowBlank_b="true"/>-->
+                    <!--<JUserGrid pos="C1:C1" fieldLabel_s="renderPerson" cid="renderPersonName" allowBlank_b="false"-->
+                               <!--refer_j='[{"refField":"renderPerson","valueField":"userId"},{"refField":"officeId","valueField":"orgCode"}]'/>-->
+                    <!--<JUserGrid pos="C1:C1" fieldLabel_s="renderPerson" cid="renderPersonName" allowBlank_b="false"-->
+                               <!--refer_j='[{"refField":"renderPerson","valueField":"userId"}]'/>-->
+                    <JUserGrid pos="C1:C1" fieldLabel_s="renderPerson" cid="renderPerson" allowBlank_b="false"
+                               valueField="userId" descField="userName"/>
+                    <JErpDepartMent pos="D1:D1" fieldLabel_s="officeId" cid="officeId"
+                                    field="responsible_department" readOnly_b="true" adaptable_b="false"/>
+                    <JNoneFinishedProject pos="A2:B2" fieldLabel_s="fadProjectMainId" cid="prmProjectName"
+                                          valueField="projectName"
+                                  allowBlank_b="false" refer_j='[{"refField":"prmProjectMainId","valueField":"uuid"},{"refField":"fadSubjectCode","valueField":"projectCode"}]'/>
+
+                    <JTextArea pos="C2:D2" cid="tripLocation" fieldLabel_s="tripLocation" allowBlank_b="false" wrap_b="true"/>
+                    <JText pos="A3:A3" cid="fadSubjectCode" fieldLabel_s="fadSubjectCode" allowBlank_b="true"
+                           readOnly_b="true" adaptable_b="false"/>
+                    <JInt pos="B3:B3" cid="tripDays" fieldLabel_s="tripDays" allowBlank_b="false" readOnly_b="true"
+                          adaptable_b="false"/>
+                    <JDate pos="A4:A4" cid="tripBeginDate" fieldLabel_s="tripBeginDate" allowBlank_b="false"/>
+                    <JDate pos="B4:B4" cid="tripEndDate" fieldLabel_s="tripEndDate" allowBlank_b="false"/>
+                    <JTextArea pos="C3:D4" cid="tripReason" fieldLabel_s="tripReason" allowBlank_b="true" wrap_b="true"/>
+                    <JFieldSet pos="A6:B6" row="23*7" col="0.5*2" title_s="expensesTable" border_n="1">
+                        <JCur pos="A1:A1" cid="remainBudget" fieldLabel_s="remainBudget" allowBlank_b="true"
+                              readOnly_b="true" adaptable_b="false" fieldStyle_j="{'fontSize':'16px','color': 'red'}"></JCur>
+                        <JCheck pos="B1:B1" cid="isWriteOff" fieldLabel_s="冲请款"/>
+                        <JCur pos="A2:A2" cid="invoiceTotalValue" fieldLabel_s="invoiceTotalValue" allowBlank_b="false"
+                              readOnly_b="true" adaptable_b="false"/>
+                        <JCur pos="B2:B2" cid="expensesMoney" fieldLabel_s="totalExpensesMoney" allowBlank_b="true"
+                              readOnly_b="true" adaptable_b="false"/>
+                        <JHidden pos="A3:A3" cid="cashReqMoney" fieldLabel_s="cashReqMoney" allowBlank_b="true"
+                              readOnly_b="true" adaptable_b="false"/>
+                        <JCur pos="A3:A3" cid="totalClearanceMoney" fieldLabel_s="totalClearanceMoney" allowBlank_b="true"
+                              readOnly_b="true" adaptable_b="false"/>
+                        <!--<JCur pos="A3:A3" cid="expenses_money" fieldLabel_s="应退回金额" allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>-->
+                        <JCur pos="B3:B3" cid="subsidyMoney" fieldLabel_s="subsidyMoneyTotal" allowBlank_b="true" readOnly_b="true"
+                              adaptable_b="false"/>
+                        <JCur pos="A4:A4" cid="payCash" fieldLabel_s="payCash" allowBlank_b="true" readOnly_b="true"
+                              adaptable_b="false"/>
+                        <!--<JCur pos="B3:B3" cid="EXPENSES_MONEY" fieldLabel_s="应补发额" allowBlank_b="true"/>-->
+                        <!--<JCur pos="A4:A4" cid="payStyle" fieldLabel_s="payStyle" allowBlank_b="true"/>-->
+                        <JCombo pos="B4:B4" cid="payStyle" fieldLabel_s="payStyle"
+                                comboType="scdp_fmcode" codeType="FAD_PAYWAY" displayDesc_b="true" allowBlank_b="false"/>
+                        <!--<JSFSupplierGrid pos="A5:B5" cid="supplierName" fieldLabel_s="收款单位" allowBlank_b="true"/>-->
+                        <JSFSupplierGrid pos="A5:B5" fieldLabel_s="收款单位" cid="supplierName" allowBlank_b="true"
+                                         refer_j='[{"refField":"supplierId","valueField":"uuid"}]'/>
+                        <JText pos="A6:A6" cid="bank" fieldLabel_s="bank" allowBlank_b="true"/>
+                        <JCombo pos="B6:B6" comboType="supplier_bank_account_no_by_id" cid="bankId"
+                                displayDesc_b="false" fieldLabel_s="bankId" filterFields="supplierId"
+                                allowBlank_b="true" vtype_s=""
+                                />
+                        <JText pos="A7:A7" cid="payee" fieldLabel_s="payee" allowBlank_b="true"/>
+                        <JCheck pos="B7:B7" cid="cashClearance" fieldLabel_s="cashClearance"/>
+                    </JFieldSet>
+                    <JFieldSet pos="C6:D6" row="flex" col="1*1" title_s="clearanceTable" border_n="1">
+                        <JEGrid pos="A1:A1" cid="fadCashReqInvoiceDto" store="Invoice.store.FadCashReqInvoiceStore">
+                            <JHidden dataIndex="uuid"/>
+                            <JHidden dataIndex="fadCashReqId"/>
+                            <JTextCol text_s="runningNo" dataIndex="runningNo" width_n="120"/>
+                            <!--<JTextCol text_s="cashVoucher" dataIndex="cashVoucher" width_n="120"/>-->
+                            <JTextCol text_s="reqMoney" dataIndex="reqMoney" width_n="120"/>
+                            <JCurCol text_s="clearanceMoney" dataIndex="clearanceMoney" width_n="150">
+                                <JCur allowBlank_b="true"/>
+                            </JCurCol>
+                        </JEGrid>
+                    </JFieldSet>
+                    <JFieldSet pos="A7:B7" row="flex" col="1*1" title_s="travelTable" border_n="1">
+                        <JEGrid pos="A1:A1" cid="fadInvoiceTravelDto" store="Invoice.store.FadInvoiceTravelStore">
+                            <JHidden dataIndex="fadInvoiceId"/>
+                            <JComboCol text_s="type" dataIndex="type" width_n="120">
+                                <JCombo pos="A1:A1" comboType="scdp_fmcode" allowBlank_b="true"
+                                        codeType="FAD_TRIP_COST_TYPE" displayDesc_b="true" fullInfo_b="true"
+                                        multiSelect_b="false"/>
+                            </JComboCol>
+                            <JIntCol text_s="invoiceNum" dataIndex="invoiceNum" width_n="100">
+                                <JInt allowBlank_b="false"/>
+                            </JIntCol>
+                            <JCurCol text_s="invoiceMoney" dataIndex="invoiceMoney" width_n="150">
+                                <JCur allowBlank_b="false"/>
+                            </JCurCol>
+                            <JCurCol text_s="approvedMoney" dataIndex="approvedMoney" width_n="150"
+                                     tdCls="x-cell-color">
+                                <JCur allowBlank_b="false"/>
+                            </JCurCol>
+                        </JEGrid>
+                    </JFieldSet>
+                    <JFieldSet pos="C7:D7" row="flex" col="1*1" title_s="subsidyTable" border_n="1">
+                        <JEGrid pos="A1:A1" cid="fadInvoiceSubsidyDto" store="Invoice.store.FadInvoiceSubsidyStore">
+                            <JHidden cid="fadInvoiceId"/>
+                            <JHidden cid="tblVersion"/>
+                            <JTextCol text_s="tripLocation" dataIndex="tripLocation" width_n="120">
+                                <JText allowBlank_b="false"/>
+                            </JTextCol>
+                            <JIntCol text_s="tripDays" dataIndex="tripDays" width_n="100">
+                                <JInt allowBlank_b="false"/>
+                            </JIntCol>
+                            <JCurCol text_s="standard" dataIndex="standard" width_n="150">
+                                <JCur allowBlank_b="false"/>
+                            </JCurCol>
+                            <JCurCol text_s="subsidyMoney" dataIndex="money" width_n="150">
+                            </JCurCol>
+                        </JEGrid>
+                    </JFieldSet>
+                </JForm>
+            </JPanel>
+        <!--</JPanel>-->
+        <!--<JPanel pos="A1:A1" row="flex,150*1" col="1*1" title_s="table2" border_n="1">-->
+        <!--</JPanel>-->
+        <!--<JPanel pos="A1:A1" row="flex,150*1" col="1*1" title_s="table3" border_n="1">-->
+        <!--</JPanel>-->
+    <!--</JTab>-->
+</view>

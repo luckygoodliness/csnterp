@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select R.*,
+                     (select SSC.CASE_NAME
+                    from scm_sae_case SSC
+                    WHERE SSC.UUID = R.SAI_CASE) AS SAI_CASE_NAME,
+                   (SELECT SSC.CASE_NAME
+                   FROM scm_sae_case SSC
+                   WHERE SSC.UUID = R.WAI_CASE) AS WAI_CASE_NAME,
+                   (select ssac.case_name
+                    from scm_sae_appraiser_case ssac
+                   WHERE SSAC.UUID = R.APPRAISER_CASE) AS APPRAISER_CASE_NAME
+            from scm_sae R where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+    <scmsaeobj_query>
+        <common>
+        <![CDATA[
+            SELECT R.MATERIAL_CLASS_CODE,
+                   R.MATERIAL_CLASS_NAME,
+                   R.MATERIAL_TYPE,
+                   R.MATERIAL_TYPE_NAME,
+                   R.SUPPLIER_ID,
+                   R.SUPPLIER_CODE,
+                   R.SUPPLIER_ID_NAME AS SUPPLIER_NAME,
+                   R.CONTRACT_NUM,
+                   R.OPERATIVE_SEGMENTS,
+                   R.AMOUNT
+            FROM VW_SCM_SAE_OBJECT R
+            WHERE 1=1 and ${conditions} and ${selfconditions}
+        ]]>
+        </common>
+    </scmsaeobj_query>
+    <scmsaesupplier_query>
+        <common>
+            <![CDATA[SELECT * FROM (
+                SELECT SS.COMPLETE_NAME AS SUPPLIER_NAME,
+                       B.*,
+                       ROUND(SUM(B.RATIO) OVER(PARTITION BY NULL ORDER BY ROW_NUM), 4) AS ACCUMULATIVE_RATIO,
+                       SS.COMPREHENSIVE
+                  FROM (SELECT A.*,
+                               RATIO_TO_REPORT(A.TOTAL_MONEY) OVER() * 100 AS RATIO,
+                               ROWNUM AS ROW_NUM
+                          FROM (SELECT SC.SUPPLIER_CODE AS SUPPLIER_ID,
+                                       SUM(SC.AMOUNT) AS TOTAL_MONEY,
+                                       COUNT(1) AS QUANTITY
+                                  FROM SCM_CONTRACT SC
+                                 WHERE SC.STATE = 2
+                                   AND SC.SUPPLIER_CODE IS NOT NULL
+                                   AND ${effectivedate}
+                                 GROUP BY SC.SUPPLIER_CODE
+                                 ORDER BY SUM(SC.AMOUNT) DESC) A) B
+                  LEFT JOIN (SELECT SS.UUID,
+                                    MAX(SS.COMPLETE_NAME) AS COMPLETE_NAME,
+                                    ROUND((CASE
+                                            WHEN SUM(NVL(SSE.COMPREHENSIVE, 0)) != 0 THEN
+                                             SUM(NVL(SSE.COMPREHENSIVE, 0)) /
+                                             SUM(NVL2(SSE.COMPREHENSIVE, 1, 0))
+                                            ELSE
+                                             NULL
+                                          END)*2,
+                                          2) AS COMPREHENSIVE
+                               FROM SCM_SUPPLIER SS
+                               LEFT JOIN SCM_SUPPLIER_EVALUATION SSE ON SS.UUID =
+                                                                        SSE.SCM_SUPPLIER_ID
+                              GROUP BY SS.UUID) SS ON B.SUPPLIER_ID = SS.UUID)
+                WHERE ${conditions} and ${selfconditions}
+                ORDER BY TOTAL_MONEY DESC
+        ]]>
+        </common>
+    </scmsaesupplier_query>
+</DAO>

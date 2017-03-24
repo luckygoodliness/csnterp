@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonreport version="1.0">
+    <report>
+        <reporttype>L</reporttype>
+        <reporttemplate>erp/scm/ScmContractQueryPic.cpt</reporttemplate>
+        <reportcache>false</reportcache>
+    </report>
+    <conditions columns="4">
+        <JHidden cid="officeIdDesc" field="officeIdDesc"/>
+        <JErpDepartMent pos="A1:A1" cid="officeId" fieldLabel_s="officeId" field="officeId" labelWidth_n="100"
+                        multiSelect_b="true"/>
+    </conditions>
+</commonreport>

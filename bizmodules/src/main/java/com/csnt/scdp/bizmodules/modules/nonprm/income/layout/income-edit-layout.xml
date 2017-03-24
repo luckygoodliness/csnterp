@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JTab pos="A1:A1" row="flex" col="1*1" border_n="1" cid="tab">
+        <JPanel col="0.52*1,0.005,0.475*1" pos="A1:A1" title_s="收支预算平衡" row="85,flex" border_n="1" cid="generalTab">
+            <!--row="60,161,230"-->
+            <JForm pos="A1:C1" cid="nonProjectIncomeBalanceDto" row="30*3" col="0.1*10" title_s="" border_n="1">
+                <!--字符串显示-->
+                <JHidden cid="uuid"/>
+                <JHidden cid="tit"/>
+                <JDisplay pos="E1:F2" fieldLabel_s="tit" hideLabel_b="true" value=""
+                          fieldStyle_j="{'fontSize':'19px','color': 'black','textAlign':'center'}"/>
+                <JDisplay pos="A2:A2" fieldLabel_s="" hideLabel_b="true" value="纯收入："
+                          fieldStyle_j="{'fontSize':'16px','color': 'black','textAlign':'center'}"/>
+                <JText pos="B2:C2" cid="appliedValue" fieldLabel_s="当年上报值" allowBlank_b="true"
+                       allowEdit_b="false" adaptable_b="false"/>
+                <JText pos="D2:E2" cid="firstInstance" fieldLabel_s="当年初审值" allowBlank_b="true"
+                       allowEdit_b="false" adaptable_b="false"/>
+                <JText pos="F2:G2" cid="assignedValue" fieldLabel_s="当年终审值" allowBlank_b="true"
+                       allowEdit_b="false" adaptable_b="false"/>
+                <JText pos="H2:I2" cid="occurredValue" fieldLabel_s="实际发生" allowBlank_b="true"
+                       allowEdit_b="false" adaptable_b="false"/>
+                <JDisplay pos="J3:J3" fieldLabel_s="" hideLabel_b="true" value="单位：万元"
+                          fieldStyle_j="{'fontSize':'9px','color': 'black','textAlign':'center'}"/>
+            </JForm>
+            <JFieldSet row="flex" col="1*1" pos="A2:A2" title_s="预算收入" border_n="1" cid="">
+                <JEGrid pos="A1:A1" cid="nonProjectIncomeInDto" store="Income.store.NonProjectIncomeInStore"
+                        title_s="" withToolbar_b="false">
+                    <!--withToolbar_b="true" toolbarAtBottom_b="true"-->
+
+                    <JTextCol text_s="subject" dataIndex="subject" width_n="90">
+                    </JTextCol>
+                    <JTextCol text_s="subjectOfficeName" dataIndex="subjectOfficeName" width_n="100"/>
+                    <JGroupCol text_s="前一年">
+
+                        <JDecCol text_s="lastAppliedValue" dataIndex="lastAppliedValue" width_n="75">
+                            <JDec allowEdit_b="false" minValue_n="0.00"/>
+                        </JDecCol>
+                        <!--<JHidden text_s="lastAppliedValue" dataIndex="lastAppliedValue" width_n="120"/>-->
+                        <JDecCol text_s="lastOccurredValue" dataIndex="lastOccurredValue" width_n="75">
+                            <JDec allowEdit_b="false" minValue_n="0.00"/>
+                        </JDecCol>
+                        <JTextCol text_s="completion" dataIndex="completion" width_n="60">
+                            <JDec allowEdit_b="false"/>
+                        </JTextCol>
+                    </JGroupCol>
+
+                    <JGroupCol text_s="当年">
+                        <JCurCol text_s="appliedValue" dataIndex="appliedValue" width_n="75">
+                            <JCur allowBlank_b="true" minValue_n="0.00"/>
+                        </JCurCol>
+                        <JCurCol text_s="firstInstance" dataIndex="firstInstance" width_n="75">
+                            <JCur allowBlank_b="true" minValue_n="0.00"/>
+                        </JCurCol>
+                        <JCurCol text_s="assignedValue" dataIndex="assignedValue" width_n="75">
+                            <JCur allowBlank_b="true" minValue_n="0.00"/>
+                        </JCurCol>
+                    </JGroupCol>
+
+                </JEGrid>
+            </JFieldSet>
+            <JFieldSet row="flex" col="1*1" pos="C2:C2" title_s="预算支出" border_n="1" cid="">
+                <JEGrid pos="A1:A1" cid="nonProjectIncomeDto" store="Income.store.NonProjectIncomeStore"
+                        title_s="" withToolbar_b="false">
+                    <!--withToolbar_b="true" toolbarAtBottom_b="true"-->
+                    <JTextCol text_s="subject" dataIndex="subject" width_n="150"/>
+                    <JTextCol text_s="subjectOfficeName" dataIndex="subjectOfficeName" width_n="100"/>
+                    <JGroupCol text_s="前一年">
+                        <JDecCol text_s="lastOccurredValue" dataIndex="lastOccurredValue" width_n="80">
+                            <JDec allowEdit_b="false" minValue_n="0.00"/>
+                        </JDecCol>
+                    </JGroupCol>
+
+                    <JGroupCol text_s="当年">
+                        <JDecCol text_s="appliedValue" dataIndex="appliedValue" width_n="75">
+                            <JDec allowBlank_b="true" minValue_n="0.00"/>
+                        </JDecCol>
+                        <JDecCol text_s="firstInstance" dataIndex="firstInstance" width_n="75">
+                            <JDec allowBlank_b="true" minValue_n="0.00"/>
+                        </JDecCol>
+                        <JDecCol text_s="assignedValue" dataIndex="assignedValue" width_n="75">
+                            <JDec allowBlank_b="true" minValue_n="0.00"/>
+                            <!--vtype="numberCheck"-->
+                        </JDecCol>
+                    </JGroupCol>
+
+                </JEGrid>
+            </JFieldSet>
+        </JPanel>
+    </JTab>
+</view>

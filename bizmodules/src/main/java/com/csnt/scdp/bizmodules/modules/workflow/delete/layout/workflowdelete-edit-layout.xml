@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="workFlowDeleteDto" row="23*4" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JText pos="A1:A1" cid="businessKey" fieldLabel_s="businessKey" allowBlank_b="false"/>
+        <JText pos="B1:B1" cid="newBusinessKey" fieldLabel_s="newBusinessKey" allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+        <JText pos="C1:C1" cid="ruAssignee" fieldLabel_s="ruAssignee" allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+        <JText pos="D1:D1" cid="hiAssignee" fieldLabel_s="hiAssignee" allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+        <!--<JMenuCheckTree pos="D1:D1" cid="modules" fieldLabel_s="modules"  border_n="1"-->
+                        <!--title_s="wsRes" showTools_b="false"/>-->
+        <JText pos="A2:A2" cid="stateField" fieldLabel_s="stateField" allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+        <JText pos="B2:D2" cid="assigneeRecord" fieldLabel_s="assigneeRecord" allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+        <JTextArea pos="A3:B4" cid="deleteReason" fieldLabel_s="deleteReason" allowBlank_b="false"/>
+    </JForm>
+</view>

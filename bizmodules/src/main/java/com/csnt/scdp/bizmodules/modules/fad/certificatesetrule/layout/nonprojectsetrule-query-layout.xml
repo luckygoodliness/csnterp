@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>certificatesetrule-dao</daotype>
+        <daokey>fad_non_project_set_rule</daokey>
+    </querysql>
+    <defaultSort>seq_no desc</defaultSort>
+    <conditions columns="4">
+        <JHidden cid="office" field="office"/>
+        <JScdpOrgGrid pos="A1:A1" cid="orgName"
+                      fieldLabel_s="office"
+                      allowBlank_b="true"
+                      refer_j='[{"refField":"office","valueField":"orgCode"}]'
+                      upperCase_b="true"/>
+
+        <JHidden cid="financialSubject" field="financial_subject"/>
+        <JNonProjectSubjectSubject pos="B1:B1" cid="financialSubjectName"
+                                   fieldLabel_s="financialSubject"
+                                   allowBlank_b="true"
+                                   refer_j='[{"refField":"financialSubject","valueField":"financialSubjectCode"}]'
+                                   upperCase_b="true"/>
+
+        <JHidden cid="creditorSubject4a51a1a2" field="creditor_subject4a51a1a2"/>
+        <JAccsubjGrid pos="C1:C1" cid="creditorSubject4a51a1a2Name"
+                      fieldLabel_s="creditorSubject4a51a1a2"
+                      allowBlank_b="true"
+                      refer_j='[{"refField":"creditorSubject4a51a1a2","valueField":"subjectCode"}]'
+                      upperCase_b="true"/>
+
+        <JHidden cid="creditorRtfree4a51a1a2" field="creditor_rtfree4a51a1a2"/>
+        <JRtfreevalueGrid pos="D1:D1" cid="creditorRtfree4a51a1a2Name"
+                          fieldLabel_s="creditorRtfree4a51a1a2"
+                          allowBlank_b="true"
+                          refer_j='[{"refField":"creditorRtfree4a51a1a2","valueField":"accountInfoCode"}]'
+                          upperCase_b="true"/>
+
+        <JHidden cid="debtorSubject4a51" field="debtor_subject4a51"/>
+        <JAccsubjGrid pos="A2:A2" cid="debtorSubject4a51Name"
+                      fieldLabel_s="debtorSubject4a51"
+                      allowBlank_b="true"
+                      refer_j='[{"refField":"debtorSubject4a51","valueField":"subjectCode"}]'
+                      upperCase_b="true"/>
+
+        <JHidden cid="debtorSubject1" field="debtor_subject1"/>
+        <JAccsubjGrid pos="B2:B2" cid="debtorSubject1Name"
+                      fieldLabel_s="debtorSubject1" allowBlank_b="true"
+                      refer_j='[{"refField":"debtorSubject1","valueField":"subjectCode"}]'
+                      upperCase_b="true"/>
+
+        <JHidden cid="debtorSubject2" field="debtor_subject2"/>
+        <JAccsubjGrid pos="C2:C2" cid="debtorSubject2Name"
+                      fieldLabel_s="debtorSubject2" allowBlank_b="true"
+                      refer_j='[{"refField":"debtorSubject2","valueField":"subjectCode"}]'
+                      upperCase_b="true"/>
+
+        <!--<JLabel pos="A4:A4" cid="zhanweifu" border_n="0" labelWidth_n="0" width_n="0"/>-->
+    </conditions>
+    <results>
+        <!--<JTextCol text_s="office" dataIndex="office" width_n="120"/>-->
+        <JTextCol text_s="office" dataIndex="officeDesc" width_n="120"/>
+
+        <!--<JTextCol text_s="financialSubject" dataIndex="financialSubject" width_n="120"/>-->
+        <JTextCol text_s="financialSubject" dataIndex="financialSubjectName" width_n="120"/>
+
+        <!--<JTextCol text_s="debtorSubject4a51" dataIndex="debtorSubject4a51" width_n="120"/>-->
+        <JTextCol text_s="debtorSubject4a51" dataIndex="debtorSubject4a51Name" width_n="120"/>
+
+        <!--<JTextCol text_s="debtorSubject1" dataIndex="debtorSubject1" width_n="120"/>-->
+        <JTextCol text_s="debtorSubject1" dataIndex="debtorSubject1Name" width_n="120"/>
+
+        <!--<JTextCol text_s="debtorSubject2" dataIndex="debtorSubject2" width_n="120"/>-->
+        <JTextCol text_s="debtorSubject2" dataIndex="debtorSubject2Name" width_n="120"/>
+
+        <!--<JTextCol text_s="creditorSubject4a51a1a2" dataIndex="creditorSubject4a51a1a2" width_n="120"/>-->
+        <JTextCol text_s="creditorSubject4a51a1a2" dataIndex="creditorSubject4a51a1a2Name" width_n="120"/>
+
+        <!--<JTextCol text_s="creditorRtfree4a51a1a2" dataIndex="creditorRtfree4a51a1a2" width_n="120"/>-->
+        <JTextCol text_s="creditorRtfree4a51a1a2" dataIndex="creditorRtfree4a51a1a2Name" width_n="120"/>
+    </results>
+</commonquery>

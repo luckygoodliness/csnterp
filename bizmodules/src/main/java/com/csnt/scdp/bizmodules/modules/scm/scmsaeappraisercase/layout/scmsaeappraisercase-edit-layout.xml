@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="120,flex" col="1*1">
+    <JForm pos="A1:A1" cid="scmSaeAppraiserCaseDto" row="23*4" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JText pos="A1:B1" cid="caseName" fieldLabel_s="caseName"
+               allowBlank_b="false" upperCase_b="false"/>
+        <JCheck pos="C1:C1" fieldLabel_s="isactive" cid="isactive" allowBlank_b="true" />
+        <JTextArea pos="A2:C4" cid="remark" fieldLabel_s="remark"
+                   allowBlank_b="true" upperCase_b="false"/>
+    </JForm>
+    <JEGrid pos="A2:A2" cid="scmSaeAppraiserCaseDDto" store="Scmsaeappraisercase.store.ScmSaeAppraiserCaseDStore">
+        <JGridFieldCol text_s="appraiser" dataIndex="appraiser" width_n="120">
+            <JUserGrid valueField_s="userId" displayDesc_b="true"
+                       descField_s="userName" allowblank_b="true"
+                       refer_j='[{"refField":"officeIdDesc","valueField":"orgName"}]'/>
+        </JGridFieldCol>
+
+        <JGridFieldCol text_s="officeId" dataIndex="officeId" width_n="120">
+            <JErpDepartMent valueField_s="orgCode" displayDesc_b="true"
+                            descField_s="orgName" allowblank_b="true" readOnly_b = "true"  adaptable_b="false"/>
+        </JGridFieldCol>
+
+        <JTextCol text_s="remark" dataIndex="remark" width_n="400">
+            <JText allowBlank_b="true"/>
+        </JTextCol>
+    </JEGrid>
+</view>

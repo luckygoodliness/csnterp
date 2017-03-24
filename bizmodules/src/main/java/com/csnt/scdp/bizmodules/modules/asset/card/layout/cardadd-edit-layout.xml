@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JPanel pos="A1:A1" row="flex" col="1*1" title_s="" border_n="1">
+        <JForm pos="A1:A1" cid="assetHandoverDto" row="23*22" col="0.25*4" title_s="" border_n="0">
+            <JHidden cid="uuid"/>
+            <JHidden cid="tblVersion"/>
+            <JHidden cid="officeIdDesc"/>
+            <JHidden cid="liablePerson"/>
+            <JHidden cid="handoverSupervisor"/>
+            <JHidden cid="amount"/>
+
+            <JPrmPurchaseReqDetail pos="A1:A1" cid="purchaseReqNo" fieldLabel_s="purchaseReqNo"
+                                   allowBlank_b="false"
+                                   refer_j='[
+                                   {"refField":"purchaseReqDetailUuid","valueField":"uuid"},
+                                   {"refField":"assetName","valueField":"name"},
+                                   {"refField":"model","valueField":"model"},
+                                   {"refField":"factoryName","valueField":"factory"},
+                                   {"refField":"descp","valueField":"remark"},
+                                   {"refField":"source","valueField":"source"},
+                                   {"refField":"amount","valueField":"amount"},
+                                   {"refField":"localValue","valueField":"budgetPrice"},
+                                   {"refField":"purchaseTime","valueField":"checkDate"},
+                                   {"refField":"handoverDate","valueField":"checkDate"},
+                                   {"refField":"handoverSupervisor","valueField":"personId"}
+                                   ]'
+                                   upperCase_b="true"/>
+            <JHidden cid="purchaseReqDetailUuid"/>
+
+            <JText pos="B1:B1" cid="handoverNo" fieldLabel_s="handoverNo" allowBlank_b="true"/>
+            <JDate pos="C1:C1" cid="handoverDate" fieldLabel_s="handoverDate" allowBlank_b="false"/>
+
+            <JTextArea pos="D1:D1" cid="checkAcceptanceResult" fieldLabel_s="checkAcceptanceResult"
+                       allowBlank_b="false"/>
+
+            <JText pos="A2:A2" cid="assetCode" fieldLabel_s="assetCode" allowBlank_b="true"/>
+            <JText pos="B2:B2" cid="cardCode" fieldLabel_s="cardCode" allowBlank_b="true"/>
+
+            <!--数据字典的表是scdp_code表，comoType是自定义的，codeType是过滤条件是数据库中的codeType字段名-->
+            <JCombo pos="C2:C2" cid="status" fieldLabel_s="status" allowBlank_b="true" comboType="scdp_fmcode"
+                    codeType="ASSET_CARD_STATE" displayDesc_b="true" readOnly_b="true" adaptable_b="false"/>
+            <JCombo pos="D2:D2" cid="state" fieldLabel_s="state" comboType="scdp_fmcode" codeType="CDM_BILL_STATE"
+                    displayDesc_b="true" readOnly_b="true" adaptable_b="false"/>
+
+            <JText pos="A3:A3" cid="assetName" fieldLabel_s="assetName" allowBlank_b="false" maxLength_n="250"/>
+            <JText pos="B3:B3" cid="unit" fieldLabel_s="unit" allowBlank_b="true" maxLength_n="250"/>
+            <JText pos="C3:C3" cid="source" fieldLabel_s="source" allowBlank_b="true"/>
+            <JCombo pos="D3:D3" cid="deviceType" fieldLabel_s="deviceType" allowBlank_b="false"
+                    comboType="scdp_fmcode"
+                    codeType="ASSET_CARD_DEVICETYPE" displayDesc_b="true"/>
+
+            <JText pos="A4:A4" cid="specification" fieldLabel_s="specification" allowBlank_b="true"
+                   maxLength_n="250"/>
+            <JText pos="B4:B4" cid="model" fieldLabel_s="model" allowBlank_b="true" maxLength_n="250"/>
+            <JDate pos="C4:C4" cid="purchaseTime" fieldLabel_s="purchaseTime" allowBlank_b="false"/>
+            <JInt pos="D4:D4" cid="limitMonth" fieldLabel_s="limitMonth" allowBlank_b="true" minValue_n="0"/>
+
+            <JUserGrid pos="A5:A5" cid="endUserName" fieldLabel_s="endUserName" allowBlank_b="true"
+                       refer_j='[{"refField":"endUserCode","valueField":"userId"},{"refField":"officeId","valueField":"orgCode"}]'/>
+            <JHidden cid="endUserCode"/>
+            <JErpDepartMent pos="B5:B5" fieldLabel_s="officeId" cid="officeId"
+                            readOnly_b="true" adaptable_b="false"/>
+
+            <JUserGrid pos="C5:C5" cid="liablePersonDesc" fieldLabel_s="liablePerson" allowBlank_b="true"
+                       refer_j='[{"refField":"liablePerson","valueField":"userId"}]'/>
+
+            <JDate pos="D5:D5" cid="discardTime" fieldLabel_s="discardTime" allowBlank_b="true"/>
+
+            <JText pos="A6:A6" cid="storeplace" fieldLabel_s="storeplace" allowBlank_b="true" maxLength_n="200"/>
+            <JCur pos="B6:B6" cid="localValue" fieldLabel_s="localValue" allowBlank_b="false" minValue_n="0.01"/>
+            <JCur pos="C6:C6" cid="monthDepreciation" fieldLabel_s="monthDepreciation" allowBlank_b="true"
+                  minValue_n="0.01"/>
+            <JCur pos="D6:D6" cid="netValue" fieldLabel_s="netValue" allowBlank_b="true" minValue_n="0.01"/>
+
+            <JText pos="A7:B7" cid="factoryName" fieldLabel_s="factoryName" allowBlank_b="true" maxLength_n="100"/>
+            <JDate pos="C7:C7" cid="releaseDate" fieldLabel_s="releaseDate" allowBlank_b="true"/>
+            <JText pos="D7:D7" cid="identificationNumber" fieldLabel_s="identificationNumber" allowBlank_b="true"
+                   maxLength_n="50"/>
+
+            <JFieldSet pos="A8:C11" row="23*3" col="0.3*2,0.3" title_s="车辆" border_n="1" cid="assetCheL">
+                <JText pos="A1:A1" cid="chassisNumber" fieldLabel_s="chassisNumber" allowBlank_b="true"
+                       maxLength_n="50"/>
+                <JText pos="B1:B1" cid="vehicleNumber" fieldLabel_s="vehicleNumber" allowBlank_b="true"
+                       maxLength_n="50"/>
+                <JText pos="C1:C1" cid="vehicleType" fieldLabel_s="vehicleType" allowBlank_b="true"
+                       maxLength_n="50"/>
+
+                <JDate pos="A2:A2" cid="annualCheckExpiredDate" fieldLabel_s="annualCheckExpiredDate"
+                       allowBlank_b="true"/>
+                <JDate pos="B2:B2" cid="insuranceExpiredDate" fieldLabel_s="insuranceExpiredDate"
+                       allowBlank_b="true"/>
+            </JFieldSet>
+
+            <JFieldSet pos="D8:D11" row="23*3" col="1*1" title_s="建筑" border_n="1" cid="assetJianZ">
+                <JText pos="A1:A1" cid="buildingProperty" fieldLabel_s="buildingProperty" allowBlank_b="true"/>
+                <JCur pos="A2:A2" cid="area" fieldLabel_s="area" allowBlank_b="true" minValue_n="0.01"/>
+            </JFieldSet>
+
+            <JFieldSet pos="A12:B14" row="23*2" col="0.5*2" title_s="计量" border_n="1" cid="assetJiL">
+                <JDate pos="A1:A1" cid="checkedDate" fieldLabel_s="checkedDate" allowBlank_b="true"/>
+                <JDate pos="B1:B1" cid="validDate" fieldLabel_s="validDate" allowBlank_b="true"/>
+            </JFieldSet>
+
+            <JFieldSet pos="C12:D14" row="23*2" col="0.5*2" title_s="软件" border_n="1" cid="assetRuanJ">
+                <JText pos="A1:A1" cid="authorizationCode" fieldLabel_s="authorizationCode" allowBlank_b="true"
+                       maxLength_n="50"/>
+            </JFieldSet>
+
+            <JFieldSet pos="A15:D17" row="23*2" col="0.25*4" title_s="特种" border_n="1" cid="assetTeZ">
+                <JText pos="A1:B1" cid="operationUnit" fieldLabel_s="operationUnit" allowBlank_b="true"
+                       maxLength_n="500"/>
+                <JText pos="C1:C1" cid="operator" fieldLabel_s="operator" allowBlank_b="true" maxLength_n="50"/>
+                <JText pos="D1:D1" cid="operatorTel" fieldLabel_s="operatorTel" allowBlank_b="true"/>
+            </JFieldSet>
+
+            <JTextArea pos="A18:C19" cid="accessory" fieldLabel_s="accessory" allowBlank_b="true"/>
+            <JTextArea pos="A20:C21" cid="descp" fieldLabel_s="descp" allowBlank_b="true"/>
+
+            <JText pos="A22:A22" cid="createBy" fieldLabel_s="createBy" allowBlank_b="true" readOnly_b="true"
+                   adaptable_b="false"/>
+            <JDate pos="B22:B22" cid="createTime" fieldLabel_s="createTime" allowBlank_b="true" readOnly_b="true"
+                   adaptable_b="false"/>
+        </JForm>
+    </JPanel>
+</view>

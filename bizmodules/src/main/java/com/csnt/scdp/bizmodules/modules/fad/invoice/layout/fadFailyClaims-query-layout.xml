@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>invoice-dao</daotype>
+        <daokey>non_faily_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="5">
+        <JText pos="A1:A1" fieldLabel_s="invoiceReqNo" cid="invoiceReqNo" field="invoice_req_no"/>
+        <JText pos="B1:B1" fieldLabel_s="invoiceNo" cid="invoiceNo" field="invoice_no"/>
+        <JText pos="C1:C1" fieldLabel_s="supplierName" cid="supplierName" field="supplier_name"/>
+        <JText pos="D1:D1" fieldLabel_s="expensesMoney" field="expenses_money"/>
+        <JText pos="E1:E1" fieldLabel_s="renderPerson" field="render_person"/>
+        <JText pos="A2:A2" fieldLabel_s="invoiceType" cid="invoiceType" field="invoice_type"/>
+        <JText pos="B2:B2" fieldLabel_s="state" cid="state" field="state"/>
+        <JText pos="C2:C2" fieldLabel_s="prmProjectMainId" cid="prmProjectMainId" field="prmProject_main_id"/>
+        <JText pos="D2:D2" fieldLabel_s="subjectId" cid="subjectId" field="subject_Id"/>
+        <!--<JText pos="C2:C2" fieldLabel_s="createBy" cid="createBy" field="create_by"/>-->
+        <!--<JText pos="D2:D2" fieldLabel_s="updateBy" cid="updateby" field="update_by"/>-->
+        <!--<JFromTo pos="A3:B3" subXtype="JDatetime" fieldLabel_s="createTime" cid="createTime" field="create_time"/>-->
+        <!--<JFromTo pos="C3:D3" subXtype="JDatetime" fieldLabel_s="updateTime" cid="updateTime" field="update_time"/>-->
+    </conditions>
+    <results>
+        <JTextCol text_s="invoiceReqNo" dataIndex="invoiceReqNo" width_n="120"/>
+        <JTextCol text_s="subjectId" dataIndex="subjectId" width_n="120"/>
+        <JIntCol text_s="invoiceNum" dataIndex="invoiceNum" width_n="100"/>
+        <JTextCol text_s="invoiceNo" dataIndex="invoiceNo" width_n="120"/>
+        <!--<JTextCol text_s="prmProjectMainId" dataIndex="prmProjectMainId" width_n="120"/>-->
+        <JTextCol text_s="invoiceCode" dataIndex="invoiceCode" width_n="120"/>
+        <!--<JTextCol text_s="tripName" dataIndex="tripNameR" width_n="120"/>-->
+        <!--<JTextCol text_s="tripLocation" dataIndex="tripLocation" width_n="120"/>-->
+        <JTextCol text_s="subjectName" dataIndex="subjectName" width_n="120"/>
+        <JDecCol text_s="invoiceTotalValue" dataIndex="invoiceTotalValue" width_n="150"/>
+        <JDecCol text_s="expensesMoney" dataIndex="expensesMoney" width_n="150"/>
+        <JTextCol text_s="invoiceType" dataIndex="invoiceType" width_n="120"/>
+        <JTextCol text_s="payStyle" dataIndex="payStyle" width_n="120"/>
+        <JDecCol text_s="taxRate" dataIndex="taxRate" width_n="150"/>
+        <JTextCol text_s="renderPerson" dataIndex="renderPersonR" width_n="120"/>
+        <JTextCol text_s="renderOffice" dataIndex="renderOfficeR" width_n="120"/>
+        <JTextCol text_s="state" dataIndex="state" width_n="120"/>
+        <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+        <!--<JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120"/>-->
+        <!--<JTextCol text_s="projectId" dataIndex="projectId" width_n="120"/>-->
+        <!--<JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120"/>-->
+        <!--<JTextCol text_s="部门" dataIndex="officeId" width_n="120"/>-->
+        <!--<JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>-->
+        <!--<JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>-->
+        <!--<JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>-->
+        <!--<JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>-->
+    </results>
+</commonquery>

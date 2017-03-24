@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <commonquery version="1.0">
+        <querysql>
+            <daotype>cashreq-dao</daotype>
+            <daokey>query_for_clearance</daokey>
+        </querysql>
+        <defaultSort>create_time desc</defaultSort>
+        <conditions columns="4">
+            <JHidden cid="reqType_Q" field="req_Type"/>
+            <JHidden cid="projectId_Q" field="project_Id"/>
+            <JHidden cid="notInRow" field="notInRow"/>
+            <JHidden cid="budgetCUuid" field="budget_c_uuid"/>
+	        <!-- 保证金报销 -->
+	        <JHidden cid="projectIdBzj" field="projectIdBzj"/>
+            <JHidden cid="subjectCodeBzj" field="subjectCodeBzj"/>
+
+            <JHidden cid="isProject" field="isProject"/>
+            <JHidden cid="staffId" fieldLabel_s="staffId" field="staff_Id"/>
+            <JUser pos="A2:A2" cid="staffName" fieldLabel_s="staffId" allowBlank_b="true" refer_j='[{"refField":"staffId","valueField":"userId"}]'/>
+            <JFromTo pos="A1:B1" subXtype="JDate" fieldLabel_s="createTime" cid="createTime" field="create_time"/>
+            <JFromTo pos="C1:D1" subXtype="JDate" fieldLabel_s="updateTime" cid="updateTime" field="update_time"/>
+        </conditions>
+        <results>
+            <JTextCol text_s="runningNo" dataIndex="runningNo" width_n="120"/>
+            <JHidden text_s="budgetCUuid" dataIndex="budgetCUuid" width_n="120"/>
+            <JTextCol text_s="subjectCode" dataIndex="subjectCode" width_n="120"/>
+            <JTextCol text_s="subjectName" dataIndex="subjectName" width_n="120"/>
+            <JTextCol text_s="officeId" dataIndex="officeName" width_n="120"/>
+            <JHidden text_s="officeId" dataIndex="officeId" width_n="120"/>
+            <JTextCol text_s="projectId" dataIndex="projectName" width_n="120"/>
+            <JHidden text_s="projectId" dataIndex="projectId" width_n="120"/>
+            <JHidden text_s="staffId" dataIndex="staffId"/>
+            <JTextCol text_s="staffId" dataIndex="staffName" width_n="120"/>
+            <JTextCol text_s="purpose" dataIndex="purpose" width_n="120"/>
+            <JCurCol text_s="money" dataIndex="money" width_n="150"/>
+            <JCurCol text_s="已核销金额" dataIndex="clearancedMoney" width_n="150"/>
+            <JCurCol text_s="未核销金额" dataIndex="unClearancedMoney" width_n="150"/>
+            <JHidden text_s="payStyle" dataIndex="payStyle" width_n="120"/>
+            <JTextCol text_s="financeNo" dataIndex="financeNo" width_n="120"/>
+            <JTextCol text_s="state" dataIndex="state" width_n="120"/>
+            <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+            <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+        </results>
+    </commonquery>

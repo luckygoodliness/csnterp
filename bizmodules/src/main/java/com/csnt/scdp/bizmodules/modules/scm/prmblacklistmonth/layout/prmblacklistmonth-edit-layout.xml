@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="prmBlacklistMonthDto" row="23*6" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JSupplierGrid pos="A1:A1" cid="scmSupplierName" fieldLabel_s="供应商" allowBlank_b="false" refer_j='[{"refField":"scmSupplierId","valueField":"uuid"}]'/>
+        <JHidden pos="A1:A1" cid="scmSupplierId"/>
+        <JNoneFinishedProject pos="B1:C1" cid="projectName" fieldLabel_s="prmProjectMainId" allowBlank_b="false"
+                              refer_j='[{"refField":"prmProjectMainId","valueField":"uuid"}]'/>
+        <JHidden pos="B1:C1" cid="prmProjectMainId"/>
+        <!--<JDatetime pos="C1:C1" cid="monthFrom" fieldLabel_s="months" allowBlank_b="true"/>-->
+
+        <!--<JText pos="A1:A1" cid="complainDepartment" fieldLabel_s="complainDepartment" allowBlank_b="true"/>-->
+        <!--<JText pos="A1:A1" cid="complainContract" fieldLabel_s="complainContract" allowBlank_b="true"/>-->
+
+        <JMonth pos="A2:A2" cid="monthFrom" fieldLabel_s="monthFrom" allowBlank_b="false" format="Y-m"/>
+        <JMonth pos="B2:B2" cid="monthTo" fieldLabel_s="monthTo" allowBlank_b="false" format="Y-m"  lastday="true"/>
+        <JHidden pos="C2:C2" cid="complainant"/>
+        <JUserGrid pos="C2:C2" fieldLabel_s="complainant" cid="complainantName" allowBlank_b="true" refer_j='[{"refField":"complainant","valueField":"userId"}]'/>
+        <JTextArea pos="A3:D7" cid="reason" fieldLabel_s="reason" allowBlank_b="true" wrap_b="true"/>
+        <!--<JText pos="A1:A1" cid="remark" fieldLabel_s="remark" allowBlank_b="true"/>-->
+        <!--<JText pos="A1:A1" cid="companyCode" fieldLabel_s="companyCode" allowBlank_b="true"/>-->
+
+        <!--<JText pos="A1:A1" cid="departmentCode" fieldLabel_s="departmentCode" allowBlank_b="true"/>-->
+        <!--<JText pos="A1:A1" cid="createOffice" fieldLabel_s="createOffice" allowBlank_b="true"/>-->
+        <!--<JText pos="A1:A1" cid="updateOffice" fieldLabel_s="updateOffice" allowBlank_b="true"/>-->
+    </JForm>
+</view>

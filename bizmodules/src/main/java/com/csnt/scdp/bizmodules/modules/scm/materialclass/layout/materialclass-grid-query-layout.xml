@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>materialclass-dao</daotype>
+        <daokey>jgrid_query</daokey>
+    </querysql>
+    <defaultSort>code</defaultSort>
+    <conditions columns="4">
+        <JText pos="A1:A1" fieldLabel_s="code" cid="code" field="code"/>
+        <JText pos="B1:B1" fieldLabel_s="name" cid="name" field="name"/>
+        <JText pos="B1:B1" fieldLabel_s="shortCode" cid="shortCode" field="short_Code"/>
+        <JCombo pos="C1:C1" cid="classLevel" fieldLabel_s="classLevel" field="class_level" allowBlank_b="true"
+                comboType="scdp_fmcode"
+                codeType="SCM_MATERIAL_CLASS_LEVEL" displayDesc_b="true"/>
+        <JCombo pos="D1:D1" cid="isRigid" fieldLabel_s="isRigid" field="is_rigid" allowBlank_b="true"
+                comboType="scdp_fmcode"
+                codeType="SCM_DEFAULTPROPERTY" displayDesc_b="true"/>
+        <!--<JFromTo pos="C1:C1" subXtype="JDatetime" fieldLabel_s="createTime" cid="createTime" field="create_time"/>-->
+        <!--<JFromTo pos="D1:D1" subXtype="JDatetime" fieldLabel_s="updateTime" cid="updateTime" field="update_time"/>-->
+    </conditions>
+    <quickquery>
+        <QueryCids>shortCode,code,name</QueryCids>
+        <ForceQueryCids></ForceQueryCids>
+    </quickquery>
+    <results>
+        <JTextCol text_s="code" dataIndex="code" width_n="120"/>
+        <JTextCol text_s="name" dataIndex="name" width_n="120"/>
+        <JTextCol text_s="operativeSegments" dataIndex="operativeSegmentsCombo" width_n="120"/>
+        <JTextCol text_s="classLevel" dataIndex="classLevelCombo" width_n="120"/>
+        <JIntCol text_s="cycle" dataIndex="cycle" width_n="100"/>
+        <JTextCol text_s="isRigid" dataIndex="isRigidCombo" width_n="120"/>
+        <!--<JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>-->
+        <!--<JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>-->
+        <!--<JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>-->
+        <!--<JTextCol text_s="remark" dataIndex="remark" width_n="120"/>-->
+        <!--<JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120"/>-->
+        <!--<JTextCol text_s="projectId" dataIndex="projectId" width_n="120"/>-->
+        <!--<JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120"/>-->
+        <!--<JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120"/>-->
+        <!--<JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120"/>-->
+    </results>
+</commonquery>

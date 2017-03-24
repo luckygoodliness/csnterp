@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>scmsaecase-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="3">
+        <JText pos="A1:A1" fieldLabel_s="caseName" cid="caseName" field="case_name"/>
+        <JCombo pos="B1:B1" cid="caseType" fieldLabel_s="caseType" field="case_type"
+                comboType="scm_sae_case_type" displayDesc_b="true" multiSelect_b="true"/>
+    </conditions>
+    <results resultGridConfig="{'autoResizeColumn':false}">
+            <JTextCol text_s="caseName" dataIndex="caseName" width_n="120"/>
+            <JTextCol text_s="caseType" dataIndex="caseType" width_n="120"/>
+            <JRCheckCol text_s="isactive" dataIndex="isactive" width_n="80" />
+    </results>
+</commonquery>

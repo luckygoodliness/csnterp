@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>finalestimate-dao</daotype>
+        <daokey>common_query_department</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="A1:A1" cid="projectCode" fieldLabel_s="projectCode" field="m.project_code"/>
+        <JText pos="B1:B1" cid="projectName" fieldLabel_s="prmProjectMainId" field="m.project_name"/>
+        <JHidden cid="departmentCodeDesc"/>
+        <JCombo pos="C1:C1" cid="squareType" fieldLabel_s="squareType"
+                comboType="scdp_fmcode" codeType="PRM_SQUARE_TYPE"
+                displayDesc_b="true" fullInfo_b="false" multiSelect_b="false"
+                field="f.square_type"/>
+        <JErpDepartMent pos="D1:D1" fieldLabel_s="departmentCode" cid="departmentCode"
+                        field="f.department_code" labelWidth_n="100"/>
+        <JFromTo pos="A2:B2" subXtype="JDate" fieldLabel_s="squareDate" cid="squareDate" field="f.square_date"/>
+        <JCombo pos="C2:C2" cid="state" fieldLabel_s="state" allowBlank_b="true"
+                comboType="scdp_fmcode" field="f.state"
+                codeType="CDM_BILL_STATE" displayDesc_b="true" fullInfo_b="false" multiSelect_b="false"/>
+        <JBolCombo pos="D2:D2" fieldLabel_s="税金已修正" cid="isCorrected"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="prmProjectMainId" dataIndex="projectName" width_n="300"/>
+        <JTextCol text_s="projectCode" dataIndex="projectCode" width_n="100"/>
+        <JTextCol text_s="state" dataIndex="cdmBillStateCombo" width_n="120"/>
+        <JTextCol text_s="departmentCode" dataIndex="orgName" width_n="120"/>
+        <JTextCol text_s="squareType" dataIndex="squareType" width_n="120"/>
+        <JDateCol text_s="squareDate" dataIndex="squareDate" width_n="150"/>
+        <JDatetimeCol text_s="examDate" dataIndex="examDate" width_n="120"/>
+        <JCurCol text_s="squareProjectMoney" dataIndex="squareProjectMoney" width_n="150"/>
+        <JCurCol text_s="squareCost" dataIndex="squareCost" width_n="150"/>
+        <JCurCol text_s="squareGrossProfit" dataIndex="squareGrossProfit" width_n="120"/>
+        <JRCheckCol text_s="isArchiving" dataIndex="isArchiving" width_n="80" />
+        <JRCheckCol text_s="税金已修正" dataIndex="taxCorrected" width_n="80"/>
+        <JDateCol text_s="reviseTaxDate" dataIndex="reviseTaxDate" width_n="100"/>
+        <JDatetimeCol text_s="examRTaxDate" dataIndex="examRTaxDate" width_n="120"/>
+    </results>
+</commonquery>

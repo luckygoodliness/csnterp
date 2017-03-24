@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <!--<JTab col="1*1" pos="A1:A1" row="flex" border_n="1" cid="tab">-->
+    <!--<JPanel col="1*1" pos="A1:A1" title_s="table1" row="flex" border_n="1" cid="generalTab">-->
+    <!--&lt;!&ndash;<JFieldSet pos="A1:A1" title_s="44444" border_n="0"></JFieldSet>&ndash;&gt;-->
+    <JPanel pos="A1:A1" title_s="" row="190,150,flex" col="1">
+        <JForm pos="A1:A1" title_s="" col="0.25*4" row="23*8" border_n="0"
+               cid="fadInvoiceDto">
+            <JHidden cid="uuid"/>
+            <JHidden cid="expensesType"/>
+            <JHidden cid="tblVersion"/>
+            <JHidden cid="supplierId" cascadeField="bankId"/>
+            <!--<JHidden cid="subjectId"/>-->
+            <!--<JHidden cid="subjectCode"/>-->
+            <JHidden cid="prmProjectMainIdDesc"/>
+            <!--<JHidden cid="renderPerson"/>-->
+            <JHidden cid="renderPersonDesc"/>
+            <!--<JHidden cid="payee"/>-->
+            <JHidden cid="taxRate"/>
+            <JHidden cid="officeIdDesc"/>
+            <JHidden cid="invoiceTotalValue"/>
+            <JButton pos="A1:A1" cid="pickContract" text_s="pickContract"/>
+            <JText pos="B1:B1" cid="invoiceReqNo" fieldLabel_s="invoiceReqNo" allowBlank_b="true"
+                   readOnly_b="true" adaptable_b="false"/>
+            <JCombo pos="C1:C1" cid="state" fieldLabel_s="state"
+                    comboType="scdp_fmcode" codeType="FAD_BILL_STATE" displayDesc_b="true" allowBlank_b="true"
+                    readOnly_b="true" adaptable_b="false"/>
+            <!--<JProject pos="A2:B2" fieldLabel_s="fadProjectMainId" cid="prmProjectMainId" valueField="uuid"-->
+            <!--adaptable_b="false" readOnly_b="true" allowBlank_b="true"/>-->
+            <!--<JSFSupplierGrid pos="A2:B2" cid="supplierName" fieldLabel_s="开票单位" allowBlank_b="false"/>-->
+            <!--<JText pos="C2:C2" cid="bank" fieldLabel_s="bank" allowBlank_b="false"/>-->
+            <!--<JText pos="D2:D2" cid="bankId" fieldLabel_s="bankId" allowBlank_b="false"/>-->
+            <JSFSupplierGrid pos="A2:B2" fieldLabel_s="supplierName" cid="supplierName" allowBlank_b="false"
+                             refer_j='[{"refField":"supplierId","valueField":"uuid"}]'/>
+            <JText pos="C2:C2" cid="bank" fieldLabel_s="bank" allowBlank_b="false"/>
+            <JCombo pos="D2:D2" comboType="supplier_bank_account_no_by_id" cid="bankId"
+                    displayDesc_b="false" fieldLabel_s="bankId" filterFields="supplierId"
+                    allowBlank_b="false" vtype_s=""
+                    />
+            <JCombo pos="A3:A3" cid="payStyle" fieldLabel_s="payStyle"
+                    comboType="scdp_fmcode" codeType="FAD_PAYWAY" displayDesc_b="true" allowBlank_b="false"/>
+            <JCombo pos="B3:B3" cid="invoiceType" fieldLabel_s="invoiceType"
+                    comboType="scdp_fmcode" codeType="FAD_INVOICE_TYPE" displayDesc_b="true"
+                    allowBlank_b="false"/>
+            <JText pos="C3:C3" cid="invoiceNo" fieldLabel_s="invoiceNo" allowBlank_b="false"/>
+            <JInt pos="D3:D3" cid="invoiceNum" fieldLabel_s="invoiceNum" allowBlank_b="false" minValue_n="1"/>
+            <JCur pos="A4:A4" cid="expensesMoney" fieldLabel_s="发票总金额(元)" allowBlank_b="false"
+                  readOnly_b="true" adaptable_b="false"/>
+            <JCombo pos="B4:B4" cid="taxRateDesc" fieldLabel_s="taxRate"
+                    comboType="scdp_fmcode" codeType="FAD_TAX_RATE" displayDesc_b="true" allowBlank_b="false"
+                    target='taxRate|code'/>
+            <JCur pos="C4:C4" cid="noTaxMoney" fieldLabel_s="noTaxMoney" allowBlank_b="true" readOnly_b="true"
+                  adaptable_b="false"/>
+            <JCur pos="D4:D4" cid="taxMoney" fieldLabel_s="taxMoney" allowBlank_b="true" readOnly_b="true"
+                  adaptable_b="false"/>
+            <JDate pos="A5:A5" cid="buildTime" fieldLabel_s="buildTime" allowBlank_b="true"/>
+            <!--<JUserGrid pos="B5:B5" fieldLabel_s="报销人" cid="renderPersonName" allowBlank_b="false"-->
+                       <!--refer_j='[{"refField":"renderPerson","valueField":"userId"}]'/>-->
+            <JUserGrid pos="B5:B5" fieldLabel_s="renderPerson" cid="renderPerson" allowBlank_b="false" valueField="userId" descField="userName"/>
+            <JText pos="C5:C5" fieldLabel_s="payee" cid="payee" allowBlank_b="true"/>
+            <JUserGrid pos="D5:D5" fieldLabel_s="创建人" cid="createBy" readOnly_b="true" adaptable_b="false"/>
+            <JTextArea pos="A6:D7" cid="remark" fieldLabel_s="remark" allowBlank_b="true" wrap_b="true"/>
+            <JTextArea pos="A8:A8" cid="fadSubjectCode" fieldLabel_s="fadSubjectCode" allowBlank_b="true"
+                       readOnly_b="true"
+                       adaptable_b="false" wrap_b="true" hidden_b="true"/>
+            <JTextArea pos="B8:B8" cid="subjectName" fieldLabel_s="subjectName" allowBlank_b="true" readOnly_b="true"
+                       adaptable_b="false" wrap_b="true" hidden_b="true"/>
+            <JTextArea pos="B8:B8" cid="scmContractCode" fieldLabel_s="scmContractCode" allowBlank_b="true"
+                       wrap_b="true" readOnly_b="true" adaptable_b="false" hidden_b="true"/>
+            <JTextArea pos="C8:C8" fieldLabel_s="officeId" cid="officeId" readOnly_b="true"
+                       adaptable_b="false" allowBlank_b="true" wrap_b="true" hidden_b="true"/>
+            <JTextArea pos="D8:D8" fieldLabel_s="officeName" cid="officeName" readOnly_b="true"
+                       adaptable_b="false" allowBlank_b="true" wrap_b="true" hidden_b="true"/>
+        </JForm>
+        <!--所属合同子表-->
+        <JFieldSet pos="A2:A2" title_s="contractInvoice" col="flex" row="flex"
+                   border_n="1" cid="">
+            <JEGrid pos="A1:A1" cid="scmContractInvoiceDto" store="Invoice.store.ScmContractInvoiceStore">
+                <JHidden text_s="uuid" dataIndex="uuid" width_n="100"/>
+                <JHidden text_s="officeId" dataIndex="officeId" width_n="100"/>
+                <JHidden text_s="scmContractId" dataIndex="scmContractId" width_n="120"/>
+                <JHidden text_s="projectId" dataIndex="projectId" width_n="120"/>
+                <JTextCol text_s="scmContractCode" dataIndex="scmContractCode" width_n="100"/>
+                <JTextCol text_s="fadSubjectCode" dataIndex="fadSubjectCode" width_n="120"/>
+                <JTextCol text_s="projectName" dataIndex="projectName" width_n="120"/>
+                <JTextCol text_s="subjectName" dataIndex="subjectName" width_n="100"/>
+                <JTextCol text_s="officeName" dataIndex="officeName" width_n="100"/>
+                <JCurCol text_s="contractTotalValue" dataIndex="contractTotalValue" width_n="120"/>
+                <JCurCol text_s="入账发票总额(元)" dataIndex="fadInvoiceMoney" width_n="120"/>
+                <JCurCol text_s="录入发票总额(元)" dataIndex="fadInvoiceMoneyL" width_n="120"/>
+                <JCurCol text_s="amount" dataIndex="amount" width_n="120">
+                    <JCur allowBlank_b="true" minValue_n="0.01"/>
+                </JCurCol>
+            </JEGrid>
+        </JFieldSet>
+        <!--请款核销-->
+        <JFieldSet pos="A3:A3" title_s="clearanceTable" col="flex" row="flex"
+                   border_n="1" cid="">
+            <JEGrid pos="A1:A1" cid="fadCashReqInvoiceDto" store="Invoice.store.FadCashReqInvoiceStore"
+                    withToolbar_b="false">
+                <JTextCol text_s="runningNo" dataIndex="runningNo" width_n="120"/>
+                <JTextCol text_s="cashContract" dataIndex="cashContract" width_n="120"/>
+                <JCurCol text_s="reqMoney" dataIndex="reqMoney" width_n="120"/>
+                <JCurCol text_s="已核销金额(元)" dataIndex="clearancedMoney" width_n="120"/>
+                <!--<JTextCol text_s="cashVoucher" dataIndex="cashVoucher" width_n="120"/>-->
+                <JCurCol text_s="本次核销金额(元)" dataIndex="clearanceMoney" width_n="150"/>
+            </JEGrid>
+        </JFieldSet>
+    </JPanel>
+    <!--</JPanel>-->
+    <!--<JPanel pos="A1:A1" row="flex,150*1" col="1*1" title_s="table2" border_n="1">-->
+    <!--</JPanel>-->
+    <!--<JPanel pos="A1:A1" row="flex,150*1" col="1*1" title_s="table3" border_n="1">-->
+    <!--</JPanel>-->
+    <!--</JTab>-->
+</view>

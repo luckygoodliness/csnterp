@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>scmpricedatabase-dao</daotype>
+        <daokey>price_database_query</daokey>
+    </querysql>
+    <defaultSort>effective_date desc</defaultSort>
+    <conditions columns="4">
+        <JHidden cid="officeIdNameDesc"/>
+        <JErpDepartMent pos="A1:A1" fieldLabel_s="officeIdName" cid="officeIdName"
+                        multiSelect="true" field="office_id"/>
+        <JText pos="B1:B1" fieldLabel_s="projectCode" cid="projectCode" field="project_code"/>
+        <JProject pos="C1:C1" fieldLabel_s="projectId" cid="projectId_query"
+                  refer_j='[{"refField":"projectId","valueField":"uuid"}]'/>
+        <JHidden cid="projectId" field="project_id"/>
+        <JText pos="D1:D1" fieldLabel_s="equipmentName" cid="equipmentName" field="material_name"/>
+        <JText pos="A2:A2" fieldLabel_s="scmContractCode" cid="scmContractCode" field="scm_contract_code"/>
+        <JFromTo pos="B2:C2" subXtype="JDatetime" fieldLabel_s="contractSigningTime" cid="contractSigningTime"
+                 field="effective_date"/>
+        <JSupplierGrid pos="D2:D2" fieldLabel_s="supplierId" cid="supplierId"
+                       refer_j='[{"refField":"supplierCode","valueField":"uuid"}]'/>
+        <JHidden cid="supplierCode" field="supplier_id"/>
+        <JCombo pos="A3:A3" cid="region" fieldLabel_s="region" allowBlank_b="true" comboType="fm_gis_state"
+                field="BUILD_REGION"
+                displayDesc_b="true" fullInfo_b="true" filterFields="countryCode|countryCode"/>
+        <JPackageGrid pos="B3:B3" cid="materialClassCode" fieldLabel_s="materialClassCode" allowBlank_b="true"
+                      valueField="name" field="name"/>
+        <JText pos="C3:C3" fieldLabel_s="specificationModel" cid="model" field="model"/>
+        <JCombo pos="D3:D3" cid="countryCode" fieldLabel_s="countryCode" allowBlank_b="true"
+                comboType="fm_gis_country" field="" hidden_b="true"
+                displayDesc_b="true" fullInfo_b="true" cascadeField="buildRegion"/>
+    </conditions>
+    <results resultGridConfig="{'autoResizeColumn':false}">
+        <JHidden text_s="uuid" dataIndex="uuid" width_n="120"/>
+        <JHidden text_s="supplierId" dataIndex="supplierId" width_n="120"/>
+        <JTextCol text_s="materialClassCode" dataIndex="name" width_n="120"/>
+        <JTextCol text_s="equipmentName" dataIndex="materialName" width_n="120"/>
+        <JTextCol text_s="specificationModel" dataIndex="model" width_n="120"/>
+        <JTextCol text_s="supplierId" dataIndex="completeName" width_n="120"/>
+        <JCurCol text_s="unitPriceTalk" dataIndex="unitPriceTalk" width_n="120"/>
+        <JCurCol text_s="unitPriceTrue" dataIndex="unitPriceTrue" width_n="120"/>
+        <JTextCol text_s="scmContractCode" dataIndex="scmContractCode" width_n="120"/>
+        <JCurCol text_s="number" dataIndex="amount" width_n="120"/>
+        <JTextCol text_s="units" dataIndex="units" width_n="120"/>
+        <JDatetimeCol text_s="contractSigningTime" dataIndex="effectiveDate" width_n="120"/>
+        <JTextCol text_s="officeIdName" dataIndex="orgName" width_n="120"/>
+        <JTextCol text_s="projectCode" dataIndex="projectCode" width_n="120"/>
+        <JTextCol text_s="region" dataIndex="buildRegionName" width_n="120"/>
+    </results>
+</commonquery>

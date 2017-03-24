@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<excel>
+    <entity name="合同细项清单导入模板" code="PrmPurchasePlanDetail">
+        <column name="序号" code="materialNumber" type="String"/>
+        <column name="设备材料名称" code="materialName" type="String"/>
+        <column name="规格型号" code="model" type="String"/>
+        <column name="生产厂家" code="factory" type="String"/>
+        <column name="单位" code="units" type="String"/>
+        <column name="数量" code="amount" type="BigDecimal"/>
+        <column name="单价（元）" code="unitPriceTalk" type="BigDecimal"/>
+        <!--<column name="优惠单价" code="unitPriceTrue" type="BigDecimal"/>-->
+        <column name="备注" code="remark" type="String"/>
+        <column name="合价（元，含税）"/>
+        <!--<column name="优惠合计（元）"/>-->
+    </entity>
+</excel>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select pre.*, pro.project_name project_name, pro.project_code, fmcode.code_desc money_type_desc,fmcode1.code_desc wf_status,
+              prc.customer_name customer_name, prc1.customer_name payer_name, org.org_name ,rec.receipt_no from PRM_RECEIPTS pre
+              left join prm_project_main pro on pre.prm_project_main_id = pro.uuid
+              left join prm_customer prc on prc.uuid=pre.customer_id
+              left join prm_customer prc1 on prc1.uuid=pre.payer
+              left join scdp_code fmcode on fmcode.code_type='MONEY_TYPE' and fmcode.sys_code = pre.money_type
+              left join scdp_org org on org.org_code = pre.department_code
+              left join scdp_code fmcode1 on fmcode1.code_type='FAD_BILL_STATE' and fmcode1.sys_code = pre.state
+              left join prm_unknown_receipts rec on rec.UUID = pre.Prm_Unknown_Receipts_Id
+              where ${conditions} and ${extend} and (pre.is_void is null or pre.is_void = 0)]]>
+        </common>
+    </common_query>
+
+    <!--合同选择弹出框-->
+    <contract_query>
+        <common>
+            <![CDATA[ select SCES.*,
+                   (select so.org_name
+                      from scdp_org so
+                     where so.org_code = sces.OFFICE_ID) as OFFICE_Name,
+                   PPM.PROJECT_NAME,
+                   PPM.PROJECT_CODE,
+                   PPM.Project_Money,
+                   PR.ACTUAL_MONEY,
+                   NVL(PR.ACTUAL_MONEY * 100 /   DECODE(PPM.PROJECT_MONEY, 0, NULL, PPM.PROJECT_MONEY),  0) AS PRM_RECEIPT_RATE,
+                   NVL(SCES.SCM_PAID_MONEY * 100 /  DECODE(SCES.AMOUNT, 0, NULL, SCES.AMOUNT),   0) AS SCM_PAID_RATE,
+                   DECODE(SIGN(NVL(SCES.AMOUNT, 0) -
+                               (NVL(SCES.FAD_REQ_MONEY, 0) +
+                                NVL(SCES.INVOICE_SCM_VALUE_REAL_PAID, 0) +
+                                NVL(SCES.FAD_PAY_REQ_PAYABLE_MONEY, 0) -
+                                NVL(SCES.CLEARANCE_MONEY, 0))),
+                          1,
+                          NVL(SCES.AMOUNT, 0) -
+                          (NVL(SCES.FAD_REQ_MONEY, 0) +
+                           NVL(SCES.INVOICE_SCM_VALUE_REAL_PAID, 0) +
+                           NVL(SCES.FAD_PAY_REQ_PAYABLE_MONEY, 0) -
+                           NVL(SCES.CLEARANCE_MONEY, 0)),
+                          0) AS SCM_UNPAID_MONEY ,
+                  SUM(SCES.SCM_NEED_PAY_MONEY) OVER(PARTITION BY SCES.SUPPLIER_CODE) SCM_SUPPLIER_UN_PAID_MONEY
+              from VW_SCM_CONTRACT_EXECUTE_SIMPLE SCES
+              LEFT JOIN prm_project_main PPM
+                ON PPM.UUID = SCES.PROJECT_ID
+               LEFT JOIN (SELECT PRM_PROJECT_MAIN_ID,
+                              SUM(R.ACTUAL_MONEY) AS ACTUAL_MONEY
+                         FROM PRM_RECEIPTS R
+                        WHERE R.STATE in ('2','4','8')
+                          AND (R.IS_VOID = '0' OR R.IS_VOID IS NULL)
+                        GROUP BY PRM_PROJECT_MAIN_ID) PR
+              ON PPM.UUID = PR.PRM_PROJECT_MAIN_ID
+              where ${conditions} and ${extend} and SCES.PROJECT_ID IS NOT NULL and sces.SCM_NEED_PAY_MONEY <> 0 ]]>
+        </common>
+    </contract_query>
+     	
+    <pick_common_query>
+        <common>
+            <![CDATA[select pre.*, pro.project_name project_name, pro.project_code, fmcode.code_desc money_type_desc,fmcode1.code_desc wf_status,
+              prc.customer_name customer_name, prc1.customer_name payer_name, org.org_name ,rec.receipt_no from PRM_RECEIPTS pre
+              left join prm_project_main pro on pre.prm_project_main_id = pro.uuid
+              left join prm_customer prc on prc.uuid=pre.customer_id
+              left join prm_customer prc1 on prc1.uuid=pre.payer
+              left join scdp_code fmcode on fmcode.code_type='MONEY_TYPE' and fmcode.sys_code = pre.money_type
+              left join scdp_org org on org.org_code = pre.department_code
+              left join scdp_code fmcode1 on fmcode1.code_type='FAD_BILL_STATE' and fmcode1.sys_code = pre.state
+              left join prm_unknown_receipts rec on rec.UUID = pre.Prm_Unknown_Receipts_Id
+              where ${conditions} and (pre.is_void is null or pre.is_void = 0) and not exists ( select 1 from fad_certificate fad where fad.business_id = pre.uuid)]]>
+        </common>
+    </pick_common_query>
+
+
+</DAO>

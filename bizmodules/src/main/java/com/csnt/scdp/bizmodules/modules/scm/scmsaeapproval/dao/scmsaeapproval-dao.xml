@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[SELECT ssa.*,
+       (SELECT CODE_DESC
+          FROM SCDP_CODE SC
+         WHERE SC.CODE_TYPE = 'CDM_YEAR'
+           AND SC.SYS_CODE = ssa.cur_year) AS cur_year_Name,
+            (SELECT CODE_DESC
+          FROM SCDP_CODE SC
+         WHERE SC.CODE_TYPE = 'CDM_BILL_STATE'
+           AND SC.SYS_CODE = ssa.state) AS state_Name
+           FROM scm_sae_approval ssa where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+    <result_query>
+        <common>
+            <![CDATA[
+            select rownum as seq_no,
+               tbl.supplier_id,
+               (SELECT T.COMPLETE_NAME
+                  FROM SCM_SUPPLIER T
+                 WHERE T.UUID = tbl.SUPPLIER_ID) AS SUPPLIER_NAME,
+               tbl.COMPREHENSIVE,
+               case
+                 when tbl.COMPREHENSIVE >= 9 then
+                  'B'
+                 else
+                  'C'
+               end as c_level
+          from (select ssr.supplier_id,
+                       avg(SSR.COMPREHENSIVE) as COMPREHENSIVE
+                  from scm_sae_result ssr
+                  left join scm_sae ss
+                    on ssr.scm_sae_id = ss.uuid
+                 where ${conditions}
+                 group by ssr.supplier_id) tbl
+            ]]>
+        </common>
+    </result_query>
+    <objcet_query>
+        <common>
+            <![CDATA[
+          select sso.MATERIAL_CODE,
+               (select t.name
+                  from scm_material_class t
+                 where t.code = sso.material_code) as MATERIAL_Name,
+               sso.comprehensive,
+               rownum as seq_no,
+               sso.supplier_id
+          from scm_sae_object sso
+          left join scm_sae ss
+            on sso.scm_sae_id = ss.uuid
+              where ${conditions}
+            ]]>
+        </common>
+    </objcet_query>
+</DAO>

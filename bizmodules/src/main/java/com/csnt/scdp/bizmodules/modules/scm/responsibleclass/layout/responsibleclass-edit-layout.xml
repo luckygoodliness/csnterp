@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="scmResponsibleClassDto" row="23*5" col="0.333*3" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <!--<JUserGrid pos="A1:A1" cid="principal" fieldLabel_s="principal" allowBlank_b="true"/>-->
+        <JUserGrid pos="A1:A1" fieldLabel_s="principal" cid="principalName" allowBlank_b="false"
+                   refer_j='[{"refField":"principal","valueField":"userId"}]'/>
+        <JHidden pos="A5:A5" cid="principal"/>
+        <JMaterialGrid pos="B1:C1" fieldLabel_s="responsibleClass" cid="responsibleClassName" allowBlank_b="false"
+                       refer_j='[{"refField":"responsibleClass","valueField":"code"},
+                       {"refField":"operativeSegments","valueField":"operativeSegments"},
+                       {"refField":"classLevel","valueField":"classLevel"},
+                       {"refField":"isRigid","valueField":"isRigid"}]'/>
+        <JHidden pos="A5:A5" cid="responsibleClass"/>
+        <JCombo pos="A2:A2" cid="operativeSegments" fieldLabel_s="operativeSegments" allowBlank_b="false"
+                comboType="scdp_fmcode"
+                codeType="PRM_OPERATIVE_SEGMENTS" displayDesc_b="true" readOnly_b="true" adaptable_b="false"/>
+        <JCombo pos="B2:B2" cid="classLevel" fieldLabel_s="classLevel" field="class_level" allowBlank_b="false"
+                comboType="scdp_fmcode"
+                codeType="SCM_MATERIAL_CLASS_LEVEL" displayDesc_b="true" readOnly_b="true" adaptable_b="false"/>
+        <JCombo pos="C2:C2" cid="isRigid" fieldLabel_s="isRigid" field="is_rigid" allowBlank_b="false"
+                comboType="scdp_fmcode"
+                codeType="SCM_DEFAULTPROPERTY" displayDesc_b="true" readOnly_b="true" adaptable_b="false"/>
+        <JTextArea pos="A3:C5" cid="remark" fieldLabel_s="remark" allowBlank_b="true" wrap_b="true"/>
+    </JForm>
+</view>

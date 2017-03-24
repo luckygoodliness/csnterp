@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JPanel pos="A1:A1" row="335,flex" col="1*1" border_n="0">
+        <JFieldSet pos="A1:A1" row="flex" col="1*1" title_s="basicInfo" border_n="1">
+            <JForm pos="A1:A1" cid="prmContractCDto" row="23*14" col="0.125*8" title_s="" border_n="0"
+                   labelWidth_n="130">
+                <JHidden cid="uuid"/>
+                <JHidden cid="tblVersion"/>
+                <JHidden cid="contractStatus"/>
+                <JHidden cid="prmContractId"/>
+                <JHidden cid="operateBusinessBidInfoIdDesc"/>
+                <JHidden cid="projectManagerDesc"/>
+                <JHidden cid="generalEngineerDesc"/>
+                <JHidden cid="customerIdDesc"/>
+                <JHidden cid="innerPurchaseReqIdDesc"/>
+                <JHidden cid="contractorOfficeDesc"/>
+                <JHidden cid="designerId"/>
+                <JHidden cid="managementId"/>
+                <JHidden cid="auditTime"/>
+                <JHidden cid="examDate"/>
+                <!--<JOperateBusiness pos="G1:H1" cid="operateBusinessBidInfoId" fieldLabel_s="operateBusinessBidInfoId"-->
+                <!--allowBlank_b="true"/>-->
+                <JHidden cid="operateBusinessBidInfoId"/>
+                <JHidden cid="successBidDate"/>
+                <JButton pos="B1:B1" cid="bidInfoId" text_s="项目来源选择"/>
+                <JText pos="C1:D1" cid="contractNo" fieldLabel_s="contractNo" readOnly_b="true" adaptable_b="false"
+                       allowBlank_b="true"/>
+                <JCombo pos="E1:F1" cid="state" fieldLabel_s="state" allowBlank_b="true"
+                        comboType="scdp_fmcode" codeType="CDM_BILL_STATE" displayDesc_b="true" fullInfo_b="false"
+                        multiSelect_b="false" readOnly_b="true" adaptable_b="false"/>
+                <!--<JCombo pos="G1:H1" cid="affiliatedInstitutions" fieldLabel_s="affiliatedInstitutions"-->
+                        <!--allowBlank_b="false"-->
+                        <!--comboType="affiliated_institutions" displayDesc_b="true"-->
+                        <!--fullInfo_b="true" filterFields="contractorOffice"-->
+                        <!--/>-->
+                <JErpDepartMent pos="G1:H1" fieldLabel_s="contractorOffice" cid="contractorOffice" allowBlank_b="true"
+                                readOnly_b="true" adaptable_b="false" cascadeField="affiliatedInstitutions"/>
+                <JText pos="A2:D2" cid="contractName" fieldLabel_s="contractName" readOnly_b="true" adaptable_b="false"
+                       allowBlank_b="true"/>
+
+                <JText pos="E2:H2" cid="projectName" fieldLabel_s="projectName" readOnly_b="true" adaptable_b="false"
+                       allowBlank_b="true"/>
+
+                <JCustomerGrid pos="A3:D3" cid="customerId" valueField="uuid" descField="customerName"
+                               forceValidate_b="false"
+                               fieldLabel_s="customerId" allowBlank_b="false" displayDesc_b="true"/>
+
+                <JInnerProject pos="E3:H3" cid="innerPurchaseReqId" valueField="innerPurchaseReqId" readOnly_b="true"
+                               adaptable_b="false"
+                               fieldLabel_s="innerPurchaseReqId" allowBlank_b="true" displayDesc_b="true"
+                               descField="projectName" filterConditions_j="{'filterCurrentDept_h':'1'}"/>
+
+                <JCheck pos="A4:B4" cid="isMajorProject" fieldLabel_s="isMajorProject" allowBlank_b="true"
+                        readOnly_b="true" adaptable_b="false"/>
+                <JCombo pos="C4:D4" cid="taxType" fieldLabel_s="taxType" allowBlank_b="true"
+                        comboType="scdp_fmcode" upperCase_b="true" cascadeField="prmCodeType" readOnly_b="true"
+                        adaptable_b="false"
+                        codeType="CDM_TAX_TYPE" displayDesc_b="true" fullInfo_b="false" multiSelect_b="false"/>
+                <JCombo pos="E4:F4" cid="prmCodeType" fieldLabel_s="prmCodeType" allowBlank_b="true"
+                        comboType="erp_prm_code_type" filterFields="taxType|taxType" readOnly_b="true"
+                        adaptable_b="false" filterCanBeBlank_b="true"
+                        displayDesc_b="true" fullInfo_b="false" multiSelect_b="false"/>
+
+                <JCur pos="G4:H4" cid="profitRate" fieldLabel_s="profitRate" readOnly_b="true" adaptable_b="false"
+                      allowBlank_b="true"/>
+
+
+                <JCombo pos="A5:B5" cid="affiliatedInstitutions" fieldLabel_s="affiliatedInstitutions"
+                        allowBlank_b="false"
+                        comboType="affiliated_institutions" displayDesc_b="true"
+                        fullInfo_b="true" filterFields="contractorOffice"
+                        />
+                <JUserGrid pos="C5:D5" cid="projectManager" fieldLabel_s="projectManager" valueField_s="userId"
+                           descField_s="userName"
+                           displayDesc_b="true"/>
+                <JUserGrid pos="E5:F5" cid="generalEngineer" fieldLabel_s="generalEngineer" valueField_s="userId"
+                            descField_s="userName"
+                           displayDesc_b="true"/>
+                <JCur pos="G5:H5" cid="contractSignMoney" fieldLabel_s="contractSignMoney" allowBlank_b="true"
+                      readOnly_b="true" adaptable_b="false" minValue_n="0"/>
+
+                <JDate pos="A6:B6" cid="contractSignDate"
+                       fieldLabel_s="contractSignDate" allowBlank_b="false"/>
+                <JDate pos="C6:D6" cid="contractStartDate"
+                       fieldLabel_s="contractStartDate" allowBlank_b="false"/>
+                <JDate pos="E6:F6" cid="contractEndDate"
+                       fieldLabel_s="contractEndDate" allowBlank_b="false"/>
+
+                <JCur pos="G6:H6" cid="contractLastMoney" fieldLabel_s="contractLastMoney" allowBlank_b="true"
+                      readOnly_b="true" adaptable_b="false" minValue_n="0"/>
+
+                <JCombo pos="A7:B7" cid="countryCode" readOnly_b="true" adaptable_b="false" fieldLabel_s="countryCode"
+                        allowBlank_b="true"
+                        comboType="fm_gis_country"
+                        displayDesc_b="true" fullInfo_b="true" cascadeField="buildRegion"/>
+                <JCombo pos="C7:D7" cid="buildRegion" fieldLabel_s="buildRegion"
+                        allowBlank_b="true"
+                        comboType="fm_gis_state"
+                        displayDesc_b="true" fullInfo_b="true" filterFields="countryCode|countryCode"/>
+
+                <JCombo pos="E7:F7" cid="projectSourceType" fieldLabel_s="projectSourceType" allowBlank_b="true"
+                        comboType="scdp_fmcode" codeType="CDM_PROJECT_SOURCE_TYPE" displayDesc_b="true"
+                        fullInfo_b="false" readOnly_b="true" adaptable_b="false" multiSelect_b="false"
+                        upperCase_b="true"/>
+                <JCur pos="G7:H7" cid="contractNowMoney" fieldLabel_s="contractNowMoney" allowBlank_b="false"
+                      minValue_n="0"/>
+
+                <JDisplay pos="A8:B8" fieldLabel_s="contractDuration" readOnly_b="true" adaptable_b="false"
+                          hideLabel_b="false" labelSeparator=""
+                          allowBlank_b="true"/>
+                <JDisplay pos="C8:D8" fieldLabel_s="preoperation" readOnly_b="true" adaptable_b="false"
+                          hideLabel_b="false" labelSeparator=""
+                          allowBlank_b="true"/>
+                <JDisplay pos="E8:F8" fieldLabel_s="defectsLiabilityPeriods" hideLabel_b="false" labelSeparator=""
+                          allowBlank_b="true"/>
+                <JDisplay pos="G8:H8" fieldLabel_s="projectScale" hideLabel_b="false" labelSeparator=""
+                          allowBlank_b="true"/>
+                <JTextArea pos="A9:B10" cid="contractDuration" fieldLabel_s="" labelWidth_n="0" allowBlank_b="true"
+                           readOnly_b="true" adaptable_b="false"/>
+                <JTextArea pos="C9:D10" cid="preoperation" fieldLabel_s="" labelWidth_n="0" allowBlank_b="true"
+                           readOnly_b="true" adaptable_b="false"/>
+                <JTextArea pos="E9:F10" cid="defectsLiabilityPeriods" fieldLabel_s="" labelWidth_n="0"
+                           allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+                <JTextArea pos="G9:H10" cid="projectScale" readOnly_b="true" adaptable_b="false" fieldLabel_s=""
+                           labelWidth_n="0" allowBlank_b="true"/>
+                <JTextArea pos="A11:H13" cid="remark" fieldLabel_s="remark" allowBlank_b="false"/>
+            </JForm>
+        </JFieldSet>
+        <JFieldSet pos="A2:A2" row="flex,65" col="1*1" title_s="attachment" border_n="1">
+            <JEGrid pos="A1:A1" cid="cdmFileRelationDto" store="Cdmfile.store.CdmFileRelationStore"
+                    toolbarAtBottom_b="false" hideCopyAdd_b="true" withSelMode_b="true"
+                    cdmFileType="PRM_CONTRACT">
+                <!--<JTextCol text_s="fileType" dataIndex="fileType" width_n="80"/>-->
+                <JTextCol text_s="fileName" dataIndex="fileName" width_n="300"/>
+                <JTextCol text_s="fileSize" dataIndex="convertedFileSize" width_n="120"/>
+                <JTextCol text_s="remark" dataIndex="remark" width_n="300"/>
+                <!--<JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>-->
+                <!--<JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>-->
+                <!--<JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>-->
+                <!--<JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>-->
+            </JEGrid>
+            <JForm pos="A2:A2" bcid="cdmFileRelationDto.bind" isBind_b="true" row="flex" col="0.25*4" border_n="0">
+                <JTextArea pos="A1:D1" cid="remark" labelWidth_n="120" fieldLabel_s="remark"/>
+            </JForm>
+        </JFieldSet>
+    </JPanel>
+</view>

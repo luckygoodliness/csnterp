@@ -1,0 +1,677 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="T1" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="dateStart"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateOver"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="supplierName"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+T.YHDATE 年月,
+T.SUPPLIER_NAME 供应商,
+SUB_NEGATIVE_TO_0(T.S_INIT_AMOUNT,T.B_INIT_AMOUNT) 期初合同未付金额,
+SUB_NEGATIVE_TO_0(T.I_INIT_AMOUNT,T.B_INIT_AMOUNT) 期初合同应付金额,
+T.B_CURRENT_AMOUNT 当期支付金额,
+T.I_CURRENT_AMOUNT 当期入账金额,
+T.ORG_NAME 部门
+FROM
+(
+      --第一步连接合同开始
+      SELECT
+      SCM_CONTRACT.YHDATE,
+      
+      SCM_CONTRACT.OFFICE_ID,
+      ORG.ORG_NAME,
+      ORG.SEQ_NO ORG_SEQ_NO,
+      
+      SCM_CONTRACT.SUPPLIER_NAME,
+      
+      NVL(SCM_CONTRACT.INIT_AMOUNT, 0) S_INIT_AMOUNT,
+      NVL(SCM_CONTRACT.CURRENT_AMOUNT, 0) S_CURRENT_AMOUNT,
+      
+      NVL(INVOICE_CONTRACT.INIT_AMOUNT, 0) I_INIT_AMOUNT,
+      NVL(INVOICE_CONTRACT.CURRENT_AMOUNT, 0) I_CURRENT_AMOUNT,
+      
+      NVL(BUDGET.INIT_AMOUNT, 0) B_INIT_AMOUNT,
+      NVL(BUDGET.CURRENT_AMOUNT, 0) B_CURRENT_AMOUNT
+      FROM
+      (
+        SELECT
+        LEADING_DATE.YHDATE,
+        SCM_CONTRACT.OFFICE_ID,
+        SCM_CONTRACT.SUPPLIER_NAME,
+        SUM
+        (
+          CASE
+          WHEN
+            LEADING_DATE.YHDATE > TO_CHAR(SCM_CONTRACT.EFFECTIVE_DATE, 'yyyy-mm')
+          THEN
+            NVL(SCM_CONTRACT.AMOUNT, 0)
+          WHEN
+            TO_DATE(NVL('${dateStart}',TO_CHAR(SYSDATE,'yyyy') || '-01-01'),'yyyy-mm-dd') > SCM_CONTRACT.EFFECTIVE_DATE
+          THEN
+            NVL(SCM_CONTRACT.AMOUNT, 0)
+          ELSE
+            0
+          END
+        ) INIT_AMOUNT,
+        SUM
+        (
+          CASE
+          WHEN
+            LEADING_DATE.YHDATE = TO_CHAR(SCM_CONTRACT.EFFECTIVE_DATE, 'yyyy-mm')
+            AND
+            TO_DATE(NVL('${dateStart}',TO_CHAR(SYSDATE,'yyyy') || '-01-01'),'yyyy-mm-dd') <= SCM_CONTRACT.EFFECTIVE_DATE
+          THEN
+            NVL(SCM_CONTRACT.AMOUNT, 0)
+          ELSE
+            0
+          END
+        ) CURRENT_AMOUNT
+        FROM
+        (
+          SELECT
+          TO_CHAR(ADD_MONTHS(TO_DATE(NVL('${dateStart}',TO_CHAR(SYSDATE,'yyyy') || '-01-01'),'yyyy-mm-dd'),ROWNUM - 1), 'yyyy-mm') YHDATE
+          FROM DUAL
+          CONNECT BY ROWNUM <= (MONTHS_BETWEEN(TRUNC(TO_DATE(NVL('${dateOver}',TO_CHAR(LAST_DAY(SYSDATE), 'yyyy-mm-dd')),'yyyy-mm-dd'),'mm'),TRUNC(TO_DATE(NVL('${dateStart}',TO_CHAR(SYSDATE,'yyyy') || '-01-01'),'yyyy-mm-dd'),'mm')) + 1)
+        ) LEADING_DATE
+      
+        LEFT JOIN
+        (
+          SELECT
+          EFFECTIVE_DATE,
+          OFFICE_ID,
+          SUPPLIER_NAME,
+          AMOUNT--合同金额
+          FROM
+          SCM_CONTRACT
+          WHERE
+          SCM_CONTRACT.STATE <> '3'
+          AND
+          --截止
+          (TO_DATE(TO_CHAR(SCM_CONTRACT.EFFECTIVE_DATE,'yyyy-mm-dd'),'yyyy-mm-dd') <= TO_DATE(NVL('${dateOver}',TO_CHAR(LAST_DAY(SYSDATE), 'yyyy-mm-dd')),'yyyy-mm-dd'))
+          AND
+          --部门
+          ('${officeId}' IS NULL OR SCM_CONTRACT.OFFICE_ID = '${officeId}')
+          AND
+          --供应商
+          ('${supplierName}' IS NULL OR SCM_CONTRACT.SUPPLIER_NAME LIKE '%${supplierName}%')
+        ) SCM_CONTRACT
+        ON
+        LEADING_DATE.YHDATE >= TO_CHAR(SCM_CONTRACT.EFFECTIVE_DATE, 'yyyy-mm')
+        GROUP BY
+        LEADING_DATE.YHDATE,
+        SCM_CONTRACT.OFFICE_ID,
+        SCM_CONTRACT.SUPPLIER_NAME
+      ) SCM_CONTRACT
+      --第一步连接合同结束
+      
+      LEFT JOIN
+      --第二步连接发票开始
+      (
+        SELECT
+        LEADING_DATE.YHDATE,
+        INVOICE_CONTRACT.OFFICE_ID,
+        INVOICE_CONTRACT.SUPPLIER_NAME,
+        SUM
+        (
+          CASE
+          WHEN
+            LEADING_DATE.YHDATE > TO_CHAR(INVOICE_CONTRACT.CERTIFICATE_CREATE_TIME, 'yyyy-mm')
+          THEN
+            NVL(INVOICE_CONTRACT.AMOUNT, 0)
+          WHEN
+            TO_DATE(NVL('${dateStart}',TO_CHAR(SYSDATE,'yyyy') || '-01-01'),'yyyy-mm-dd') > INVOICE_CONTRACT.CERTIFICATE_CREATE_TIME
+          THEN
+            NVL(INVOICE_CONTRACT.AMOUNT, 0)
+          ELSE
+            0
+          END
+        ) INIT_AMOUNT,
+        SUM
+        (
+          CASE
+          WHEN
+            LEADING_DATE.YHDATE = TO_CHAR(INVOICE_CONTRACT.CERTIFICATE_CREATE_TIME, 'yyyy-mm')
+            AND
+            TO_DATE(NVL('${dateStart}',TO_CHAR(SYSDATE,'yyyy') || '-01-01'),'yyyy-mm-dd') <= INVOICE_CONTRACT.CERTIFICATE_CREATE_TIME
+          THEN
+            NVL(INVOICE_CONTRACT.AMOUNT, 0)
+          ELSE
+            0
+          END
+        ) CURRENT_AMOUNT
+        FROM
+        (
+          SELECT
+          TO_CHAR(ADD_MONTHS(TO_DATE(NVL('${dateStart}',TO_CHAR(SYSDATE,'yyyy') || '-01-01'),'yyyy-mm-dd'),ROWNUM - 1), 'yyyy-mm') YHDATE
+          FROM DUAL
+          CONNECT BY ROWNUM <= (MONTHS_BETWEEN(TRUNC(TO_DATE(NVL('${dateOver}',TO_CHAR(LAST_DAY(SYSDATE), 'yyyy-mm-dd')),'yyyy-mm-dd'),'mm'),TRUNC(TO_DATE(NVL('${dateStart}',TO_CHAR(SYSDATE,'yyyy') || '-01-01'),'yyyy-mm-dd'),'mm')) + 1)
+        ) LEADING_DATE
+      
+        LEFT JOIN
+        (
+          SELECT
+          FAD_INVOICE.CERTIFICATE_CREATE_TIME,
+          SCM_CONTRACT.OFFICE_ID,
+          SCM_CONTRACT.SUPPLIER_NAME,
+          SCM_CONTRACT_INVOICE.AMOUNT--发票金额
+          FROM
+          (
+            SELECT
+            UUID,
+            CERTIFICATE_CREATE_TIME
+            FROM
+            FAD_INVOICE
+            WHERE
+            EXPENSES_TYPE = '0'
+            AND
+            STATE IN ('4')
+            AND
+            NVL(IS_VOID, '0') = '0'
+            AND
+            --截止
+            (TO_DATE(TO_CHAR(FAD_INVOICE.CERTIFICATE_CREATE_TIME,'yyyy-mm-dd'),'yyyy-mm-dd') <= TO_DATE(NVL('${dateOver}',TO_CHAR(LAST_DAY(SYSDATE), 'yyyy-mm-dd')),'yyyy-mm-dd'))
+          ) FAD_INVOICE,
+          (
+            SELECT
+            FAD_INVOICE_ID,
+            SCM_CONTRACT_ID,
+            AMOUNT
+            FROM
+            SCM_CONTRACT_INVOICE
+          ) SCM_CONTRACT_INVOICE,
+          (
+            SELECT
+            UUID,
+            OFFICE_ID,
+            SUPPLIER_NAME
+            FROM
+            SCM_CONTRACT
+            WHERE
+            --部门
+            ('${officeId}' IS NULL OR SCM_CONTRACT.OFFICE_ID = '${officeId}')
+            AND
+            --供应商
+            ('${supplierName}' IS NULL OR SCM_CONTRACT.SUPPLIER_NAME LIKE '%${supplierName}%')
+          ) SCM_CONTRACT
+          WHERE
+          FAD_INVOICE.UUID = SCM_CONTRACT_INVOICE.FAD_INVOICE_ID
+          AND
+          SCM_CONTRACT_INVOICE.SCM_CONTRACT_ID = SCM_CONTRACT.UUID
+        ) INVOICE_CONTRACT
+        ON
+        LEADING_DATE.YHDATE >= TO_CHAR(INVOICE_CONTRACT.CERTIFICATE_CREATE_TIME, 'yyyy-mm')
+        GROUP BY
+        LEADING_DATE.YHDATE,
+        INVOICE_CONTRACT.OFFICE_ID,
+        INVOICE_CONTRACT.SUPPLIER_NAME
+      ) INVOICE_CONTRACT
+      --第二步连接发票结束
+      ON
+      SCM_CONTRACT.YHDATE = INVOICE_CONTRACT.YHDATE
+      AND
+      SCM_CONTRACT.OFFICE_ID = INVOICE_CONTRACT.OFFICE_ID
+      AND
+      SCM_CONTRACT.SUPPLIER_NAME = INVOICE_CONTRACT.SUPPLIER_NAME
+      
+      LEFT JOIN
+      --第三步连接支付开始
+      (
+        SELECT
+        LEADING_DATE.YHDATE,
+        BUDGET.OFFICE_ID,
+        BUDGET.SUPPLIER_NAME,
+        SUM
+        (
+          CASE
+          WHEN
+            LEADING_DATE.YHDATE > TO_CHAR(BUDGET.CERTIFICATE_CREATE_TIME, 'yyyy-mm')
+          THEN
+            NVL(BUDGET.AMOUNT, 0)
+          WHEN
+            TO_DATE(NVL('${dateStart}',TO_CHAR(SYSDATE,'yyyy') || '-01-01'),'yyyy-mm-dd') > BUDGET.CERTIFICATE_CREATE_TIME
+          THEN
+            NVL(BUDGET.AMOUNT, 0)
+          ELSE
+            0
+          END
+        ) INIT_AMOUNT,
+        SUM
+        (
+          CASE
+          WHEN
+            LEADING_DATE.YHDATE = TO_CHAR(BUDGET.CERTIFICATE_CREATE_TIME, 'yyyy-mm')
+            AND
+            TO_DATE(NVL('${dateStart}',TO_CHAR(SYSDATE,'yyyy') || '-01-01'),'yyyy-mm-dd') <= BUDGET.CERTIFICATE_CREATE_TIME
+          THEN
+            NVL(BUDGET.AMOUNT, 0)
+          ELSE
+            0
+          END
+        ) CURRENT_AMOUNT
+        FROM
+        (
+          SELECT
+          TO_CHAR(ADD_MONTHS(TO_DATE(NVL('${dateStart}',TO_CHAR(SYSDATE,'yyyy') || '-01-01'),'yyyy-mm-dd'),ROWNUM - 1), 'yyyy-mm') YHDATE
+          FROM DUAL
+          CONNECT BY ROWNUM <= (MONTHS_BETWEEN(TRUNC(TO_DATE(NVL('${dateOver}',TO_CHAR(LAST_DAY(SYSDATE), 'yyyy-mm-dd')),'yyyy-mm-dd'),'mm'),TRUNC(TO_DATE(NVL('${dateStart}',TO_CHAR(SYSDATE,'yyyy') || '-01-01'),'yyyy-mm-dd'),'mm')) + 1)
+        ) LEADING_DATE
+      
+        LEFT JOIN
+        (
+              SELECT
+              VW_BUDGET_FAD_DETAIL.CERTIFICATE_CREATE_TIME,
+              SCM_CONTRACT.OFFICE_ID,
+              SCM_CONTRACT.SUPPLIER_NAME,
+              VW_BUDGET_FAD_DETAIL.MONEY AMOUNT
+              FROM
+              (
+                SELECT
+                UUID,
+                SCM_CONTRACT_ID,
+                CERTIFICATE_CREATE_TIME,
+                MONEY
+                FROM
+                VW_BUDGET_FAD_DETAIL
+                WHERE
+                STATE = '4'
+                AND
+                DETAIL_TYPE IN ('日常请款','差旅请款','采购请款','临时支付','月度支付','日常请款现金核销','差旅请款现金核销','采购请款现金核销','发票支付')
+                AND
+                --截止
+                (TO_DATE(TO_CHAR(VW_BUDGET_FAD_DETAIL.CERTIFICATE_CREATE_TIME,'yyyy-mm-dd'),'yyyy-mm-dd') <= TO_DATE(NVL('${dateOver}',TO_CHAR(LAST_DAY(SYSDATE), 'yyyy-mm-dd')),'yyyy-mm-dd'))
+              ) VW_BUDGET_FAD_DETAIL,
+              (
+                SELECT
+                UUID,
+                OFFICE_ID,
+                SUPPLIER_NAME
+                FROM
+                SCM_CONTRACT
+                WHERE
+                --部门
+                ('${officeId}' IS NULL OR SCM_CONTRACT.OFFICE_ID = '${officeId}')
+                AND
+                --供应商
+                ('${supplierName}' IS NULL OR SCM_CONTRACT.SUPPLIER_NAME LIKE '%${supplierName}%')
+              ) SCM_CONTRACT
+              WHERE
+              VW_BUDGET_FAD_DETAIL.SCM_CONTRACT_ID = SCM_CONTRACT.UUID
+        ) BUDGET
+        ON
+        LEADING_DATE.YHDATE >= TO_CHAR(BUDGET.CERTIFICATE_CREATE_TIME, 'yyyy-mm')
+        GROUP BY
+        LEADING_DATE.YHDATE,
+        BUDGET.OFFICE_ID,
+        BUDGET.SUPPLIER_NAME
+      ) BUDGET
+      --第三步连接支付结束
+      ON
+      SCM_CONTRACT.YHDATE = BUDGET.YHDATE
+      AND
+      SCM_CONTRACT.OFFICE_ID = BUDGET.OFFICE_ID
+      AND
+      SCM_CONTRACT.SUPPLIER_NAME = BUDGET.SUPPLIER_NAME
+      
+      LEFT JOIN
+      (
+        SELECT
+        SCDP_ORG.ORG_CODE,
+        SCDP_ORG.ORG_NAME,
+        SCDP_ORG.SEQ_NO
+        FROM
+        SCDP_ORG
+        INNER JOIN
+        (SELECT DATA_UUID FROM SCDP_EXPAND_ROW WHERE EXPAND_CODE = 'DEPT_PROP' AND EXPAND_VALUE = '事业部') SCDP_EXPAND_ROW
+        ON
+        SCDP_ORG.UUID = SCDP_EXPAND_ROW.DATA_UUID
+      ) ORG
+      ON
+      SCM_CONTRACT.OFFICE_ID = ORG.ORG_CODE
+) T
+WHERE
+T.ORG_NAME IS NOT NULL
+AND
+T.SUPPLIER_NAME IS NOT NULL
+ORDER BY
+T.ORG_SEQ_NO ASC,
+T.SUPPLIER_NAME ASC,
+T.YHDATE ASC]]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR F="0" T="1"/>
+<FR/>
+<HC/>
+<FC/>
+<UPFCR COLUMN="false" ROW="true"/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1371600,720000,720000,720000,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[3024000,10080000,5400000,5400000,5400000,5400000,5040000,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" cs="7" s="0">
+<O>
+<![CDATA[支付分析报表]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" s="1">
+<O>
+<![CDATA[年月]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" s="1">
+<O>
+<![CDATA[供应商]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="1" s="1">
+<O>
+<![CDATA[合同未付金额(期初)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="1" s="1">
+<O>
+<![CDATA[合同应付金额(期初)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="1" s="1">
+<O>
+<![CDATA[当期支付金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="1" s="1">
+<O>
+<![CDATA[当期入账金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="1" s="1">
+<O>
+<![CDATA[部门]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="年月"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="供应商"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="期初合同未付金额"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="期初合同应付金额"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="当期支付金额"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="当期入账金额"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="部门"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="3" s="1">
+<O>
+<![CDATA[累计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="3" s="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="3" s="6">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(C3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="3" s="6">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(D3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="3" s="6">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(E3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="3" s="6">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(F3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="3" s="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting orientation="1">
+<Margin top="986400" left="1440000" bottom="986400" right="1440000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="144"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="1" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

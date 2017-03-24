@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JPanel col="0.495*1,0.01,0.495*1" pos="A1:A1" title_s="" row="40,flex" border_n="1" cid="generalTab">
+        <JForm pos="A1:C1" cid="monitorBaseDto" row="23*2" col="0.25*4" title_s="" border_n="1">
+            <JHidden cid="tblVersion"/>
+            <JHidden cid="officeIdDesc"/>
+            <JErpDepartMent pos="A1:A1" cid="officeId" fieldLabel_s="officeId" readOnly_b="true" adaptable_b="false"/>
+            <JInt pos="B1:B1" cid="year" fieldLabel_s="year" readOnly_b="true" adaptable_b="false"/>
+            <JInt pos="C1:C1" cid="month" fieldLabel_s="month" readOnly_b="true" adaptable_b="false"/>
+        </JForm>
+        <JFieldSet row="flex" col="1*1" pos="A2:A2" title_s="monitorLaborCostDto" border_n="1" cid="">
+            <JEGrid pos="A1:A1" cid="monitorLaborCostDto"
+                    store="Monitorlaborcostandothershareexpense.store.MonitorLaborCostStore"
+                    title_s="" withToolbar_b="true">
+                <JHidden dataIndex="year"/>
+                <JHidden dataIndex="month"/>
+                <JHidden dataIndex="officeId"/>
+                <JTextCol text_s="seqNo" dataIndex="seqNo" width_n="55"/>
+                <JTextCol text_s="subjectName" dataIndex="subjectName" width_n="150">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JCurCol text_s="money" dataIndex="money" width_n="120">
+                    <JCur allowBlank_b="false" minValue_n="0"/>
+                </JCurCol>
+            </JEGrid>
+        </JFieldSet>
+        <JFieldSet row="flex" col="1*1" pos="C2:C2" title_s="monitorOtherShareDto" border_n="1" cid="">
+            <JEGrid pos="A1:A1" cid="monitorOtherShareDto"
+                    store="Monitorlaborcostandothershareexpense.store.MonitorOtherShareStore"
+                    title_s="" withToolbar_b="true">
+                <JHidden dataIndex="year"/>
+                <JHidden dataIndex="month"/>
+                <JHidden dataIndex="officeId"/>
+                <JTextCol text_s="seqNo" dataIndex="seqNo" width_n="55"/>
+                <JTextCol text_s="subjectName" dataIndex="subjectName" width_n="150">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JCurCol text_s="money" dataIndex="money" width_n="120">
+                    <JCur allowBlank_b="false" minValue_n="0"/>
+                </JCurCol>
+            </JEGrid>
+        </JFieldSet>
+    </JPanel>
+</view>

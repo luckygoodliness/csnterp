@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>cashreq-dao</daotype>
+        <daokey>common_query_single</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="A1:A1" cid="runningNoQ" fieldLabel_s="runningNo" field="running_no"/>
+
+        <JHidden cid="officeIdPlusQDesc"/>
+        <JErpDepartMent pos="B1:B1" fieldLabel_s="officeId" cid="officeIdPlusQ"
+                        field="office_id" labelWidth_n="100"/>
+
+        <JText pos="C1:C1" cid="subjectCodeQ" fieldLabel_s="subjectCode" field="subject_code"/>
+
+        <JCombo pos="D1:D1" cid="stateQ" fieldLabel_s="state" comboType="scdp_fmcode" codeType="FAD_BILL_STATE"
+                displayDesc_b="true" field="state"/>
+
+        <JHidden cid="staffIdQ" field="staff_id"/>
+
+        <JUserGrid pos="A2:A2" cid="staffIdPlusQ" fieldLabel_s="staffId"
+                   refer_j='[{"refField":"staffIdQ","valueField":"userId"}]'/>
+
+        <JCombo pos="B2:B2" cid="payStyleQ" fieldLabel_s="payStyle"
+                comboType="scdp_fmcode" codeType="FAD_PAYWAY" displayDesc_b="true" field="pay_style"/>
+
+        <JBolCombo pos="C2:C2" fieldLabel_s="isCleared" cid="isClearedQ" field="is_cleared"/>
+
+        <JHidden cid="subjectNameQ" field="subject_name"/>
+        <JCombo pos="D2:D2" cid="subjectNamePlusQ" comboType="fm_financial_non_subject" fieldLabel_s="subjectName"
+                displayDesc_b="true" fullInfo_b="false" target="subjectNameQ,jtext|codedesc"/>
+
+    </conditions>
+    <results resultGridConfig="{'autoResizeColumn':false}">
+        <JTextCol text_s="runningNo" dataIndex="runningNo"/>
+        <JTextCol text_s="state" dataIndex="billState" width_n="120"/>
+        <JTextCol text_s="orgName" dataIndex="orgName" width_n="120"/>
+        <JTextCol dataIndex="isCleared" hidden_b="true"/>
+
+        <JTextCol text_s="subjectCode" dataIndex="subjectCode" width_n="120"/>
+        <JTextCol text_s="subjectName" dataIndex="subjectName" width_n="120"/>
+        <JCurCol text_s="money" dataIndex="money" width_n="150"/>
+        <JCurCol text_s="clearanceMoney" dataIndex="clearanceMoney" width_n="120"/>
+
+        <JTextCol text_s="staffId" dataIndex="userName" width_n="150"/>
+        <JDateCol text_s="applyDate" dataIndex="applyDate" width_n="150"/>
+        <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+        <JTextCol text_s="certificateNo" dataIndex="certificateNo" width_n="120"/>
+        <!--M4_C6_F3_批量打印-->
+        <JHidden  text_s="reqType" dataIndex="reqType"/>
+        <JHidden  text_s="uuid" dataIndex="uuid"/>
+    </results>
+</commonquery>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:jaxws="http://cxf.apache.org/jaxws"
+       xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+       xmlns:cxf="http://cxf.apache.org/core"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+       http://cxf.apache.org/core http://cxf.apache.org/schemas/core.xsd
+       http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd">
+
+    <import resource="classpath:META-INF/cxf/cxf.xml"/>
+
+    <jaxws:endpoint id="login" implementor="#WSLogin" address="/Login"/><!-- Login Service, DO NOT REMOVE -->
+    <jaxws:endpoint id="helloWorld" implementor="#SampleWebService" address="/HelloWebService"/>
+
+    <jaxrs:server address="/api">
+        <jaxrs:serviceBeans>
+            <ref bean="WSLogin"/><!-- Login Service, DO NOT REMOVE -->
+            <ref bean="SampleWebService"/>
+            <ref bean="WorkFlow"/>
+            <ref bean="Mobile" />
+        </jaxrs:serviceBeans>
+        <jaxrs:extensionMappings>
+            <entry key="json" value="application/json"/>
+            <entry key="xml" value="application/xml"/>
+        </jaxrs:extensionMappings>
+        <jaxrs:providers>
+            <bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider"/>
+            <bean class="com.csnt.scdp.sysmodules.interceptors.InvokeFaultExceptionMapper"/>
+        </jaxrs:providers>
+    </jaxrs:server>
+
+    <bean id="loggingFeature" class="org.apache.cxf.feature.LoggingFeature">
+        <property name="prettyLogging" value="true"/>
+    </bean>
+
+    <!-- add the loggingFeature to the cxf bus -->
+    <!--<cxf:bus>-->
+        <!--<cxf:inInterceptors>-->
+            <!--<ref bean="WSBasicAuthenticationInterceptor"/>-->
+            <!--<ref bean="WSAuthorizationInterceptor"/>-->
+        <!--</cxf:inInterceptors>-->
+        <!--<cxf:outFaultInterceptors>-->
+            <!--<ref bean="WSFaultOutInterceptor"/>-->
+        <!--</cxf:outFaultInterceptors>-->
+        <!--<cxf:features>-->
+            <!--<ref bean="loggingFeature"/>-->
+        <!--</cxf:features>-->
+    <!--</cxf:bus>-->
+    <cxf:bus>
+        <cxf:inInterceptors>
+            <ref bean="WSAuthorizationInterceptor"/>
+            <ref bean="WSLogInInterceptor"/>
+        </cxf:inInterceptors>
+        <cxf:outInterceptors>
+            <ref bean="WSLogOutInterceptor"/>
+        </cxf:outInterceptors>
+        <cxf:outFaultInterceptors>
+            <ref bean="WSFaultOutInterceptor"/>
+        </cxf:outFaultInterceptors>
+        <cxf:features>
+            <ref bean="loggingFeature"/>
+        </cxf:features>
+    </cxf:bus>
+
+</beans>

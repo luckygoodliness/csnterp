@@ -1,0 +1,1022 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="PROJECT_INFO" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="office_id"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="month"/>
+<O t="I">
+<![CDATA[0]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="year"/>
+<O t="I">
+<![CDATA[0]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="start_year"/>
+<O t="I">
+<![CDATA[0]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select OPERATE_REPORT_OBJECT.OFFICE_ID,OPERATE_REPORT_OBJECT.ORD
+        ,OPERATE_PROJECT_INFO.PROJECT_ID
+        ,OPERATE_PROJECT_INFO.PROJECT_NAME
+        ,OPERATE_PROJECT_INFO.PROJECT_NUMBER
+        ,OPERATE_PROJECT_INFO.CSHTE
+        ,OPERATE_PROJECT_INFO.ZZHTE
+        ,OPERATE_PROJECT_INFO.SZDQ
+        ,OPERATE_PROJECT_INFO.YQNDSK
+        ,OPERATE_PROJECT_INFO.DNJHSK
+        ,OPERATE_PROJECT_INFO.DNSJSK
+        ,OPERATE_PROJECT_INFO.LJSK
+        ,OPERATE_PROJECT_INFO.LJSKBL
+        ,OPERATE_PROJECT_INFO.YSKZCB
+        ,OPERATE_PROJECT_INFO.CBZC
+        ,OPERATE_PROJECT_INFO.CBZCBL
+        ,OPERATE_PROJECT_INFO.YQNDJSSR
+        ,OPERATE_PROJECT_INFO.DNJSSR
+        ,OPERATE_PROJECT_INFO.LJJSSR
+        ,OPERATE_PROJECT_INFO.JSBL
+        ,OPERATE_PROJECT_INFO.YQNDJSLR
+        ,OPERATE_PROJECT_INFO.DNJSLR
+        ,OPERATE_PROJECT_INFO.LJJSLR
+        ,OPERATE_PROJECT_INFO.UPDATE_TIME
+        ,OPERATE_PROJECT_INFO.YEAR
+        ,OPERATE_PROJECT_INFO.MONTH
+        ,OPERATE_PROJECT_INFO.YEAR_WG
+        ,OPERATE_PROJECT_INFO.MONTH_WG
+        ,OPERATE_PROJECT_INFO.IS_WG
+        ,OPERATE_PROJECT_INFO.IS_ZDXM
+        ,OPERATE_PROJECT_INFO.GLF
+        ,OPERATE_PROJECT_INFO.SJ
+from  
+  (
+    select OFFICE_ID,ORD
+    from OPERATE_REPORT_OBJECT
+    where OBJECT_TYPE='1' and VERSION='201512'
+  ) OPERATE_REPORT_OBJECT left join 
+  (
+    select * 
+    from OPERATE_PROJECT_INFO
+      left join V_SP_P_INFO
+        on OPERATE_PROJECT_INFO.PROJECT_ID=V_SP_P_INFO.PRM_PROJECT_MAIN_ID
+  ) OPERATE_PROJECT_INFO
+    on OPERATE_PROJECT_INFO.OFFICE_ID=OPERATE_REPORT_OBJECT.OFFICE_ID
+where
+  OPERATE_PROJECT_INFO.YEAR=${year}
+  and OPERATE_PROJECT_INFO.MONTH=${month}
+  ${if(len(office_id)>0,"and OPERATE_PROJECT_INFO.OFFICE_ID='"+office_id+"'","")}
+  ${if(start_year>0,"and OPERATE_PROJECT_INFO.START_YEAR="+start_year,"")}
+order by OPERATE_PROJECT_INFO.IS_WG,OPERATE_REPORT_OBJECT.ORD]]></Query>
+</TableData>
+<TableData name="部门" class="com.fr.data.impl.DBTableData">
+<Parameters/>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select OPERATE_REPORT_OBJECT.*,SCDP_ORG.SHORT_CODE
+from OPERATE_REPORT_OBJECT
+  left join SCDP_ORG
+    on OPERATE_REPORT_OBJECT.OFFICE_ID=SCDP_ORG.ORG_CODE
+where OBJECT_TYPE='1' and VERSION='201512'
+order by ORD]]></Query>
+</TableData>
+</TableDataMap>
+<ReportWebAttr>
+<ServerPrinter/>
+<WebPageContent>
+<ToolBars>
+<ToolBarManager>
+<Location>
+<Embed position="1"/>
+</Location>
+<ToolBar>
+<Widget class="com.fr.report.web.button.page.First">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-First')}]]></Text>
+<IconName>
+<![CDATA[first]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Previous">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-Previous')}]]></Text>
+<IconName>
+<![CDATA[previous]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.PageNavi">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Next">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-Next')}]]></Text>
+<IconName>
+<![CDATA[next]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Last">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-Last')}]]></Text>
+<IconName>
+<![CDATA[last]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.FlashPrint">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Utils-Print[Client]A')}]]></Text>
+<IconName>
+<![CDATA[flashprint]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.Print">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Print')}]]></Text>
+<IconName>
+<![CDATA[print]]></IconName>
+<PrintButtons/>
+</Widget>
+<Widget class="com.fr.report.web.button.Export">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Export')}]]></Text>
+<IconName>
+<![CDATA[export]]></IconName>
+<Buttons pdf="true" excelP="true" excelO="true" excelS="true" word="true" image="true" html="true"/>
+</Widget>
+<Widget class="com.fr.report.web.button.Email">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Email')}]]></Text>
+<IconName>
+<![CDATA[email]]></IconName>
+</Widget>
+</ToolBar>
+</ToolBarManager>
+</ToolBars>
+<WebPage isPage="true" isShowAsImage="false" isAutoScale="false" isTDHeavy="false"/>
+</WebPageContent>
+</ReportWebAttr>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR F="0" T="1"/>
+<FR/>
+<HC/>
+<FC/>
+<UPFCR COLUMN="false" ROW="true"/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1143000,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[1638300,0,0,0,0,2743200,2880000,4320000,7200000,4320000,0,0,4320000,4320000,0,0,4320000,0,0,4320000,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" s="0">
+<O>
+<![CDATA[序号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="0" s="1">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="0" s="1">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="0" s="1">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="0" s="1">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="0" s="0">
+<O>
+<![CDATA[测算期]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="0" s="0">
+<O>
+<![CDATA[部门]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="0" s="0">
+<O>
+<![CDATA[项目代号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="0" s="0">
+<O>
+<![CDATA[项目名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="0" s="0">
+<O>
+<![CDATA[最终合同运行额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="0" s="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="0" s="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="0" s="0">
+<O>
+<![CDATA[累计收款]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="0" s="0">
+<O>
+<![CDATA[成本支出\\n(不含税金)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="14" r="0" s="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="0" s="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="16" r="0" s="0">
+<O>
+<![CDATA[累计结算收入]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="17" r="0" s="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="18" r="0" s="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="19" r="0" s="0">
+<O>
+<![CDATA[累计结算利润\\n(含管理费)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" cs="9" s="3">
+<O>
+<![CDATA[合计(元)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="1" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(J3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="1" s="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="1" s="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="1" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(M3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="1" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(N3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="14" r="1" s="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="1" s="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="16" r="1" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(Q3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="17" r="1" s="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="18" r="1" s="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="19" r="1" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(T3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="2" s="6">
+<O>
+<![CDATA[]]></O>
+<PrivilegeControl/>
+<CellPageAttr/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[序号]]></Name>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ValueHighlightAction">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=row() - 2]]></Attributes>
+</O>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0" leftParentDefault="false" left="B3"/>
+</C>
+<C c="1" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="PROJECT_INFO" columnName="PROJECT_ID"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<CellPageAttr/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="PROJECT_INFO" columnName="YEAR"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<CellPageAttr/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="PROJECT_INFO" columnName="MONTH"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<CellPageAttr/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="2" s="7">
+<O t="DSColumn">
+<Attributes dsName="PROJECT_INFO" columnName="IS_WG"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[背景色]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$==1]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Scope val="1"/>
+<Background name="ColorBackground" color="-6697984"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="5" r="2" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=DATE(C3, D3, 1)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellPageAttr/>
+<Expand/>
+</C>
+<C c="6" r="2" s="6">
+<O t="DSColumn">
+<Attributes dsName="PROJECT_INFO" columnName="OFFICE_ID"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<CellPageAttr/>
+<Present class="com.fr.base.present.DictPresent">
+<Dictionary class="com.fr.data.impl.DatabaseDictionary">
+<FormulaDictAttr kiName="ORG_CODE" viName="SHORT_CODE"/>
+<DBDictAttr tableName="SCDP_ORG" schemaName="" ki="-1" vi="-1" kiName="ORG_CODE" viName="SHORT_CODE"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+</Dictionary>
+</Present>
+<Expand dir="0"/>
+</C>
+<C c="7" r="2" s="6">
+<O t="DSColumn">
+<Attributes dsName="PROJECT_INFO" columnName="PROJECT_NUMBER"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<CellPageAttr/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="2" s="9">
+<O t="DSColumn">
+<Attributes dsName="PROJECT_INFO" columnName="PROJECT_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="项目进度">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters>
+<Parameter>
+<Attributes name="project_id"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=B3]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="year"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=C3]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="month"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D3]]></Attributes>
+</O>
+</Parameter>
+</Parameters>
+<TargetFrame>
+<![CDATA[_blank]]></TargetFrame>
+<Features width="600" height="400"/>
+<ReportletName showPI="true">
+<![CDATA[/erp/ygb/OPERATE_PROJECT_INFO_C.cpt]]></ReportletName>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+<NameJavaScript name="项目费用明细">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters>
+<Parameter>
+<Attributes name="project_id"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=B3]]></Attributes>
+</O>
+</Parameter>
+</Parameters>
+<TargetFrame>
+<![CDATA[_blank]]></TargetFrame>
+<Features width="600" height="400"/>
+<ReportletName showPI="true" byPost="true">
+<![CDATA[/erp/ygb/XMDTB.cpt]]></ReportletName>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<CellPageAttr/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="2" s="10">
+<O t="DSColumn">
+<Attributes dsName="PROJECT_INFO" columnName="ZZHTE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<CellPageAttr/>
+<Expand dir="0"/>
+</C>
+<C c="10" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="PROJECT_INFO" columnName="YQNDSK"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="11" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="PROJECT_INFO" columnName="DNSJSK"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="12" r="2" s="10">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=K3 + L3]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellPageAttr/>
+<Present class="com.fr.base.present.FormulaPresent"/>
+<Expand dir="0"/>
+</C>
+<C c="13" r="2" s="10">
+<O t="DSColumn">
+<Attributes dsName="PROJECT_INFO" columnName="CBZC"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<CellPageAttr/>
+<Expand dir="0"/>
+</C>
+<C c="14" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="PROJECT_INFO" columnName="YQNDJSSR"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="15" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="PROJECT_INFO" columnName="DNJSSR"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="16" r="2" s="10">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=O3 + P3]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellPageAttr/>
+<Expand dir="0"/>
+</C>
+<C c="17" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="PROJECT_INFO" columnName="YQNDJSLR"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="18" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="PROJECT_INFO" columnName="DNJSLR"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="19" r="2" s="10">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=R3 + S3]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellPageAttr/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="6">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting orientation="1">
+<PaperSize width="30240000" height="47520000"/>
+<Margin top="986400" left="2743200" bottom="986400" right="2743200"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="false" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+<ParameterUI class="com.fr.form.main.parameter.FormParameterUI">
+<Layout class="com.fr.form.ui.container.WParameterLayout">
+<WidgetName name="para"/>
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Margin top="1" left="1" bottom="1" right="1"/>
+<Border>
+<border style="0" color="-723724" type="0" borderStyle="0"/>
+<WidgetTitle>
+<O>
+<![CDATA[新建标题]]></O>
+<FRFont name="SimSun" style="0" size="72"/>
+<Position pos="0"/>
+</WidgetTitle>
+<Alpha alpha="1.0"/>
+</Border>
+<Background name="ColorBackground" color="-1118482"/>
+<LCAttr vgap="0" hgap="0" compInterval="0"/>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="year_button"/>
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[年月]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="3" y="23" width="70" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.parameter.FormSubmitButton">
+<WidgetName name="formSubmit0"/>
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[查询]]></Text>
+<Hotkeys>
+<![CDATA[enter]]></Hotkeys>
+</InnerWidget>
+<BoundsAttr x="382" y="23" width="80" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="Office_button"/>
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[部门]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="175" y="23" width="70" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboBox">
+<WidgetName name="Office_Id"/>
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="OFFICE_ID" viName="SHORT_CODE"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[部门]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<widgetValue>
+<O>
+<![CDATA[]]></O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="245" y="23" width="122" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.DateEditor">
+<Listener event="afteredit">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[var date = this.getValue().split("-");
+this.options.form.getWidgetByName("year").setValue(date[0]A);
+this.options.form.getWidgetByName("month").setValue(date[1]A);]]></Content>
+</JavaScript>
+</Listener>
+<Listener event="afterinit">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[var date = this.getValue().split("-");
+this.options.form.getWidgetByName("year").setValue(date[0]A);
+this.options.form.getWidgetByName("month").setValue(date[1]A);]]></Content>
+</JavaScript>
+</Listener>
+<WidgetName name="dateEditor"/>
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<DateAttr format="yyyy-MM"/>
+<widgetValue>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=NOW()]]></Attributes>
+</O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="73" y="23" width="80" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.NumberEditor">
+<WidgetName name="year"/>
+<WidgetAttr invisible="true">
+<PrivilegeControl/>
+</WidgetAttr>
+<NumberAttr allowDecimals="false" allowNegative="false">
+<widgetValue>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=]]></Attributes>
+</O>
+</widgetValue>
+</NumberAttr>
+</InnerWidget>
+<BoundsAttr x="501" y="23" width="80" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.NumberEditor">
+<WidgetName name="month"/>
+<WidgetAttr invisible="true">
+<PrivilegeControl/>
+</WidgetAttr>
+<NumberAttr allowDecimals="false" allowNegative="false">
+<widgetValue/>
+</NumberAttr>
+</InnerWidget>
+<BoundsAttr x="602" y="23" width="80" height="21"/>
+</Widget>
+<Sorted sorted="false"/>
+<Display display="true"/>
+<DelayDisplayContent delay="false"/>
+<Position position="0"/>
+<Design_Width design_width="960"/>
+<MobileWidgetList>
+<Widget widgetName="dateEditor"/>
+<Widget widgetName="Office_Id"/>
+<Widget widgetName="year"/>
+<Widget widgetName="month"/>
+</MobileWidgetList>
+<WidgetNameTagMap>
+<NameTag name="dateEditor" tag="年月"/>
+<NameTag name="Office_Id" tag="部门"/>
+</WidgetNameTagMap>
+</Layout>
+<DesignAttr width="960" height="65"/>
+</ParameterUI>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="ColorBackground" color="-1577999"/>
+<Border>
+<Top style="1" color="-3085062"/>
+<Bottom style="1" color="-3085062"/>
+<Left style="1" color="-3085062"/>
+<Right style="1" color="-3085062"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1" paddingLeft="0" paddingRight="7">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="ColorBackground" color="-1314338"/>
+<Border>
+<Top style="1" color="-3085062"/>
+<Bottom style="1" color="-3085062"/>
+<Left style="1" color="-3085062"/>
+<Right style="1" color="-3085062"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-3085062"/>
+<Bottom style="1" color="-3085062"/>
+<Left style="1" color="-3085062"/>
+<Right style="1" color="-3085062"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="ColorBackground" color="-52"/>
+<Border>
+<Top style="1" color="-3085062"/>
+<Bottom style="1" color="-3085062"/>
+<Left style="1" color="-3085062"/>
+<Right style="1" color="-3085062"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="ColorBackground" color="-52"/>
+<Border>
+<Top style="1" color="-3085062"/>
+<Bottom style="1" color="-3085062"/>
+<Left style="1" color="-3085062"/>
+<Right style="1" color="-3085062"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="ColorBackground" color="-52"/>
+<Border>
+<Top style="1" color="-3085062"/>
+<Bottom style="1" color="-3085062"/>
+<Left style="1" color="-3085062"/>
+<Right style="1" color="-3085062"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-3085062"/>
+<Bottom style="1" color="-3085062"/>
+<Left style="1" color="-3085062"/>
+<Right style="1" color="-3085062"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="java.text.SimpleDateFormat">
+<![CDATA[yyyy-MM]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-3085062"/>
+<Bottom style="1" color="-3085062"/>
+<Left style="1" color="-3085062"/>
+<Right style="1" color="-3085062"/>
+</Border>
+</Style>
+<Style horizontal_alignment="2" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72" foreground="-16776961" underline="1"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-3085062"/>
+<Bottom style="1" color="-3085062"/>
+<Left style="1" color="-3085062"/>
+<Right style="1" color="-3085062"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-3085062"/>
+<Bottom style="1" color="-3085062"/>
+<Left style="1" color="-3085062"/>
+<Right style="1" color="-3085062"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

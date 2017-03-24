@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>nonprmpurchasereq-dao</daotype>
+        <daokey>nonproject_budget_query</daokey>
+        <needfilter>false</needfilter>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="A1:A1" cid="item" fieldLabel_s="item" allowBlank_b="true" upperCase_b="true"
+               field="item"/>
+        <JHidden cid="cid" field="cid"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="item" dataIndex="item" upperCase_b="true" width_n="120"/>
+        <JDecCol text_s="amount" dataIndex="amount" width_n="120"/>
+        <JCurCol text_s="price" dataIndex="price" width_n="120"/>
+
+        <JDecCol text_s="remainAmount" dataIndex="remainAmount" width_n="120"/>
+        <JCurCol text_s="remainPrice" dataIndex="remainPrice" width_n="120"/>
+
+        <JCurCol text_s="totalValue" dataIndex="totalValue" width_n="120"/>
+        <JTextCol text_s="descp" dataIndex="descp" width_n="120"/>
+
+    </results>
+</commonquery>

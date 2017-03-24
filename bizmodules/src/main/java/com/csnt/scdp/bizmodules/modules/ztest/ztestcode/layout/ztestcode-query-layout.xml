@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>ztestcode-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="C2:C2" fieldLabel_s="createBy" cid="createBy" field="create_by"/>
+        <JText pos="D2:D2" fieldLabel_s="updateBy" cid="updateby" field="update_by"/>
+        <JFromTo pos="A3:B3" subXtype="JDatetime" fieldLabel_s="createTime" cid="createTime" field="create_time"/>
+        <JFromTo pos="C3:D3" subXtype="JDatetime" fieldLabel_s="updateTime" cid="updateTime" field="update_time"/>
+    </conditions>
+    <results>
+            <JTextCol text_s="code" dataIndex="code" width_n="120"/>
+            <JTextCol text_s="name" dataIndex="name" width_n="120"/>
+        <JIntCol text_s="phone" dataIndex="phone" width_n="100" />
+            <JTextCol text_s="email" dataIndex="email" width_n="120"/>
+            <!--<JTextCol text_s="cusomterUuid" dataIndex="cusomterUuid" width_n="120"/>-->
+            <JTextCol text_s="cusomterUuid" dataIndex="updateBydesc" width_n="120"/>
+            <JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120"/>
+            <JTextCol text_s="projectId" dataIndex="projectId" width_n="120"/>
+            <JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120"/>
+            <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+            <JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>
+        <JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>
+        <JIntCol text_s="seqNo" dataIndex="seqNo" width_n="100" />
+            <!--<JTextCol text_s="state" dataIndex="state" width_n="120"/>-->
+        <JTextCol text_s="state" dataIndex="billState" width_n="120"/>
+        <!--<JTextCol text_s="updateBydesc" dataIndex="updateBydesc" width_n="120"/>-->
+    </results>
+</commonquery>

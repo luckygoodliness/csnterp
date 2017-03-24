@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <!--<![CDATA[select * from prm_role_filter where ${conditions} and ${voidfilter}]]>-->
+            <![CDATA[
+            SELECT ROLE.*
+            FROM SCDP_ROLE ROLE
+            WHERE ${conditions}
+                AND (ROLE.UUID IN (SELECT ROW1.DATA_UUID
+                    FROM SCDP_EXPAND_ROW ROW1
+                    ,SCDP_EXPAND_COLUMN COL
+                    WHERE 1=1
+                    AND ROW1.EXPAND_ID = COL.UUID
+                    AND ROW1.EXPAND_CODE = COL.EXPAND_CODE
+                    AND COL.IS_ACTIVE = 1
+                    AND ((ROW1.EXPAND_VALUE = 'Y' AND COL.EXPAND_CODE = 'IS_PROJECT_ROLE')
+                               OR (ROW1.EXPAND_VALUE = 'Y' AND COL.EXPAND_CODE = 'IS_ORG_SPECIFIED_MODULES'))
+                    )
+                OR NOT EXISTS
+                (
+                    SELECT 1 FROM SCDP_EXPAND_COLUMN A
+                    WHERE A.EXPAND_TYPE = 'ROLE' AND A.IS_ACTIVE = 1
+                ))
+            and ${voidfilter}]]>
+        </common>
+    </common_query>
+</DAO>

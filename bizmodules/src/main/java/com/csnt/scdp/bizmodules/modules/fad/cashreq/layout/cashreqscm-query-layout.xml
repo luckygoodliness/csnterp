@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>cashreq-dao</daotype>
+        <daokey>common_query_scm</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="A1:A1" cid="runningNoQ" fieldLabel_s="runningNo" field="running_no"/>
+
+        <JHidden cid="officeIdQDesc"/>
+        <JErpDepartMent pos="B1:B1" fieldLabel_s="officeId" cid="officeIdQ"
+                        field="office_id" labelWidth_n="100"/>
+
+        <JText pos="C1:C1" cid="fadSubjectCodeQ" fieldLabel_s="代号" allowBlank_b="true"
+               field='fad_subject_code'/>
+
+        <JCombo pos="D1:D1" fieldLabel_s="isAdvancePayment" cid="isAdvancePayment" comboType="fad_cash_advance"
+                displayDesc_b="true" field="is_advance_payment"  />
+
+        <JText pos="A2:A2" cid="supplierNameQ" fieldLabel_s="supplierName" allowBlank_b="true"
+               field='supplier_name'/>
+
+        <JText pos="B2:B2" cid="purchaseContractIdQPlus" fieldLabel_s="purchaseContractId"
+                    field="scm_contract_code"/>
+
+        <JBolCombo pos="C2:C2" fieldLabel_s="isCleared" cid="isClearedQ" field="is_cleared"/>
+        <JCombo pos="D2:D2" cid="stateQ" fieldLabel_s="state" comboType="scdp_fmcode" codeType="FAD_BILL_STATE"
+                displayDesc_b="true" field="state"/>
+
+    </conditions>
+    <results resultGridConfig="{'autoResizeColumn':false}">
+        <JTextCol text_s="runningNo" dataIndex="runningNo" width_n="120"/>
+        <JTextCol text_s="isAdvancePayment" dataIndex="isAdvancePaymentDesc" width_n="80"/>
+        <JTextCol text_s="state" dataIndex="billState"/>
+        <JTextCol dataIndex="isCleared" hidden_b="true"/>
+        <!--<JTextCol text_s="purchaseContractId" dataIndex="scmContractCode" width_n="120"/>-->
+        <JTextCol text_s="orgName" dataIndex="orgName" width_n="120"/>
+        <JTextCol text_s="staffId" dataIndex="staffName" width_n="120"/>
+        <JTextCol text_s="supplierName" dataIndex="supplierName" width_n="120"/>
+        <JTextCol text_s="payeeBankName" dataIndex="payeeBankName" width_n="120"/>
+        <JTextCol text_s="payeeAccount" dataIndex="payeeAccount" width_n="120"/>
+
+        <JTextCol text_s="代号" dataIndex="fadSubjectCode" width_n="100"/>
+        <JTextCol text_s="projectName" dataIndex="projectName" width_n="120"/>
+        <JTextCol text_s="purchaseContractId" dataIndex="scmContractCode" width_n="120"/>
+
+        <JCurCol text_s="money" dataIndex="money" width_n="150"/>
+        <JCurCol text_s="clearanceMoney" dataIndex="clearanceMoney" width_n="120"/>
+        <!--<JTextCol text_s="payStyle" dataIndex="payStyle" width_n="120"/>-->
+        <JDateCol text_s="squareDate" dataIndex="squareDate" width_n="150"/>
+        <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+        <JTextCol text_s="operatorName" dataIndex="operatorName" width_n="120"/>
+        <JTextCol text_s="certificateNo" dataIndex="certificateNo" width_n="120"/>
+    </results>
+</commonquery>

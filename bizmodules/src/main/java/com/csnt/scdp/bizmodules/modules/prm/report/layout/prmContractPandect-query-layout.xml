@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonreport version="1.0">
+    <report>
+        <reporttype>L</reporttype>
+        <reporttemplate>erp/scm/ScmContractQuery.cpt</reporttemplate>
+        <reportcache>false</reportcache>
+    </report>
+    <conditions columns="4">
+        <JHidden cid="officeDesc"/>
+        <JHidden cid="createBy" field="createBy"/>
+        <JHidden cid="projectId" field="projectId"/>
+        <JHidden cid="supplierCode" field="supplierCode"/>
+        <JErpDepartMent pos="A1:A1" fieldLabel_s="office" cid="office" field="office" readOnly_b="true"
+                        adaptable_b="false"/>
+        <JProject pos="B1:B1" fieldLabel_s="项目" cid="prmProjectName" valueField="projectName"
+                  allowBlank_b="true" refer_j='[{"refField":"projectId","valueField":"uuid"}]'/>
+        <!--<JText pos="C1:C1" fieldLabel_s="supplierName" cid="supplierName" field="supplierName"/>-->
+        <JSupplierGrid pos="C1:C1" fieldLabel_s="supplierName" cid="supplierName_query"
+                       refer_j='[{"refField":"supplierCode","valueField":"uuid"}]'/>
+        <JText pos="A2:A2" fieldLabel_s="scmContractCode" cid="scmContractCode" field="scmContractCode"/>
+        <JCombo pos="B2:B2" fieldLabel_s="contractState" allowBlank_b="true" cid="contractType_query"
+                comboType="scdp_fmcode"
+                codeType="SCM_CONTRACT_STATE" displayDesc_b="true" field="contractState"/>
+        <JUserGrid pos="C2:C2" fieldLabel_s="负责人" cid="createByName"
+                   refer_j='[{"refField":"createBy","valueField":"userId"}]'/>
+    </conditions>
+</commonreport>

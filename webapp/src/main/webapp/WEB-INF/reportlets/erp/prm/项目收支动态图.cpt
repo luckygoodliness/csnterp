@@ -1,0 +1,686 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="VW_PROJECT_DYNAMICPIC_BASE" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="projectCode"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="projectName"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--动态图主表
+--VW_PROJECT_DYNAMICPIC_BASE
+SELECT
+*
+FROM
+(
+  SELECT
+  PRM_PROJECT_MAIN.CONTRACTOR_OFFICE 项目部门,
+  PRM_PROJECT_MAIN.ESTABLISH_DATE 项目时间,
+  PRM_PROJECT_MAIN.UUID 项目ID,
+  PRM_PROJECT_MAIN.PROJECT_CODE 项目代号,
+  PRM_PROJECT_MAIN.PROJECT_NAME 项目名称,
+  CASE WHEN NVL(PRM_PROJECT_MAIN.PROJECT_MONEY, 0) = 0 THEN 0 ELSE CASE WHEN ROUND(NVL(PRM_RECEIPTS.SUM_ACTUAL_MONEY, 0) / NVL(PRM_PROJECT_MAIN.PROJECT_MONEY, 0),4) = 0 THEN 0 ELSE NVL(PRM_RECEIPTS.SUM_ACTUAL_MONEY, 0) / NVL(PRM_PROJECT_MAIN.PROJECT_MONEY, 0) END END 收款进度,
+  CASE WHEN NVL(VW_PRM_BUDGET_DETAIL1.SUM_ESTIMATED_COST, 0) = 0 THEN 0 ELSE CASE WHEN ROUND(NVL(PRM_PURCHASE_REQ.MONEY, 0) / NVL(VW_PRM_BUDGET_DETAIL1.SUM_ESTIMATED_COST, 0),4) = 0 THEN 0 ELSE NVL(PRM_PURCHASE_REQ.MONEY, 0) / NVL(VW_PRM_BUDGET_DETAIL1.SUM_ESTIMATED_COST, 0) END END 采购进度,
+  CASE WHEN NVL(VW_PRM_BUDGET_DETAIL2.SUM_ESTIMATED_COST, 0) = 0 THEN 0 ELSE CASE WHEN ROUND(NVL(VW_BUDGET_DETAIL.MONEY, 0) / NVL(VW_PRM_BUDGET_DETAIL2.SUM_ESTIMATED_COST, 0),4) = 0 THEN 0 ELSE NVL(VW_BUDGET_DETAIL.MONEY, 0) / NVL(VW_PRM_BUDGET_DETAIL2.SUM_ESTIMATED_COST, 0) END END 支出进度,
+  CASE WHEN NVL(PRM_PROJECT_MAIN.PROJECT_MONEY, 0) = 0 THEN 0 ELSE CASE WHEN ROUND(NVL(PRM_FINAL_ESTIMATE.SUM_PROJECT_MONEY, 0) / NVL(PRM_PROJECT_MAIN.PROJECT_MONEY, 0),4) = 0 THEN 0 ELSE NVL(PRM_FINAL_ESTIMATE.SUM_PROJECT_MONEY, 0) / NVL(PRM_PROJECT_MAIN.PROJECT_MONEY, 0) END END 结算进度
+  FROM PRM_PROJECT_MAIN
+  
+  --收款
+  LEFT JOIN
+  (
+    SELECT
+    PRM_RECEIPTS.PRM_PROJECT_MAIN_ID,
+    SUM(NVL(PRM_RECEIPTS.ACTUAL_MONEY, 0)) SUM_ACTUAL_MONEY
+    FROM PRM_RECEIPTS
+    WHERE PRM_RECEIPTS.STATE IN ('2','4','8')
+    AND (IS_VOID = 0 OR IS_VOID IS NULL)
+    GROUP BY PRM_RECEIPTS.PRM_PROJECT_MAIN_ID
+  ) PRM_RECEIPTS
+  ON PRM_PROJECT_MAIN.UUID = PRM_RECEIPTS.PRM_PROJECT_MAIN_ID
+  
+  --采购申请
+  LEFT JOIN
+  (
+    SELECT
+    PRM_PURCHASE_REQ.PRM_PROJECT_MAIN_ID,
+    SUM(NVL(PRM_PURCHASE_REQ_DETAIL.BUDGET_PRICE, 0) * NVL(NVL(PRM_PURCHASE_REQ_DETAIL.HANDLE_AMOUNT, PRM_PURCHASE_REQ_DETAIL.AMOUNT), 0)) MONEY
+    FROM PRM_PURCHASE_REQ
+    LEFT JOIN (SELECT * FROM PRM_PURCHASE_REQ_DETAIL WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PRM_PURCHASE_REQ_DETAIL
+    ON PRM_PURCHASE_REQ.UUID = PRM_PURCHASE_REQ_DETAIL.PRM_PURCHASE_REQ_ID
+    WHERE PRM_PURCHASE_REQ.STATE IN ('2')
+    AND NVL(PRM_PURCHASE_REQ_DETAIL.ISFALLBACK, 0) <> 1
+    AND PRM_PURCHASE_REQ_DETAIL.PRM_BUDGET_TYPE IN ('PRINCIPAL','ACCESSORY','OUTSOURCE')
+    AND (PRM_PURCHASE_REQ.IS_VOID = 0 OR PRM_PURCHASE_REQ.IS_VOID IS NULL)
+    GROUP BY PRM_PURCHASE_REQ.PRM_PROJECT_MAIN_ID
+  ) PRM_PURCHASE_REQ
+  ON PRM_PROJECT_MAIN.UUID = PRM_PURCHASE_REQ.PRM_PROJECT_MAIN_ID
+  
+  --采购申请的预算控制成本
+  LEFT JOIN
+  (
+    SELECT
+    VW_PRM_BUDGET_DETAIL.PRM_PROJECT_MAIN_ID,
+    SUM(NVL(VW_PRM_BUDGET_DETAIL.COST_CONTROL_MONEY, 0)) SUM_ESTIMATED_COST
+    FROM VW_PRM_BUDGET_DETAIL
+    WHERE VW_PRM_BUDGET_DETAIL.BUDGET_CODE IN ('PRINCIPAL','ACCESSORY','OUTSOURCE')
+    GROUP BY VW_PRM_BUDGET_DETAIL.PRM_PROJECT_MAIN_ID
+  ) VW_PRM_BUDGET_DETAIL1
+  ON PRM_PROJECT_MAIN.UUID = VW_PRM_BUDGET_DETAIL1.PRM_PROJECT_MAIN_ID
+  
+  --支出额
+  LEFT JOIN
+  (
+   SELECT
+   VW_BUDGET_DETAIL.PROJECT_ID PRM_PROJECT_MAIN_ID,
+   SUM(NVL(VW_BUDGET_DETAIL.MONEY, 0)) MONEY
+   FROM VW_BUDGET_DETAIL
+   WHERE NVL(VW_BUDGET_DETAIL.IS_PROJECT, 0) = 1
+   GROUP BY VW_BUDGET_DETAIL.PROJECT_ID
+  ) VW_BUDGET_DETAIL
+  ON PRM_PROJECT_MAIN.UUID = VW_BUDGET_DETAIL.PRM_PROJECT_MAIN_ID
+  
+  --支出额的预算控制成本
+  LEFT JOIN
+  (
+    SELECT
+    VW_PRM_BUDGET_DETAIL.PRM_PROJECT_MAIN_ID,
+    SUM(NVL(VW_PRM_BUDGET_DETAIL.COST_CONTROL_MONEY, 0)) SUM_ESTIMATED_COST
+    FROM VW_PRM_BUDGET_DETAIL
+    WHERE VW_PRM_BUDGET_DETAIL.BUDGET_CODE = 'ESTIMATED_COST'
+    GROUP BY VW_PRM_BUDGET_DETAIL.PRM_PROJECT_MAIN_ID
+  ) VW_PRM_BUDGET_DETAIL2
+  ON PRM_PROJECT_MAIN.UUID = VW_PRM_BUDGET_DETAIL2.PRM_PROJECT_MAIN_ID
+  
+  --结算合同额
+  LEFT JOIN
+  (
+       SELECT
+       PRM_FINAL_ESTIMATE.PRM_PROJECT_MAIN_ID,
+       SUM(NVL(PRM_FINAL_ESTIMATE.SQUARE_PROJECT_MONEY, 0)) SUM_PROJECT_MONEY
+       FROM PRM_FINAL_ESTIMATE
+       WHERE
+       (
+         (
+           PRM_FINAL_ESTIMATE.SQUARE_TYPE = '0' AND PRM_FINAL_ESTIMATE.STATE = '2'
+         )
+         OR
+         (
+           PRM_FINAL_ESTIMATE.SQUARE_TYPE = '1' AND EXISTS(SELECT 1 FROM PRM_PROJECT_MAIN WHERE PRM_PROJECT_MAIN.UUID = PRM_FINAL_ESTIMATE.PRM_PROJECT_MAIN_ID AND NVL(PRM_PROJECT_MAIN.STATE, '2') = '1')
+         )
+         OR
+         (
+           PRM_FINAL_ESTIMATE.SQUARE_TYPE = '3' AND EXISTS(SELECT 1 FROM PRM_PROJECT_MAIN WHERE PRM_PROJECT_MAIN.UUID = PRM_FINAL_ESTIMATE.PRM_PROJECT_MAIN_ID AND NVL(PRM_PROJECT_MAIN.STATE, '2') = '3')
+         )
+       )
+       AND (IS_VOID = 0 OR IS_VOID IS NULL)
+       GROUP BY PRM_FINAL_ESTIMATE.PRM_PROJECT_MAIN_ID
+  ) PRM_FINAL_ESTIMATE
+  ON PRM_PROJECT_MAIN.UUID = PRM_FINAL_ESTIMATE.PRM_PROJECT_MAIN_ID
+  WHERE
+  (PRM_PROJECT_MAIN.IS_VOID = 0 OR PRM_PROJECT_MAIN.IS_VOID IS NULL)
+) PROJECT_DYNAMICPIC_SON1
+WHERE 项目部门 = '${officeId}'
+AND 项目代号 LIKE '%${projectCode}%'
+AND 项目名称 LIKE '%${projectName}%'
+ORDER BY 项目时间 ASC,项目代号 ASC]]></Query>
+</TableData>
+</TableDataMap>
+<ReportWebAttr>
+<ServerPrinter/>
+<WebPageContent>
+<ToolBars/>
+<WebPage isPage="false" isShowAsImage="false" isAutoScale="false" isTDHeavy="false"/>
+</WebPageContent>
+<Background name="ColorBackground" color="-460552"/>
+</ReportWebAttr>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[720000,720000,10020300,720000,723900,533400,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[0,3600000,10080000,0,0,0,0,12960000,12960000,2743200,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" cs="9" s="0">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=$officeIdDesc + " 项目收支动态图(单位:万元)"]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" s="1">
+<O>
+<![CDATA[项目ID]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" s="2">
+<O>
+<![CDATA[项目代号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="1" s="2">
+<O>
+<![CDATA[项目名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="1" s="1">
+<O>
+<![CDATA[结算进度]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="1" s="1">
+<O>
+<![CDATA[支出进度]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="1" s="1">
+<O>
+<![CDATA[采购进度]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="1" s="1">
+<O>
+<![CDATA[收款进度]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="1" s="1">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="1" s="1">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="VW_PROJECT_DYNAMICPIC_BASE" columnName="项目ID"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="VW_PROJECT_DYNAMICPIC_BASE" columnName="项目代号"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="VW_PROJECT_DYNAMICPIC_BASE" columnName="项目名称"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="网络报表1">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters>
+<Parameter>
+<Attributes name="project_id"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=A3]]></Attributes>
+</O>
+</Parameter>
+</Parameters>
+<TargetFrame>
+<![CDATA[_blank]]></TargetFrame>
+<Features width="600" height="400"/>
+<ReportletName showPI="true" byPost="true">
+<![CDATA[/erp/ygb/YG009.cpt]]></ReportletName>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand dir="0"/>
+</C>
+<C c="3" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="VW_PROJECT_DYNAMICPIC_BASE" columnName="结算进度"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="VW_PROJECT_DYNAMICPIC_BASE" columnName="支出进度"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="VW_PROJECT_DYNAMICPIC_BASE" columnName="采购进度"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="VW_PROJECT_DYNAMICPIC_BASE" columnName="收款进度"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="2" s="1">
+<O t="CC">
+<LayoutAttr selectedIndex="0"/>
+<Chart name="默认" chartClass="com.fr.chart.chartattr.Chart">
+<Chart class="com.fr.chart.chartattr.Chart">
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-6908266"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<ChartAttr isJSDraw="true" isStyleGlobal="false"/>
+<Title>
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-6908266"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<O>
+<![CDATA[新建图表标题]]></O>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="微软雅黑" style="0" size="88"/>
+</Attr>
+</TextAttr>
+<TitleVisible value="false" position="0"/>
+</Title>
+<Plot class="com.fr.chart.chartattr.Bar2DPlot">
+<CategoryPlot>
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<Attr isNullValueBreak="true" autoRefreshPerSecond="0" seriesDragEnable="false" plotStyle="0" combinedSize="50.0"/>
+<newHotTooltipStyle>
+<AttrContents>
+<Attr showLine="false" position="1" isWhiteBackground="true" isShowMutiSeries="false" seriesLabel="${VALUE}"/>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#.##]]></Format>
+<PercentFormat>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.##%]]></Format>
+</PercentFormat>
+</AttrContents>
+</newHotTooltipStyle>
+<ConditionCollection>
+<DefaultAttr class="com.fr.chart.chartglyph.ConditionAttr">
+<ConditionAttr name="">
+<AttrList>
+<Attr class="com.fr.chart.base.AttrContents">
+<AttrContents>
+<Attr showLine="false" position="0" isWhiteBackground="true" isShowMutiSeries="false" seriesLabel="${VALUE}"/>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="宋体" style="0" size="72"/>
+</Attr>
+</TextAttr>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.00%]]></Format>
+<PercentFormat>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#.##%]]></Format>
+</PercentFormat>
+</AttrContents>
+</Attr>
+</AttrList>
+</ConditionAttr>
+</DefaultAttr>
+</ConditionCollection>
+<Legend>
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-6908266"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<Attr position="4" visible="false"/>
+<FRFont name="微软雅黑" style="0" size="72"/>
+</Legend>
+<DataSheet>
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="1" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-16777216"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<Attr isVisible="false"/>
+</DataSheet>
+<newPlotFillStyle>
+<AttrFillStyle>
+<AFStyle colorStyle="0"/>
+<FillStyleName fillStyleName=""/>
+</AttrFillStyle>
+</newPlotFillStyle>
+<RectanglePlotAttr interactiveAxisTooltip="false"/>
+<xAxis>
+<CategoryAxis class="com.fr.chart.chartattr.CategoryAxis">
+<newAxisAttr isShowAxisLabel="true"/>
+<AxisLineStyle AxisStyle="1" MainGridStyle="0"/>
+<newLineColor mainGridColor="-4144960" lineColor="-5197648"/>
+<AxisPosition value="2"/>
+<TickLine201106 type="2" secType="0"/>
+<ArrowShow arrowShow="false"/>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="微软雅黑" style="0" size="72"/>
+</Attr>
+</TextAttr>
+<AxisLabelCount value="=0"/>
+<AxisRange/>
+<AxisUnit201106 isCustomMainUnit="false" isCustomSecUnit="false" mainUnit="=0" secUnit="=0"/>
+<ZoomAxisAttr isZoom="false"/>
+<axisReversed axisReversed="false"/>
+</CategoryAxis>
+</xAxis>
+<yAxis>
+<ValueAxis class="com.fr.chart.chartattr.ValueAxis">
+<ValueAxisAttr201108 alignZeroValue="false"/>
+<newAxisAttr isShowAxisLabel="true"/>
+<AxisLineStyle AxisStyle="1" MainGridStyle="1"/>
+<newLineColor mainGridColor="-4144960" lineColor="-5197648"/>
+<AxisPosition value="3"/>
+<TickLine201106 type="2" secType="2"/>
+<ArrowShow arrowShow="false"/>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="Century Gothic" style="0" size="72"/>
+</Attr>
+</TextAttr>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.00%]]></Format>
+<AxisLabelCount value="=0"/>
+<AxisRange minValue="=0" maxValue="=1"/>
+<AxisUnit201106 isCustomMainUnit="true" isCustomSecUnit="false" mainUnit="=0.2" secUnit="=0"/>
+<ZoomAxisAttr isZoom="false"/>
+<axisReversed axisReversed="false"/>
+</ValueAxis>
+</yAxis>
+<secondAxis>
+<ValueAxis class="com.fr.chart.chartattr.ValueAxis">
+<ValueAxisAttr201108 alignZeroValue="false"/>
+<newAxisAttr isShowAxisLabel="true"/>
+<AxisLineStyle AxisStyle="1" MainGridStyle="1"/>
+<newLineColor mainGridColor="-4144960" lineColor="-5197648"/>
+<AxisPosition value="4"/>
+<TickLine201106 type="2" secType="0"/>
+<ArrowShow arrowShow="false"/>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="Century Gothic" style="0" size="72"/>
+</Attr>
+</TextAttr>
+<AxisLabelCount value="=0"/>
+<AxisRange/>
+<AxisUnit201106 isCustomMainUnit="false" isCustomSecUnit="false" mainUnit="=0" secUnit="=0"/>
+<ZoomAxisAttr isZoom="false"/>
+<axisReversed axisReversed="false"/>
+</ValueAxis>
+</secondAxis>
+<CateAttr isStacked="false"/>
+<BarAttr isHorizontal="true" overlap="-0.25" interval="1.0"/>
+<Bar2DAttr isSimulation3D="false"/>
+</CategoryPlot>
+</Plot>
+<ChartDefinition>
+<NormalReportDataDefinition>
+<Series>
+<SeriesDefinition>
+<SeriesName>
+<O>
+<![CDATA[收支进度]]></O>
+</SeriesName>
+<SeriesValue>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D3:G3]]></Attributes>
+</O>
+</SeriesValue>
+</SeriesDefinition>
+</Series>
+<Category>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D2:G2]]></Attributes>
+</O>
+</Category>
+<Top topCate="-1" topValue="-1" isDiscardOtherCate="false" isDiscardOtherSeries="false" isDiscardNullCate="false" isDiscardNullSeries="false"/>
+</NormalReportDataDefinition>
+</ChartDefinition>
+</Chart>
+</Chart>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="2" s="1">
+<O t="SubReport">
+<SubReportAttr/>
+<packee class="com.fr.main.impl.LinkWorkBookTemplate">
+<Path>
+<![CDATA[erp/prm/项目收支动态图_子报表_2_折线图.cpt]]></Path>
+</packee>
+<KVS>
+<KV key="项目代号">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=B3]]></Attributes>
+</O>
+</KV>
+</KVS>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="3" cs="6">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[="打印日期：" + NOW()]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting>
+<PaperSize width="40608000" height="19152000"/>
+<Margin top="0" left="0" bottom="0" right="0"/>
+</PaperSetting>
+<Background name="NullBackground"/>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+<Parameter>
+<Attributes name="cata"/>
+<O>
+<![CDATA[SUV]]></O>
+</Parameter>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="96"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72" foreground="-16776961" underline="1"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="2"/>
+</WorkBook>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>certificate-dao</daotype>
+        <daokey>common_query_accsubjRtfreevalue</daokey>
+    </querysql>
+    <defaultSort>to_number(uuid) asc</defaultSort>
+    <conditions columns="4">
+        <JHidden cid="subjectCode$Optr" value="^"/>
+        <JText pos="A1:A1" cid="subjectCode" fieldLabel_s="subjectCode" field="subject_code"/>
+        <JText pos="A2:A2" cid="subjectName" fieldLabel_s="subjectName" field="subject_name"/>
+
+        <JInt pos="B1:B1" cid="subjectLev" fieldLabel_s="subjectLev" field="subject_lev"/>
+
+        <!--<JText pos="C1:C1" cid="accountNo" fieldLabel_s="accountNo" field="account_no"/>
+        <JText pos="C2:C2" cid="accountType" fieldLabel_s="accountType" field="account_type"/>-->
+        <!--<JCombo pos="C1:C1" cid="accountNo" fieldLabel_s="accountType" field="account_no"
+                comboType="fm_fad_rtfreevalue_account_no" displayDesc_b="true" multiSelect_b="true"/>-->
+    </conditions>
+    <results>
+        <JTextCol text_s="subjectCode" dataIndex="subjectCode" width_n="100"/>
+        <JTextCol text_s="subjectName" dataIndex="subjectName" width_n="100"/>
+        <JTextCol text_s="subjectLev" dataIndex="subjectLev" width_n="100"/>
+        <JTextCol text_s="accountNo" dataIndex="accountNo" width_n="100"/>
+        <JTextCol text_s="accountType" dataIndex="accountType" width_n="100"/>
+    </results>
+</commonquery>

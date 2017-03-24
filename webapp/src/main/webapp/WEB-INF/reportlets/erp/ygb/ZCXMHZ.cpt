@@ -1,0 +1,1207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="T1" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="year"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="month"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+       O.ORG_CODE,
+       O.ORG_NAME,
+       PRM.COUNT,
+       PRM.PROJECT_MONEY / 10000 AS PROJECT_MONEY,
+       PRM.COST / 10000 AS COST,
+       PRM.RECEIPTS / 10000 AS RECEIPTS,
+       PRM.LOCK_COST / 10000 AS LOCK_COST,
+       PRM.LOCK_INVOICE / 10000 AS LOCK_INVOICE,
+       PRM.I_COUNT, --内委
+       PRM.I_PROJECT_MONEY / 10000 AS I_PROJECT_MONEY,
+       PRM.I_COST / 10000 AS I_COST,
+       PRM.I_RECEIPTS / 10000 AS I_RECEIPTS,
+       PRM.I_LOCK_COST / 10000 AS I_LOCK_COST,
+       PRM.I_LOCK_INVOICE / 10000 AS I_LOCK_INVOICE,
+       PRM.FIVE_COUNT AS FIVE_COUNT,
+       PRM.FIVE_MONEY / 10000 AS FIVE_MONEY
+  FROM SCDP_ORG O
+ INNER JOIN (SELECT *
+               FROM SCDP_EXPAND_ROW
+              WHERE EXPAND_CODE = 'DEPT_PROP'
+                AND EXPAND_VALUE = '事业部' AND (IS_VOID = 0 OR IS_VOID IS NULL)) OE
+    ON O.UUID = OE.DATA_UUID
+  LEFT JOIN (SELECT PM.CONTRACTOR_OFFICE,
+                    COUNT(PM.UUID) AS COUNT,
+                    SUM(PM.PROJECT_MONEY) AS PROJECT_MONEY,
+                    SUM(PM.COST) AS COST,
+                    SUM(PM.RECEIPTS) AS RECEIPTS,
+                    SUM(PM.LOCK_COST) AS LOCK_COST,
+                    SUM(PM.LOCK_INVOICE) AS LOCK_INVOICE,
+                    SUM(DECODE(PM.IS_INNER, 1, 1, 0)) AS I_COUNT,
+                    SUM(DECODE(PM.IS_INNER, 1, PM.PROJECT_MONEY, 0)) AS I_PROJECT_MONEY,
+                    SUM(DECODE(PM.IS_INNER, 1, PM.COST, 0)) AS I_COST,
+                    SUM(DECODE(PM.IS_INNER, 1, PM.RECEIPTS, 0)) AS I_RECEIPTS,
+                    SUM(DECODE(PM.IS_INNER, 1, PM.LOCK_COST, 0)) AS I_LOCK_COST,
+                    SUM(DECODE(PM.IS_INNER, 1, PM.LOCK_INVOICE, 0)) AS I_LOCK_INVOICE,
+                    SUM(CASE
+                          WHEN TO_NUMBER(TO_CHAR(SYSDATE, 'yyyy')) -
+                               TO_NUMBER(TO_CHAR(PM.ESTABLISH_DATE, 'yyyy')) >= 5 THEN
+                           1
+                          ELSE
+                           0
+                        END) AS FIVE_COUNT,
+                    SUM(CASE
+                          WHEN TO_NUMBER(TO_CHAR(SYSDATE, 'yyyy')) -
+                               TO_NUMBER(TO_CHAR(PM.ESTABLISH_DATE, 'yyyy')) >= 5 THEN
+                           PM.PROJECT_MONEY
+                          ELSE
+                           0
+                        END) AS FIVE_MONEY
+               FROM (
+                     
+                     SELECT  M.UUID,
+                             M.PRM_PROJECT_MAIN_ID,
+                             M.PROJECT_NAME,
+                             M.PROJECT_CODE,
+                             M.CONTRACTOR_OFFICE,
+                             M.ESTABLISH_DATE,
+                             NVL(M.PROJECT_MONEY, 0) -
+                             SUM(NVL(E.SQUARE_PROJECT_MONEY, 0)) AS PROJECT_MONEY,
+                             NVL(M.COST_CONTROL_MONEY, 0) -
+                             SUM(NVL(E.SQUARE_COST, 0)) AS COST,
+                             NVL(R.ACTUAL_MONEY, 0) -
+                             SUM(NVL(E.SQUARE_PROJECT_MONEY, 0)) AS RECEIPTS,
+                             NVL(VFCRP.SUM_PAY_MONEY_ALL, 0) + NVL(BDC.TAX, 0) -
+                             SUM(NVL(E.SQUARE_COST, 0)) AS LOCK_COST,
+                             NVL(PI.LOCKED_INVOICE, 0) + NVL(BDC.TAX, 0)-
+                             SUM(NVL(E.SQUARE_COST, 0)) AS LOCK_INVOICE,
+                             DECODE(SUBSTR(M.PROJECT_CODE, 8, 1), '9', 1, 0) IS_INNER
+                       FROM --截止日期的项目立项数据
+                             (SELECT *
+                                FROM (SELECT MC.*,
+                                             ROW_NUMBER() OVER(PARTITION BY MC.PRM_PROJECT_MAIN_ID ORDER BY MC.AUDIT_TIME DESC) AS ROW_NUM
+                                        FROM PRM_PROJECT_MAIN_C MC
+                                       WHERE NOT EXISTS
+                                       (SELECT 1
+                                                FROM PRM_FINAL_ESTIMATE PFE
+                                               WHERE PFE.PRM_PROJECT_MAIN_ID =
+                                                     MC.PRM_PROJECT_MAIN_ID
+                                                 AND PFE.SQUARE_TYPE = 1
+                                                 AND (IS_VOID = 0 OR IS_VOID IS NULL)
+                                                 AND PFE.SQUARE_DATE <
+                                                     ADD_MONTHS(TO_DATE('${year}' || '${month}',
+                                                             'YYYYMM'),1)) --未完工结算
+                                         AND (SUBSTR(MC.PROJECT_CODE, 1, 1) <> '研' OR
+                                             SUBSTR(MC.PROJECT_CODE, 7, 2) = 'KY') --非外部研发
+                                         AND MC.PROJECT_CODE NOT LIKE '固%' --非固定类型项目
+                                         AND MC.IS_PRE_PROJECT <> 1 --非预立项
+                                         AND (MC.IS_VOID = 0 OR MC.IS_VOID IS NULL)
+                                         AND MC.STATE = '2' --已审核数据
+                                         AND MC.AUDIT_TIME <
+                                             ADD_MONTHS(TO_DATE('${year}' || '${month}', 'YYYYMM'),1)) MMC
+                               WHERE MMC.ROW_NUM = 1) M
+                       LEFT JOIN (SELECT *
+                                    FROM PRM_FINAL_ESTIMATE PFE
+                                   WHERE PFE.SQUARE_DATE IS NOT NULL
+                                     AND (IS_VOID = 0 OR IS_VOID IS NULL)
+                                     AND PFE.SQUARE_DATE <
+                                         ADD_MONTHS(TO_DATE('${year}' || '${month}', 'YYYYMM'),1)) E
+                         ON M.PRM_PROJECT_MAIN_ID = E.PRM_PROJECT_MAIN_ID
+                     --收款
+                       LEFT JOIN (SELECT PR.PRM_PROJECT_MAIN_ID,
+                                         SUM(NVL(PR.ACTUAL_MONEY, 0)) AS ACTUAL_MONEY
+                                    FROM PRM_RECEIPTS PR
+                                   WHERE PR.STATE IN ('2', '4', '8')
+                                     AND (IS_VOID = 0 OR IS_VOID IS NULL)
+                                     AND PR.ACTUAL_DATE <
+                                         ADD_MONTHS(TO_DATE('${year}' || '${month}', 'YYYYMM'),1)
+                                   GROUP BY PR.PRM_PROJECT_MAIN_ID) R
+                         ON M.PRM_PROJECT_MAIN_ID = R.PRM_PROJECT_MAIN_ID
+                     
+ --总成本(不含税金、印花税)
+                       LEFT JOIN (
+                               SELECT SUM(LOCKED_BUDGET) AS SUM_PAY_MONEY_ALL,
+                                      PRM_PROJECT_MAIN_ID
+                                 FROM (SELECT SUM(FI.EXPENSES_MONEY) AS LOCKED_BUDGET,
+                                              FI.PRM_PROJECT_MAIN_ID
+                                         FROM FAD_INVOICE FI
+                                        WHERE FI.EXPENSES_TYPE != '0'
+                                          AND FI.STATE IN ('2', '4', '8')
+                                          AND FI.PRM_PROJECT_MAIN_ID IS NOT NULL
+                                          AND FI.CREATE_TIME <
+                                              ADD_MONTHS(TO_DATE('${year}' || '${month}',
+                                                                 'YYYYMM'),
+                                                         1)
+                                          AND (IS_VOID = 0 OR IS_VOID IS NULL)
+                                        GROUP BY FI.PRM_PROJECT_MAIN_ID
+                                       UNION ALL
+                                       SELECT SUM(SC.AMOUNT) LOCKED_BUDGET,
+                                              SC.PROJECT_ID AS PRM_PROJECT_MAIN_ID
+                                         FROM SCM_CONTRACT SC
+                                        WHERE (SC.IS_VOID IS NULL OR SC.IS_VOID = 0)
+                                          AND (SC.STATE IS NULL OR SC.STATE != '3')
+                                          AND SC.CREATE_TIME <
+                                              ADD_MONTHS(TO_DATE('${year}' || '${month}',
+                                                                 'YYYYMM'),
+                                                         1)
+                                        GROUP BY SC.PROJECT_ID
+                                       UNION ALL
+                                       SELECT SUM(NVL(T2.HANDLE_AMOUNT, T2.AMOUNT) *
+                                                  T2.EXPECTED_PRICE) AS LOCKED_BUDGET,
+                                              T1.PRM_PROJECT_MAIN_ID
+                                         FROM PRM_PURCHASE_REQ T1
+                                        INNER JOIN PRM_PURCHASE_REQ_DETAIL T2
+                                           ON T2.PRM_PURCHASE_REQ_ID = T1.UUID
+                                          AND (T2.ISFALLBACK IS NULL OR T2.ISFALLBACK != 1)
+                                         LEFT JOIN PRM_CONTRACT T3
+                                           ON T3.INNER_PURCHASE_REQ_ID = T1.UUID
+                                          AND (T3.IS_VOID IS NULL OR T3.IS_VOID = 0)
+                                        WHERE (T1.IS_VOID IS NULL OR T1.IS_VOID = 0)
+                                          AND T1.IS_INNER = 1
+                                          AND T2.SCM_CONTRACT_ID IS NULL
+                                          AND (T1.STATE IS NULL OR T1.STATE != '3')
+                                          AND T3.UUID IS NULL
+                                          AND T2.CREATE_TIME <
+                                              ADD_MONTHS(TO_DATE('${year}' || '${month}',
+                                                                 'YYYYMM'),
+                                                         1)
+                                        GROUP BY T1.PRM_PROJECT_MAIN_ID
+                                       UNION ALL
+                                       SELECT SUM(CONTRACT_NOW_MONEY) AS LOCKED_BUDGET,
+                                              T1.PRM_PROJECT_MAIN_ID
+                                         FROM PRM_PURCHASE_REQ T1
+                                         LEFT JOIN PRM_CONTRACT T3
+                                           ON T3.INNER_PURCHASE_REQ_ID = T1.UUID
+                                          AND (T3.IS_VOID IS NULL OR T3.IS_VOID = 0)
+                                        WHERE (T1.IS_VOID IS NULL OR T1.IS_VOID = 0)
+                                          AND T1.IS_INNER = 1
+                                          AND (T1.STATE IS NULL OR T1.STATE != '3')
+                                          AND T3.UUID IS NOT NULL
+                                          AND T3.CREATE_TIME <
+                                              ADD_MONTHS(TO_DATE('${year}' || '${month}',
+                                                                 'YYYYMM'),
+                                                         1)
+                                        GROUP BY T1.PRM_PROJECT_MAIN_ID
+                                       UNION ALL
+                                       SELECT SUM(SUB_NEGATIVE_TO_0(NVL(FCR.MONEY, 0),
+                                                                    NVL(FCRI.CLEARANCE_MONEY, 0))) MONEYS,
+                                              FCR.PROJECT_ID AS PRM_PROJECT_MAIN_ID
+                                         FROM FAD_CASH_REQ FCR
+                                         LEFT JOIN (SELECT FAD_CASH_REQ_ID,
+                                                          SUM(T.CLEARANCE_MONEY) AS CLEARANCE_MONEY
+                                                     FROM FAD_CASH_REQ_INVOICE T
+                                                    WHERE (EXISTS
+                                                           (SELECT 1
+                                                              FROM FAD_INVOICE F
+                                                             WHERE F.UUID = T.FAD_INVOICE_ID
+                                                               AND F.STATE IN
+                                                                   ('1', '2', '4', '8', '9')) OR
+                                                           EXISTS
+                                                           (SELECT 1
+                                                              FROM FAD_CASH_CLEARANCE F
+                                                             WHERE F.UUID = T.FAD_INVOICE_ID
+                                                               AND F.STATE = '4'))
+                                                      AND (T.IS_VOID = '0' OR T.IS_VOID IS NULL)
+                                                      AND T.CREATE_TIME <
+                                                          ADD_MONTHS(TO_DATE('${year}' ||
+                                                                             '${month}',
+                                                                             'YYYYMM'),
+                                                                     1)
+                                                    GROUP BY T.FAD_CASH_REQ_ID) FCRI
+                                           ON FCR.UUID = FCRI.FAD_CASH_REQ_ID
+                                        WHERE FCR.REQ_TYPE <> '0' --采购请款
+                                          AND FCR.REQ_TYPE <> '4' --周转金请款
+                                          AND FCR.PROJECT_ID IS NOT NULL
+                                          AND FCR.STATE IN ('1', '2', '4', '8', '9')
+                                          AND FCR.CREATE_TIME <
+                                              ADD_MONTHS(TO_DATE('${year}' || '${month}',
+                                                                 'YYYYMM'),
+                                                         1)
+                                        GROUP BY FCR.PROJECT_ID)
+                                GROUP BY PRM_PROJECT_MAIN_ID
+                              ) VFCRP
+                         ON M.PRM_PROJECT_MAIN_ID = VFCRP.PRM_PROJECT_MAIN_ID
+
+
+                     --税金、印花税
+                       LEFT JOIN (
+                              SELECT PBDC.PRM_PROJECT_MAIN_C_ID,
+                                     SUM(CASE
+                                           WHEN PBDC.BUDGET_CODE = 'STAMP_TAX' THEN
+                                            NVL(PBDC.COST_CONTROL_MONEY, 0)
+                                           ELSE
+                                            NVL(PBDC.COST_CONTROL_MONEY, 0) *
+                                            TAX.R_PERCENT
+                                         END) AS TAX
+                                FROM PRM_BUDGET_DETAIL_C PBDC
+                                LEFT JOIN PRM_PROJECT_MAIN_C MC
+                                  ON PBDC.PRM_PROJECT_MAIN_C_ID = MC.UUID
+                                LEFT JOIN (SELECT M.UUID AS PRM_PROJECT_MAIN_ID,
+                                                  DECODE(M.PROJECT_MONEY,
+                                                         0,
+                                                         0,
+                                                         NVL(T.ACTUAL_MONEY, 0) /
+                                                         M.PROJECT_MONEY) R_PERCENT --收款比例
+                                             FROM PRM_PROJECT_MAIN M
+                                             LEFT JOIN (SELECT PR.PRM_PROJECT_MAIN_ID,
+                                                              SUM(NVL(PR.ACTUAL_MONEY,
+                                                                      0)) AS ACTUAL_MONEY
+                                                         FROM PRM_RECEIPTS PR
+                                                        WHERE PR.STATE IN
+                                                              ('2', '4', '8')
+                                                          AND (IS_VOID = 0 OR
+                                                              IS_VOID IS NULL)
+                                                          AND PR.ACTUAL_DATE <
+                                                              ADD_MONTHS(TO_DATE('${year}' ||
+                                                                                 '${month}',
+                                                                                 'YYYYMM'),
+                                                                         1)
+                                                        GROUP BY PR.PRM_PROJECT_MAIN_ID) T
+                                               ON M.UUID =
+                                                  T.PRM_PROJECT_MAIN_ID
+                                            WHERE (M.IS_VOID = 0 OR
+                                                  M.IS_VOID IS NULL)) TAX
+                                  ON MC.PRM_PROJECT_MAIN_ID =
+                                     TAX.PRM_PROJECT_MAIN_ID
+                               WHERE PBDC.BUDGET_CODE IN
+                                     ('STAMP_TAX', 'TAX_NO_STAMP')
+                                 AND (PBDC.IS_VOID = 0 OR
+                                     PBDC.IS_VOID IS NULL)
+                                 AND (MC.IS_VOID = 0 OR MC.IS_VOID IS NULL)
+                               GROUP BY PBDC.PRM_PROJECT_MAIN_C_ID
+                                ) BDC
+                         ON M.UUID = BDC.PRM_PROJECT_MAIN_C_ID
+                     
+                     --开票成本
+                       LEFT JOIN (SELECT PRMI.PRM_PROJECT_MAIN_ID,
+                                         SUM(NVL(LOCKED_BUDGET, 0)) AS LOCKED_INVOICE
+                                    FROM (SELECT FI.PRM_PROJECT_MAIN_ID,
+                                                 FI.EXPENSES_MONEY AS LOCKED_BUDGET
+                                            FROM FAD_INVOICE FI
+                                           WHERE FI.EXPENSES_TYPE != '0'
+                                             AND FI.STATE IN ('2', '4', '8')
+                                             AND FI.PRM_PROJECT_MAIN_ID IS NOT NULL
+                                             AND (IS_VOID = 0 OR IS_VOID IS NULL)
+                                          UNION ALL
+                                          SELECT T2.PROJECT_ID,
+                                                 T2.AMOUNT AS LOCKED_BUDGET
+                                            FROM FAD_INVOICE T1
+                                           INNER JOIN SCM_CONTRACT_INVOICE T2
+                                              ON T1.UUID = T2.FAD_INVOICE_ID
+                                           WHERE (T1.STATE IS NULL OR
+                                                 T1.STATE != '3')
+                                             AND (T1.IS_VOID = 0 OR T1.IS_VOID IS NULL)
+                                             AND (T2.IS_VOID = 0 OR T2.IS_VOID IS NULL)
+                                          UNION ALL
+                                          SELECT T1.PRM_PROJECT_MAIN_ID,
+                                                 NVL(T2.HANDLE_AMOUNT, T2.AMOUNT) *
+                                                 T2.EXPECTED_PRICE AS LOCKED_BUDGET
+                                            FROM PRM_PURCHASE_REQ T1
+                                           INNER JOIN PRM_PURCHASE_REQ_DETAIL T2
+                                              ON T2.PRM_PURCHASE_REQ_ID =
+                                                 T1.UUID
+                                             AND (T2.ISFALLBACK IS NULL OR
+                                                 T2.ISFALLBACK != 1)
+                                            LEFT JOIN (SELECT * FROM PRM_CONTRACT WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) T3
+                                              ON T3.INNER_PURCHASE_REQ_ID =
+                                                 T1.UUID
+                                           WHERE (T1.IS_VOID = 0 OR T1.IS_VOID IS NULL)
+                                             AND (T2.IS_VOID = 0 OR T2.IS_VOID IS NULL)
+                                             AND T1.IS_INNER = 1
+                                             AND T2.SCM_CONTRACT_ID IS NULL
+                                             AND (T1.STATE IS NULL OR
+                                                 T1.STATE != '3')
+                                             AND T3.UUID IS NULL
+                                          UNION ALL
+                                          SELECT T1.PRM_PROJECT_MAIN_ID,
+                                                 CONTRACT_NOW_MONEY AS LOCKED_BUDGET
+                                            FROM PRM_PURCHASE_REQ T1
+                                            LEFT JOIN (SELECT * FROM PRM_CONTRACT WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) T3
+                                              ON T3.INNER_PURCHASE_REQ_ID =
+                                                 T1.UUID
+                                           WHERE (T1.IS_VOID = 0 OR T1.IS_VOID IS NULL)
+                                             AND T1.IS_INNER = 1
+                                             AND (T1.STATE IS NULL OR
+                                                 T1.STATE != '3')
+                                             AND T3.UUID IS NOT NULL
+                                          ) PRMI
+                                   GROUP BY PRMI.PRM_PROJECT_MAIN_ID) PI
+                         ON M.PRM_PROJECT_MAIN_ID = PI.PRM_PROJECT_MAIN_ID
+                          WHERE
+                          ('${build_region}' IS NULL OR
+                            (EXISTS
+                            (SELECT 1
+                             FROM PRM_CONTRACT C
+                             LEFT JOIN PRM_CONTRACT_DETAIL CD ON C.UUID = CD.PRM_CONTRACT_ID
+                             WHERE CD.PRM_PROJECT_MAIN_ID = M.PRM_PROJECT_MAIN_ID
+                             AND C.BUILD_REGION = '${build_region}')))
+                                              
+                          AND ('${affiliated_institutions}' IS NULL OR
+                             (EXISTS
+                             (SELECT 1
+                              FROM PRM_CONTRACT C
+                              LEFT JOIN PRM_CONTRACT_DETAIL CD ON C.UUID = CD.PRM_CONTRACT_ID
+                              WHERE CD.PRM_PROJECT_MAIN_ID = M.PRM_PROJECT_MAIN_ID
+                              AND C.AFFILIATED_INSTITUTIONS = '${affiliated_institutions}')))
+                     
+                      GROUP BY  M.UUID,
+                                M.PRM_PROJECT_MAIN_ID,
+                                M.CONTRACTOR_OFFICE,
+                                M.ESTABLISH_DATE,
+                                M.PROJECT_MONEY,
+                                M.COST_CONTROL_MONEY,
+                                M.PROJECT_CODE,
+                                R.ACTUAL_MONEY,
+                                VFCRP.SUM_PAY_MONEY_ALL,
+                                BDC.TAX,
+                                PI.LOCKED_INVOICE,
+                                M.PROJECT_NAME
+                     
+                     ) PM
+              GROUP BY PM.CONTRACTOR_OFFICE) PRM
+    ON O.ORG_CODE = PRM.CONTRACTOR_OFFICE
+ WHERE ('${officeId}' IS NULL OR O.ORG_CODE = '${officeId}')
+   AND (O.IS_VOID = 0 OR O.IS_VOID IS NULL)
+ ORDER BY O.SEQ_NO]]></Query>
+</TableData>
+</TableDataMap>
+<ReportWebAttr>
+<ServerPrinter/>
+<WebViewContent>
+<ToolBars/>
+<SortFuncCheck check="true"/>
+<ConditionFuncCheck check="true"/>
+<ListFuncCheck check="true"/>
+</WebViewContent>
+</ReportWebAttr>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1676400,723900,1714500,1066800,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[533400,533400,5867400,2324100,2971800,3124200,3200400,2743200,2971800,3048000,2933700,3048000,2514600,2514600,3238500,3124200,0,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" s="0">
+<PrivilegeControl/>
+<CellGUIAttr/>
+<CellPageAttr/>
+<Expand/>
+</C>
+<C c="1" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="0" cs="14" s="0">
+<O>
+<![CDATA[在册项目汇总表]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="1" s="1">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="1">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="1" s="1">
+<O>
+<![CDATA[单位：万元]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="2" s="2">
+<O>
+<![CDATA[部门]]></O>
+<PrivilegeControl/>
+<CellGUIAttr/>
+<CellPageAttr/>
+<Expand/>
+</C>
+<C c="3" r="2" s="2">
+<O>
+<![CDATA[在册项目数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="2" s="2">
+<O>
+<![CDATA[在册运行额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="2" s="2">
+<O>
+<![CDATA[在册成本总额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="2" s="2">
+<O>
+<![CDATA[在册计划利润]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="2" s="2">
+<O>
+<![CDATA[在册收款]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="2" s="2">
+<O>
+<![CDATA[在册发生成本（合同）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="2" s="2">
+<O>
+<![CDATA[在册盈亏（合同）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="2" s="2">
+<O>
+<![CDATA[在册发生成本（收票）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="2" s="2">
+<O>
+<![CDATA[在册盈亏（收票）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="2" s="2">
+<O>
+<![CDATA[册龄>5年数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="2" s="2">
+<O>
+<![CDATA[册龄>5年数额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="14" r="2" s="2">
+<O>
+<![CDATA[册龄>5年数量占总比（%)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="2" s="2">
+<O>
+<![CDATA[册龄>5年数额占总比（%)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="3">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="ORG_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="JavaScript1">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=Q4]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="buildRegion"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=$build_region]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="affiliatedInstitutions"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=$affiliated_institutions]]></Attributes>
+</O>
+</Parameter>
+</Parameters>
+<Content>
+<![CDATA[parent.postMessage('XmszmxbFromZcxmhz,'+officeId+','+buildRegion+','+affiliatedInstitutions,'*');]]></Content>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<CellGUIAttr/>
+<CellPageAttr/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="3" s="4">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="COUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="3" s="5">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="PROJECT_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="3" s="5">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="COST"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="3" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=E4 - F4]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="3" s="5">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="RECEIPTS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="3" s="5">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="LOCK_COST"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="3" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=H4 - I4]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="3" s="5">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="LOCK_INVOICE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="11" r="3" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=H4-K4]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="3" rs="2" s="6">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="FIVE_COUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="13" r="3" rs="2" s="7">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="FIVE_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="14" r="3" rs="2" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=M4 / D4]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="3" rs="2" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=N4 / E4]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="16" r="3" s="9">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="ORG_CODE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr/>
+<CellPageAttr/>
+<Expand dir="0" leftParentDefault="false" left="C4"/>
+</C>
+<C c="0" r="4">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="4" s="10">
+<O>
+<![CDATA[其中（含）：内委]]></O>
+<PrivilegeControl/>
+<Expand dir="0" upParentDefault="false" up="C4"/>
+</C>
+<C c="3" r="4" s="6">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="I_COUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" upParentDefault="false" up="D4"/>
+</C>
+<C c="4" r="4" s="7">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="I_PROJECT_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" upParentDefault="false" up="E4"/>
+</C>
+<C c="5" r="4" s="7">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="I_COST"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" upParentDefault="false" up="F4"/>
+</C>
+<C c="6" r="4" s="7">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=E5 - F5]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" upParentDefault="false" up="G4"/>
+</C>
+<C c="7" r="4" s="7">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="I_RECEIPTS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="4" s="7">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="I_LOCK_COST"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="4" s="7">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=H5 - I5]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="4" s="7">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="I_LOCK_INVOICE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="11" r="4" s="7">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=H5-K5]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="5" s="2">
+<O>
+<![CDATA[合计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="5" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(D4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="5" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(E4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="5" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(F4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="5" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(G4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="5" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(H4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="5" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(I4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="5" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(J4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="5" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(K4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="5" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(L4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="5" rs="2" s="6">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(M4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="5" rs="2" s="7">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(N4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="14" r="5" rs="2" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=M6 / D6]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="5" rs="2" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=N6 / E6]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="6" s="10">
+<O>
+<![CDATA[其中（含）：内委]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="6" s="11">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(D5)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="6" s="12">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(E5)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="6" s="12">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(F5)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="6" s="12">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(G5)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="6" s="12">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(H5)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="6" s="12">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(I5)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="6" s="12">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(J5)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="6" s="12">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(K5)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="6" s="12">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(L5)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="7" cs="14">
+<O>
+<![CDATA[说明：1、本表不包含固定投资、外部研发、预立项项目。]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="8" cs="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[="打印日期：" + NOW()]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="8">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="9" cs="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[="数据截止日期：" + $year+"-"+$month]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting orientation="1">
+<PaperSize width="33912000" height="46411200"/>
+<Margin top="986400" left="720000" bottom="986400" right="720000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<ReportWriteAttr/>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="false" delayPlaying="true" windowPosition="0" align="1"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="128"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-16777216"/>
+<Bottom style="1" color="-16777216"/>
+<Left style="1" color="-16777216"/>
+<Right style="1" color="-16777216"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="72" foreground="-16776961" underline="1"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0]]></Format>
+<FRFont name="SimSun" style="1" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="1" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.00%]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="2" imageLayout="1">
+<FRFont name="SimSun" style="1" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-16777216"/>
+<Bottom style="1" color="-16777216"/>
+<Left style="1" color="-16777216"/>
+<Right style="1" color="-16777216"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="64"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1" color="-16777216"/>
+<Bottom style="1" color="-16777216"/>
+<Left style="1" color="-16777216"/>
+<Right style="1" color="-16777216"/>
+</Border>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

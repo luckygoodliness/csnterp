@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[
+            select scm.*,
+       DECODE(SCM.IS_PROJECT, 1, PRM.PROJECT_CODE, SCM.SUBJECT_CODE) AS FAD_SUBJECT_CODE,
+
+       NVL(PRM.PROJECT_NAME,
+           (SELECT N.FINANCIAL_SUBJECT
+              FROM NON_PROJECT_SUBJECT_SUBJECT N
+             WHERE N.FINANCIAL_SUBJECT_CODE = SCM.SUBJECT_CODE
+               and (N.IS_VOID is null or N.IS_VOID = 0))) AS PROJECT_NAME,
+
+       case
+         when (select count(stamp_project_uuid)
+                 from prm_purchase_req_detail
+                where SCM_PURCHASE_REQ_ID = scm.uuid
+                  and stamp_project_uuid is not null) > 0 then
+          1
+         else
+          0
+       end as stamp_count,
+
+       org.org_name,
+       case
+         when exists (select 1
+                 from cdm_file_relation cdm
+                where cdm.data_id = scm.prm_purchase_req_id) then
+          '是'
+         else
+          '否'
+       end with_attach
+  from scm_purchase_req scm
+  left join prm_project_main prm
+    on scm.prm_project_main_id = prm.uuid
+  left join scdp_org org
+    on scm.office_id = org.org_code
+where ${conditions} and ${selfconditions}
+            ]]>
+        </common>
+    </common_query>
+
+    <detail_info_query>
+        <common>
+            <![CDATA[select dt.*,(select  PROJECT_CODE from PRM_PROJECT_MAIN t1 where dt.stamp_project_uuid = t1.uuid) as project_code ,
+       prp.PACKAGE_NAME,
+       prp.PACKAGE_NO,
+       case
+         when dt.technical_drawing is null then
+          '否'
+         else
+          '是'
+       end with_attach
+  From prm_purchase_req_detail dt
+  left join PRM_PURCHASE_PACKAGE prp
+    on dt.PURCHASE_PACKAGE_ID = prp.uuid
+ where 1 = 1
+   and (scm_contract_code is null or (scm_contract_code not like 'L%' and
+       scm_contract_code not like 'S%' and
+       scm_contract_code not like 'W%' and
+       scm_contract_code not like 'Z%'))
+  and ${selfconditions}]]>
+        </common>
+    </detail_info_query>
+    <quotation_main_query>
+        <common>
+            <![CDATA[SELECT A.REFID,
+                       A.TITLE,
+                       A.PROJECT_CODE,
+                       A.REFNO,
+                       A.DEPT_CODE,
+                       A.PROCESSOR,
+                       A.PROCESS_DATE,
+                       B.CONTACT,
+                       B.TEL,
+                       B.REMARK
+                  FROM (SELECT SC.UUID AS REFID,
+                               M.PROJECT_NAME AS TITLE,
+                               M.PROJECT_CODE AS PROJECT_CODE,
+                               SC.SCM_CONTRACT_CODE AS REFNO,
+                               (SELECT O.ORG_NAME
+                                  FROM SCDP_ORG O
+                                 WHERE O.ORG_CODE = SC.OFFICE_ID) AS DEPT_CODE,
+                               (SELECT U.USER_NAME
+                                  FROM SCDP_USER U
+                                 WHERE U.USER_ID = SC.CREATE_BY) AS PROCESSOR,
+                               TO_CHAR(SC.CREATE_TIME, 'YYYY-MM-DD') AS PROCESS_DATE,
+                               'connect' AS FLAG
+                          FROM SCM_CONTRACT SC
+                          LEFT JOIN PRM_PROJECT_MAIN M ON SC.PROJECT_ID = M.UUID
+                         WHERE SC.UUID = ?) A
+                  LEFT JOIN (SELECT (LISTAGG(T.ARRIVE_LOCATION, ',') WITHIN GROUP(ORDER BY NULL)) AS RCV_PLACE,
+                                    (LISTAGG(T.CONSIGNEE, ',') WITHIN GROUP(ORDER BY NULL)) AS CONTACT,
+                                    (LISTAGG(T.CONTACT_WAY, ',') WITHIN GROUP(ORDER BY NULL)) AS TEL,
+                                    (LISTAGG(T.REMARK, ',') WITHIN GROUP(ORDER BY NULL)) AS REMARK,
+                                    'connect' AS FLAG
+                               FROM (SELECT DISTINCT D.ARRIVE_LOCATION,
+                                                     D.CONSIGNEE,
+                                                     D.CONTACT_WAY,
+                                                     D.REMARK
+                                       FROM SCM_CONTRACT SC
+                                       LEFT JOIN PRM_PURCHASE_REQ_DETAIL D ON SC.UUID =
+                                                                              D.SCM_CONTRACT_ID
+                                      WHERE SC.UUID = ?) T) B ON A.FLAG =B.FLAG
+        ]]>
+        </common>
+    </quotation_main_query>
+    <quotation_detail_query>
+        <common>
+            <![CDATA[SELECT D.SERIAL_NUMBER AS SEQNO,
+                            D.NAME,
+                            D.MODEL,
+                            D.FACTORY AS SUPPLIER,
+                            D.UNIT AS QUANTITY_UNIT,
+                            D.AMOUNT AS QUANTITY,
+                            D.EXPECTED_PRICE,
+                            D.REMARK,
+                            D.ARRIVE_DATE AS RCV_DATE
+                       FROM SCM_CONTRACT SC
+                       LEFT JOIN PRM_PURCHASE_REQ_DETAIL D ON SC.UUID = D.SCM_CONTRACT_ID
+                      WHERE SC.UUID = ?
+        ]]>
+        </common>
+    </quotation_detail_query>
+</DAO>

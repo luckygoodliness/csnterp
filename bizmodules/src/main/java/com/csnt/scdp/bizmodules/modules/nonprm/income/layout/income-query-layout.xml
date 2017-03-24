@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>income-dao</daotype>
+        <daokey>common_query_year</daokey>
+        <!--<daokey>common_query_new</daokey>-->
+    </querysql>
+    <defaultSort>year desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="A2:A2" fieldLabel_s="year" cid="uuid_query" field="year"/>
+        <!--<JText pos="A3:A3" fieldLabel_s="updateBy" cid="updateby" field="update_by"/>-->
+        <!--<JFromTo pos="B2:C2" subXtype="JDatetime" fieldLabel_s="createTime" cid="createTime" field="create_time"/>-->
+        <!--<JFromTo pos="B3:C3" subXtype="JDatetime" fieldLabel_s="updateTime" cid="updateTime" field="update_time"/>-->
+    </conditions>
+    <results>
+            <JTextCol text_s="year" dataIndex="uuid" width_n="120"/>
+    </results>
+</commonquery>

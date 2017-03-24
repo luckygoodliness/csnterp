@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>prmrolefilter-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4"  row="23">
+        <!--<JText pos="A1:A1" fieldLabel_s="roleName" cid="roleName" field="role_name"/>-->
+         <JCombo comboType="scdp_role"  displayDesc_b="true" fieldLabel_s="roleName"  cid="roleName" field="uuid"
+                    maxLength_n="32" width_n="305"/>
+
+    </conditions>
+    <results>
+            <JTextCol text_s="roleName" dataIndex="roleName" width_n="120"/>
+            <JTextCol text_s="roleDesc" dataIndex="roleDesc" width_n="120"/>
+            <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+            <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+            <JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>
+            <JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>
+    </results>
+</commonquery>

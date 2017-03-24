@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[SELECT *
+              FROM (SELECT (SELECT A.USER_NAME
+                              FROM SCDP_USER A
+                             WHERE A.USER_ID = T.PRINCIPAL) AS PRINCIPAL_NAME,
+                           (SELECT B.ORG_NAME
+                              FROM SCDP_ORG B
+                             WHERE B.ORG_CODE = T.OFFICE_ID) AS OFFICE_ID_NAME,
+                           (SELECT M.PROJECT_NAME
+                              FROM PRM_PROJECT_MAIN M
+                             WHERE T.PRM_PROJECT_MAIN_ID = M.UUID) AS PRM_PROJECT_MAIN_ID_NAME,
+                           RD.ALL_NAME,
+                           P.PROJECT_CODE,
+                           T.*
+                      FROM SCM_PURCHASE_REQ T
+                      LEFT JOIN (SELECT SCM_PURCHASE_REQ_ID, LISTAGG(RD.NAME, ';') WITHIN
+                                 GROUP(
+                                 ORDER BY RD.UUID) AS ALL_NAME
+                                  FROM (SELECT *
+                                          FROM (SELECT RD.*,
+                                                       ROW_NUMBER() OVER(PARTITION BY RD.SCM_CONTRACT_ID ORDER BY RD.EXPECTED_PRICE * RD.AMOUNT DESC) AS ROW_NUMBER
+                                                  FROM PRM_PURCHASE_REQ_DETAIL RD) RD
+                                         WHERE RD.ROW_NUMBER <= 10) RD
+                                 GROUP BY RD.SCM_PURCHASE_REQ_ID) RD ON T.UUID =
+                                                                        RD.SCM_PURCHASE_REQ_ID(+)
+                      LEFT JOIN PRM_PROJECT_MAIN P ON T.PRM_PROJECT_MAIN_ID = P.UUID)t
+                                WHERE  ${conditions} and ${voidfilter} and ${selfconditions} ]]>
+        </common>
+    </common_query>
+    <update_principalname>
+        <common>
+            UPDATE SCM_PURCHASE_REQ SET PRINCIPAL=?,UPDATE_BY=?,UPDATE_TIME=SYSDATE WHERE ${selfConditions}
+        </common>
+    </update_principalname>
+</DAO>

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>certificate-dao</daotype>
+        <daokey>common_query_single</daokey>
+    </querysql>
+    <defaultSort>seq_no desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="A1:A1" cid="certificateNo" fieldLabel_s="certificateNo" field="certificate_no"/>
+        <JText pos="B1:B1" cid="years" fieldLabel_s="years" field="years" maxLength_n="4"/>
+        <JText pos="C1:C1" cid="months" fieldLabel_s="months" field="months" maxLength_n="2"/>
+        <JUserGrid pos="D1:D1" cid="makerName" fieldLabel_s="maker"
+                   refer_j='[{"refField":"maker","valueField":"userId"}]'/>
+        <JHidden cid="maker" field="maker"/>
+
+        <JFromTo pos="A2:B2" subXtype="JDatetime" cid="certificateDate" fieldLabel_s="certificateDate"
+                 field="certificate_date"/>
+        <!--<JFromTo pos="C2:D2" subXtype="JDatetime" cid="makeDate" fieldLabel_s="makeDate" field="make_date"/>-->
+
+        <JText pos="A3:A3" cid="abstracts" fieldLabel_s="abstracts" field="abstracts"/>
+        <JText pos="B3:B3" cid="receiverOrPayerName" fieldLabel_s="receiverOrPayerName" field="receiver_or_payer_name"/>
+        <JCombo pos="C3:C3" cid="debtorSymbol" fieldLabel_s="debtorSymbol"
+                comboType="fm_fad_certificate_debtor_symbol" displayDesc_b="true"/>
+        <JText pos="D3:D3" cid="debtorSearch" fieldLabel_s="debtorSearch"/>
+
+        <JCombo pos="A4:A4" cid="state" fieldLabel_s="state" field="state" comboType="scdp_fmcode"
+                codeType="FAD_CERTIFICATE_STATE" displayDesc_b="true" multiSelect_b="true"/>
+        <JText pos="B4:B4" cid="originalFormCode" fieldLabel_s="originalFormCode" field="original_form_code"/>
+        <JCombo pos="C4:C4" cid="originalFormType" fieldLabel_s="originalFormType" field="original_form_type"
+                comboType="fm_fad_certificate_detail_originalformtype" displayDesc_b="true" multiSelect_b="true"/>
+
+
+        <JCombo pos="A5:A5" cid="ncState" fieldLabel_s="ncState" field="nc_state"
+                comboType="fm_fad_certificate_nc_state" displayDesc_b="true" multiSelect_b="true"/>
+
+        <JCombo pos="B5:B5" cid="deficitCertifiState" fieldLabel_s="deficitCertifiState" field="deficit_certifi_state"
+                comboType="fm_fad_certificate_deficit_certifi_state" displayDesc_b="true" multiSelect_b="true"/>
+
+        <JCombo pos="C5:C5" cid="copyAddState" fieldLabel_s="copyAddState" field="copy_add_state"
+                comboType="fm_fad_certificate_copy_add_state" displayDesc_b="true" multiSelect_b="true"/>
+
+        <JCombo pos="D5:D5" cid="mergeSplitState" fieldLabel_s="mergeSplitState" field="merge_split_state"
+                comboType="fm_fad_certificate_merge_split_state" displayDesc_b="true" multiSelect_b="true"/>
+
+        <!--<JButton pos="A6:A6" cid="originalToCertificate" text_s="originalToCertificate"/>
+        <JText pos="B6:B6" cid="businessId" fieldLabel_s="businessId"/>
+        <JCombo pos="C6:C6" cid="originalFormTypeForeign" fieldLabel_s="originalFormTypeForeign"
+                comboType="fm_fad_certificate_detail_originalformtype_foreign" displayDesc_b="true"/>
+        <JText pos="D6:D6" cid="fadCertificateUuid" fieldLabel_s="fadCertificateUuid"/>-->
+    </conditions>
+    <results resultGridConfig="{'autoResizeColumn':false}">
+        <JTextCol text_s="certificateNo" dataIndex="certificateNo" width_n="100"/>
+        <JTextCol text_s="abstracts" dataIndex="abstracts" width_n="120"/>
+        <JTextCol text_s="stateName" dataIndex="stateName" width_n="60"/>
+        <JTextCol text_s="ncStateName" dataIndex="ncStateName" width_n="80"/>
+        <JTextCol text_s="deficitCertifiStateName" dataIndex="deficitCertifiStateName" width_n="80"/>
+        <JTextCol text_s="copyAddStateName" dataIndex="copyAddStateName" width_n="80"/>
+        <JTextCol text_s="mergeSplitStateName" dataIndex="mergeSplitStateName" width_n="80"/>
+        <JTextCol text_s="years" dataIndex="years" width_n="100"/>
+        <JTextCol text_s="months" dataIndex="months" width_n="100"/>
+        <JDatetimeCol text_s="certificateDate" dataIndex="certificateDate" width_n="92"/>
+        <JDatetimeCol text_s="makeDate" dataIndex="makeDate" width_n="92"/>
+        <JTextCol text_s="maker" dataIndex="makerName" width_n="100"/>
+        <JTextCol text_s="attachmentNumber" dataIndex="attachmentNumber" width_n="100"/>
+        <JTextCol text_s="receiverOrPayerName" dataIndex="receiverOrPayerName" width_n="100"/>
+        <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+        <JDecCol text_s="debtor" dataIndex="debtor" width_n="100"/>
+        <JDecCol text_s="creditor" dataIndex="creditor" width_n="100"/>
+        <JTextCol text_s="originalFormCode" dataIndex="originalFormCode" width_n="235"/>
+        <JTextCol text_s="originalFormTypeName" dataIndex="originalFormTypeName" width_n="160"/>
+        <JTextCol dataIndex="splitUuid" width_n="0" hidden_b="true"/>
+        <JTextCol dataIndex="deficitUuid" width_n="0" hidden_b="true"/>
+        <JTextCol dataIndex="certifiUuid" width_n="0" hidden_b="true"/>
+        <JTextCol dataIndex="tblVersion" width_n="0" hidden_b="true"/>
+        <JTextCol dataIndex="state" width_n="0" hidden_b="true"/>
+        <JTextCol dataIndex="ncState" width_n="0" hidden_b="true"/>
+        <JTextCol dataIndex="deficitCertifiState" width_n="0" hidden_b="true"/>
+        <JTextCol dataIndex="copyAddState" width_n="0" hidden_b="true"/>
+        <JTextCol dataIndex="mergeSplitState" width_n="0" hidden_b="true"/>
+        <JTextCol dataIndex="originalFormType" width_n="0" hidden_b="true"/>
+    </results>
+</commonquery>

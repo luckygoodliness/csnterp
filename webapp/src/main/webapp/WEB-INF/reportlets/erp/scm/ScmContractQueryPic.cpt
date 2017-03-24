@@ -1,0 +1,1762 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="T1" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--T1
+--已采购金额
+SELECT
+NVL(T.时间状态, LEADING_DATE.时间状态) 时间状态,
+NVL(T.已采购月, LEADING_DATE.已采购月) || '月' 已采购月,
+SUM(NVL(T.合同终额, LEADING_DATE.合同终额)) OVER(PARTITION BY NVL(T.时间状态, LEADING_DATE.时间状态) ORDER BY NVL(T.已采购月, LEADING_DATE.已采购月) ASC) / 10000 合同终额
+FROM
+(
+  SELECT
+  CASE WHEN TO_CHAR(T.EFFECTIVE_DATE, 'YYYY') = TO_CHAR(SYSDATE, 'YYYY') THEN '今年累计' ELSE '去年同期' END 时间状态,
+  TO_CHAR(T.EFFECTIVE_DATE,'mm') 已采购月,
+  SUM(T.AMOUNT) 合同终额
+  FROM
+  (
+    SELECT
+    R.*
+    FROM
+    (
+      SELECT
+      DISTINCT
+      --ORG_NAME,
+      --DECODE(IS_PROJECT, 1, PROJECT_CODE, SUBJECT_CODE) FAD_SUBJECT_CODE,
+      --DECODE(IS_PROJECT, 1, PROJECT_NAME, FINANCIAL_SUBJECT) FAD_SUBJECT_NAME,
+      --PURCHASE_REQ_NO,
+      --SUBSTR(PURCHASE_REQ_NO, 5) ORDER_NO,
+      --TOTAL_MONEY,
+      --FORK_MONEY,
+      AMOUNT,
+      SCM_CONTRACT_CODE,
+      --SUPPLIER_NAME,
+      NVL2(SCM_CONTRACT_CODE, CONTRACT_STATE, STATE) STATE,
+      --REQ_MONEY,
+      --MAKE_DATE,
+      --USER_NAME,
+      --CREATE_TIME,
+      EFFECTIVE_DATE
+      --,
+      --USED_DAY,
+      --SUPPLIES_DETAIL
+      FROM
+      (
+        SELECT
+        PPR.UUID,
+        PPR.OFFICE_ID,
+        SO.ORG_NAME,
+        NVL(PPR.IS_PROJECT, 0) IS_PROJECT,
+        PPR.PRM_PROJECT_MAIN_ID,
+        PPM.PROJECT_CODE,
+        PPM.PROJECT_NAME,
+        PPR.SUBJECT_CODE,
+        NPSS.FINANCIAL_SUBJECT,
+        PPR.PURCHASE_REQ_NO,
+        P.TOTAL_MONEY,
+        O.FORK_MONEY,
+        NVL(SC.AMOUNT, 0) AMOUNT,
+        SC.SCM_CONTRACT_CODE,
+        SC.SUPPLIER_NAME,
+        PPR.STATE,
+        --SC.CONTRACT_STATE,
+        DECODE
+        (
+          SC.CONTRACT_STATE,
+          NULL,
+          NULL,
+          0,
+          3,
+          1,
+          4,
+          2,
+          5,
+          3,
+          6,
+          7
+        ) CONTRACT_STATE,
+        FCR.REQ_MONEY,
+        FCR.MAKE_DATE,
+        SPR.PRINCIPAL,
+        SU.USER_NAME,
+        SPR.CREATE_TIME,
+        SC.EFFECTIVE_DATE,
+        NVL(SC.EFFECTIVE_DATE, SYSDATE) - SPR.CREATE_TIME + 1 / 3 USED_DAY,
+        DECODE(INSTR(SUPPLIES_DETAIL,';','10'),0,SUPPLIES_DETAIL,SUBSTR(SUPPLIES_DETAIL,1,INSTR(SUPPLIES_DETAIL, ';', '10') - 1)) SUPPLIES_DETAIL --主要内容
+        FROM
+        PRM_PURCHASE_REQ PPR
+        LEFT JOIN 
+        (
+          SELECT
+          P.PRM_PURCHASE_REQ_ID,
+          SUM(NVL(P.AMOUNT, 0) * NVL(P.EXPECTED_PRICE, 0)) TOTAL_MONEY
+          FROM
+          PRM_PURCHASE_REQ_DETAIL P
+          WHERE
+          P.PUUID IS NULL
+          GROUP BY P.PRM_PURCHASE_REQ_ID
+        ) P
+        ON
+        P.PRM_PURCHASE_REQ_ID = PPR.UUID
+        LEFT JOIN SCDP_ORG SO ON SO.ORG_CODE = PPR.OFFICE_ID
+        LEFT JOIN PRM_PROJECT_MAIN PPM ON PPM.UUID = PPR.PRM_PROJECT_MAIN_ID
+        LEFT JOIN NON_PROJECT_SUBJECT_SUBJECT NPSS ON NPSS.FINANCIAL_SUBJECT_CODE = PPR.SUBJECT_CODE
+        LEFT JOIN
+        (
+          SELECT
+          PPRD.PRM_PURCHASE_REQ_ID,
+          PPRD.SCM_PURCHASE_REQ_ID,
+          PPRD.SCM_CONTRACT_ID,
+          SUM(NVL(PPRD.AMOUNT, 0) * NVL(PPRD.EXPECTED_PRICE, 0)) FORK_MONEY,
+          LISTAGG((PPRD.NAME), ';') WITHIN GROUP (ORDER BY PPRD.SEQ_NO) SUPPLIES_DETAIL
+          FROM
+          PRM_PURCHASE_REQ_DETAIL PPRD
+          WHERE
+          NVL(PPRD.ISFALLBACK, 0) = 0
+          GROUP BY
+          PPRD.PRM_PURCHASE_REQ_ID,
+          PPRD.SCM_PURCHASE_REQ_ID,
+          PPRD.SCM_CONTRACT_ID
+        ) O
+        ON PPR.UUID = O.PRM_PURCHASE_REQ_ID
+        LEFT JOIN SCM_CONTRACT SC ON SC.UUID = O.SCM_CONTRACT_ID
+        LEFT JOIN SCM_PURCHASE_REQ SPR ON SPR.UUID = O.SCM_PURCHASE_REQ_ID
+        LEFT JOIN SCDP_USER SU ON SU.USER_ID = SPR.PRINCIPAL
+        LEFT JOIN
+        (
+          SELECT
+          FCR.PURCHASE_CONTRACT_ID,
+          FCR.MONEY REQ_MONEY,
+          DECODE(FCR.STATE,4,FCR.MAKE_DATE,NULL) MAKE_DATE
+          FROM
+          (
+            SELECT
+            FCR.PURCHASE_CONTRACT_ID,
+            FCR.MONEY,
+            FCR.STATE,
+            (
+              SELECT
+              MAX(MAKE_DATE)
+              FROM FAD_CERTIFICATE FC
+              WHERE
+              FC.BUSINESS_ID =
+              FCR.UUID
+            ) MAKE_DATE,
+            ROW_NUMBER() OVER(PARTITION BY FCR.PURCHASE_CONTRACT_ID ORDER BY FCR.CREATE_TIME) ROW_NUM
+            FROM
+            FAD_CASH_REQ FCR
+            WHERE
+            FCR.REQ_TYPE = 0
+            AND STATE <> 3
+          ) FCR
+          WHERE
+          FCR.ROW_NUM = 1
+        ) FCR
+        ON
+        FCR.PURCHASE_CONTRACT_ID = O.SCM_CONTRACT_ID
+        --部门（多选） 所属项目  申请单号  合同编号  负责人
+        
+        WHERE
+        (
+          (
+            '${officeId}' IS NULL
+          )
+          OR
+          PPR.OFFICE_ID IN
+          (
+            SELECT
+            REGEXP_SUBSTR(NVL('${officeId}', PPR.OFFICE_ID),'[^|]A+',1,LEVEL) STR
+            FROM
+            DUAL
+            CONNECT BY LEVEL <= LENGTH(NVL('${officeId}', PPR.OFFICE_ID)) - LENGTH(REPLACE(NVL('${officeId}', PPR.OFFICE_ID), '|', '')) - 1
+          )
+        )
+        AND
+        (
+          (TO_NUMBER(TO_CHAR(SC.EFFECTIVE_DATE,'yyyy')) = TO_NUMBER(TO_CHAR(SYSDATE,'yyyy')))
+          OR
+          (
+            TO_NUMBER(TO_CHAR(SC.EFFECTIVE_DATE,'yyyy')) = TO_NUMBER(TO_CHAR(ADD_MONTHS(SYSDATE,-12),'yyyy'))
+            AND
+            TO_NUMBER(TO_CHAR(SC.EFFECTIVE_DATE,'mm')) <= TO_NUMBER(TO_CHAR(ADD_MONTHS(SYSDATE,-12),'mm'))
+          )
+        )
+      ) R
+      WHERE NVL2(SCM_CONTRACT_CODE, CONTRACT_STATE, STATE) IN ('7')
+    ) R
+  ) T
+  GROUP BY
+  CASE WHEN TO_CHAR(T.EFFECTIVE_DATE, 'YYYY') = TO_CHAR(SYSDATE, 'YYYY') THEN '今年累计' ELSE '去年同期' END,
+  TO_CHAR(T.EFFECTIVE_DATE,'mm')
+) T
+FULL JOIN
+(
+  --去年
+  SELECT '去年同期' 时间状态,CASE WHEN LENGTH(TO_CHAR(ROWNUM)) = 1 THEN '0'|| TO_CHAR(ROWNUM) ELSE TO_CHAR(ROWNUM) END 已采购月,0 合同终额 FROM DUAL CONNECT BY ROWNUM <= (MONTHS_BETWEEN(TRUNC(TO_DATE(TO_CHAR(LAST_DAY(SYSDATE), 'yyyy-mm-dd'),'yyyy-mm-dd'),'mm'),TRUNC(TO_DATE(TO_CHAR(SYSDATE,'yyyy') || '-01-01','yyyy-mm-dd'),'mm')) + 1)
+  
+  UNION ALL
+  
+  --今年
+  SELECT '今年累计' 时间状态,CASE WHEN LENGTH(TO_CHAR(ROWNUM)) = 1 THEN '0'|| TO_CHAR(ROWNUM) ELSE TO_CHAR(ROWNUM) END 已采购月,0 合同终额 FROM DUAL CONNECT BY ROWNUM <= (MONTHS_BETWEEN(TRUNC(TO_DATE(TO_CHAR(LAST_DAY(SYSDATE), 'yyyy-mm-dd'),'yyyy-mm-dd'),'mm'),TRUNC(TO_DATE(TO_CHAR(SYSDATE,'yyyy') || '-01-01','yyyy-mm-dd'),'mm')) + 1)
+) LEADING_DATE
+ON
+T.时间状态 = LEADING_DATE.时间状态
+AND
+T.已采购月 = LEADING_DATE.已采购月
+ORDER BY
+NVL(T.时间状态, LEADING_DATE.时间状态) DESC,
+NVL(T.已采购月, LEADING_DATE.已采购月) ASC]]></Query>
+</TableData>
+<TableData name="T2" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--T2
+--采购应付款
+SELECT
+AB.TIME_STATE 时间状态,
+AB.EFFECTIVE_MONTH || '月' 已采购月,
+SUM(SUB_NEGATIVE_TO_0(CASE WHEN AB.EFFECTIVE_YM > '201511' THEN AB.AMOUNT_MONTH ELSE 0 END,CASE WHEN AB.EFFECTIVE_YM > '201511' THEN AC.AMOUNT_MONTH ELSE 0 END)) / 10000 合同应付账款
+FROM
+(
+  SELECT
+  LEADING_DATE.TIME_STATE,
+  LEADING_DATE.EFFECTIVE_MONTH,
+  LEADING_DATE.EFFECTIVE_YM,
+  T.SCM_CONTRACT_ID,
+  T.AMOUNT_MONTH
+  FROM
+  (
+    --去年
+    SELECT
+    '去年采购应付款' TIME_STATE,
+    CASE WHEN LENGTH(TO_CHAR(ROWNUM)) = 1 THEN '0'|| TO_CHAR(ROWNUM) ELSE TO_CHAR(ROWNUM) END EFFECTIVE_MONTH,
+    TO_CHAR(ADD_MONTHS(SYSDATE,-12),'yyyy') || CASE WHEN LENGTH(TO_CHAR(ROWNUM)) = 1 THEN '0'|| TO_CHAR(ROWNUM) ELSE TO_CHAR(ROWNUM) END EFFECTIVE_YM,
+    0 AMOUNT_MONTH
+    FROM
+    DUAL
+    CONNECT BY ROWNUM <= 12
+    
+    UNION ALL
+    
+    --今年
+    SELECT
+    '今年采购应付款'
+    TIME_STATE,
+    CASE WHEN LENGTH(TO_CHAR(ROWNUM)) = 1 THEN '0'|| TO_CHAR(ROWNUM) ELSE TO_CHAR(ROWNUM) END EFFECTIVE_MONTH,
+    TO_CHAR(SYSDATE,'yyyy') || CASE WHEN LENGTH(TO_CHAR(ROWNUM)) = 1 THEN '0'|| TO_CHAR(ROWNUM) ELSE TO_CHAR(ROWNUM) END EFFECTIVE_YM,
+    0 AMOUNT_MONTH
+    FROM
+    DUAL
+    CONNECT BY ROWNUM <= 12
+  ) LEADING_DATE
+
+  LEFT JOIN
+  (
+    SELECT
+    UUID SCM_CONTRACT_ID,
+    '去年采购应付款' TIME_STATE,
+    TO_CHAR(EFFECTIVE_DATE,'mm') EFFECTIVE_MONTH,
+    TO_CHAR(EFFECTIVE_DATE,'yyyymm') EFFECTIVE_YM,
+    AMOUNT AMOUNT_MONTH
+    FROM
+    (
+      SELECT
+      UUID,
+      OFFICE_ID,
+      AMOUNT,
+      
+      CASE 
+        WHEN 
+          SCM_CONTRACT_CODE LIKE 'S%' THEN EFFECTIVE_DATE + 40 
+        WHEN 
+          SCM_CONTRACT_CODE LIKE 'W%' THEN ADD_MONTHS(EFFECTIVE_DATE, 3) 
+        ELSE EFFECTIVE_DATE
+      END
+      EFFECTIVE_DATE,
+      
+      STATE
+      FROM
+      SCM_CONTRACT
+    ) SCM_CONTRACT
+    WHERE
+    STATE = '2'
+    AND
+    OFFICE_ID
+    IN
+    (
+      SELECT
+      REGEXP_SUBSTR(NVL('${officeId}', OFFICE_ID),'[^|]A+',1,LEVEL) STR
+      FROM
+      DUAL
+      CONNECT BY LEVEL <= LENGTH(NVL('${officeId}', OFFICE_ID)) - LENGTH(REPLACE(NVL('${officeId}', OFFICE_ID), '|', '')) - 1
+    )
+    AND
+    TO_NUMBER(TO_CHAR(EFFECTIVE_DATE,'yyyy')) <= TO_NUMBER(TO_CHAR(ADD_MONTHS(SYSDATE,-12),'yyyy'))
+    
+    UNION ALL
+    
+    SELECT
+    UUID SCM_CONTRACT_ID,
+    '今年采购应付款' TIME_STATE,
+    TO_CHAR(EFFECTIVE_DATE,'mm') EFFECTIVE_MONTH,
+    TO_CHAR(EFFECTIVE_DATE,'yyyymm') EFFECTIVE_YM,
+    AMOUNT AMOUNT_MONTH
+    FROM
+    (
+      SELECT
+      UUID,
+      OFFICE_ID,
+      AMOUNT,
+      
+      CASE 
+        WHEN 
+          SCM_CONTRACT_CODE LIKE 'S%' THEN EFFECTIVE_DATE + 40 
+        WHEN 
+          SCM_CONTRACT_CODE LIKE 'W%' THEN ADD_MONTHS(EFFECTIVE_DATE, 3) 
+        ELSE EFFECTIVE_DATE
+      END
+      EFFECTIVE_DATE,
+      
+      STATE
+      FROM
+      SCM_CONTRACT
+    ) SCM_CONTRACT
+    WHERE
+    STATE = '2'
+    AND
+    OFFICE_ID
+    IN
+    (
+      SELECT
+      REGEXP_SUBSTR(NVL('${officeId}', OFFICE_ID),'[^|]A+',1,LEVEL) STR
+      FROM
+      DUAL
+      CONNECT BY LEVEL <= LENGTH(NVL('${officeId}', OFFICE_ID)) - LENGTH(REPLACE(NVL('${officeId}', OFFICE_ID), '|', '')) - 1
+    )
+    AND
+    TO_NUMBER(TO_CHAR(EFFECTIVE_DATE,'yyyy')) <= TO_NUMBER(TO_CHAR(SYSDATE,'yyyy'))
+  ) T
+  ON
+  LEADING_DATE.TIME_STATE = T.TIME_STATE
+  AND
+  LEADING_DATE.EFFECTIVE_YM >= T.EFFECTIVE_YM
+) AB
+
+LEFT JOIN
+(
+  SELECT
+  LEADING_DATE.TIME_STATE,
+  LEADING_DATE.EFFECTIVE_MONTH,
+  T.SCM_CONTRACT_ID,
+  SUM(T.AMOUNT_MONTH) AMOUNT_MONTH
+  FROM
+  (
+    --去年
+    SELECT
+    '去年采购应付款' TIME_STATE,
+    CASE WHEN LENGTH(TO_CHAR(ROWNUM)) = 1 THEN '0'|| TO_CHAR(ROWNUM) ELSE TO_CHAR(ROWNUM) END EFFECTIVE_MONTH,
+    TO_CHAR(ADD_MONTHS(SYSDATE,-12),'yyyy') || CASE WHEN LENGTH(TO_CHAR(ROWNUM)) = 1 THEN '0'|| TO_CHAR(ROWNUM) ELSE TO_CHAR(ROWNUM) END EFFECTIVE_YM,
+    0 AMOUNT_MONTH
+    FROM
+    DUAL
+    CONNECT BY ROWNUM <= 12
+    
+    UNION ALL
+    
+    --今年
+    SELECT
+    '今年采购应付款'
+    TIME_STATE,
+    CASE WHEN LENGTH(TO_CHAR(ROWNUM)) = 1 THEN '0'|| TO_CHAR(ROWNUM) ELSE TO_CHAR(ROWNUM) END EFFECTIVE_MONTH,
+    TO_CHAR(SYSDATE,'yyyy') || CASE WHEN LENGTH(TO_CHAR(ROWNUM)) = 1 THEN '0'|| TO_CHAR(ROWNUM) ELSE TO_CHAR(ROWNUM) END EFFECTIVE_YM,
+    0 AMOUNT_MONTH
+    FROM
+    DUAL
+    CONNECT BY ROWNUM <= 12
+  ) LEADING_DATE
+
+  LEFT JOIN
+  (
+    SELECT
+    SCM_CONTRACT_ID,
+    '去年采购应付款' TIME_STATE,
+    TO_CHAR(CERTIFICATE_CREATE_TIME,'mm') EFFECTIVE_MONTH,
+    TO_CHAR(CERTIFICATE_CREATE_TIME,'yyyymm') EFFECTIVE_YM,
+    SUM(MONEY) AMOUNT_MONTH
+    FROM
+    (
+      SELECT
+      SCM_CONTRACT_ID,
+      CERTIFICATE_CREATE_TIME,
+      MONEY
+      FROM
+      VW_BUDGET_FAD_DETAIL
+      WHERE
+      STATE = '4'
+      AND
+      DETAIL_TYPE IN ('日常请款','差旅请款','采购请款','临时支付','月度支付','日常请款现金核销','差旅请款现金核销','采购请款现金核销','发票支付')
+    ) VW_BUDGET_FAD_DETAIL
+    WHERE
+    TO_NUMBER(TO_CHAR(CERTIFICATE_CREATE_TIME,'yyyy')) <= TO_NUMBER(TO_CHAR(ADD_MONTHS(SYSDATE,-12),'yyyy'))
+    
+    GROUP BY
+    SCM_CONTRACT_ID,
+    TO_CHAR(CERTIFICATE_CREATE_TIME,'mm'),
+    TO_CHAR(CERTIFICATE_CREATE_TIME,'yyyymm')
+    
+    UNION ALL
+    
+    SELECT
+    SCM_CONTRACT_ID,
+    '今年采购应付款' TIME_STATE,
+    TO_CHAR(CERTIFICATE_CREATE_TIME,'mm') EFFECTIVE_MONTH,
+    TO_CHAR(CERTIFICATE_CREATE_TIME,'yyyymm') EFFECTIVE_YM,
+    SUM(MONEY) AMOUNT_MONTH
+    FROM
+    (
+      SELECT
+      SCM_CONTRACT_ID,
+      CERTIFICATE_CREATE_TIME,
+      MONEY
+      FROM
+      VW_BUDGET_FAD_DETAIL
+      WHERE
+      STATE = '4'
+      AND
+      DETAIL_TYPE IN ('日常请款','差旅请款','采购请款','临时支付','月度支付','日常请款现金核销','差旅请款现金核销','采购请款现金核销','发票支付')
+    ) VW_BUDGET_FAD_DETAIL
+    WHERE
+    TO_NUMBER(TO_CHAR(CERTIFICATE_CREATE_TIME,'yyyy')) <= TO_NUMBER(TO_CHAR(SYSDATE,'yyyy'))
+    
+    GROUP BY
+    SCM_CONTRACT_ID,
+    TO_CHAR(CERTIFICATE_CREATE_TIME,'mm'),
+    TO_CHAR(CERTIFICATE_CREATE_TIME,'yyyymm')
+  ) T
+  ON
+  LEADING_DATE.TIME_STATE = T.TIME_STATE
+  AND
+  LEADING_DATE.EFFECTIVE_YM >= T.EFFECTIVE_YM
+  
+  GROUP BY
+  T.SCM_CONTRACT_ID,
+  LEADING_DATE.TIME_STATE,
+  LEADING_DATE.EFFECTIVE_MONTH
+) AC
+ON
+AB.SCM_CONTRACT_ID = AC.SCM_CONTRACT_ID
+AND
+AB.TIME_STATE = AC.TIME_STATE
+AND
+AB.EFFECTIVE_MONTH = AC.EFFECTIVE_MONTH
+
+--WHERE
+--AB.EFFECTIVE_YM > '201511'
+
+GROUP BY
+AB.TIME_STATE,
+AB.EFFECTIVE_MONTH
+
+ORDER BY
+AB.TIME_STATE DESC,
+AB.EFFECTIVE_MONTH ASC]]></Query>
+</TableData>
+<TableData name="T3" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--T3
+--采购关键数据
+--待采购金额与数量
+--审批中金额与数量
+--已采购金额与数量
+SELECT
+SUM(CASE WHEN T.STATE IN ('2','3','4','5') /*AND TO_CHAR(T.CREATE_TIME, 'YYYY') = TO_CHAR(SYSDATE, 'YYYY')*/ THEN T.FORK_MONEY ELSE 0 END) SUM_FORK_MONEY,--待采购金额
+COUNT(CASE WHEN T.STATE IN ('2','3','4','5') /*AND TO_CHAR(T.CREATE_TIME, 'YYYY') = TO_CHAR(SYSDATE, 'YYYY')*/ THEN 1 ELSE NULL END) SUM_FORK_COUNT,--待采购数量
+
+SUM(CASE WHEN T.STATE IN ('6') /*AND TO_CHAR(T.CREATE_TIME, 'YYYY') = TO_CHAR(SYSDATE, 'YYYY')*/ THEN T.AMOUNT ELSE 0 END) SUM_AMOUNT_MONEY,--审批中金额
+COUNT(CASE WHEN T.STATE IN ('6') /*AND TO_CHAR(T.CREATE_TIME, 'YYYY') = TO_CHAR(SYSDATE, 'YYYY')*/ THEN 1 ELSE NULL END) SUM_AMOUNT_COUNT,--审批中数量
+
+SUM(CASE WHEN T.STATE IN ('7') AND TO_CHAR(T.EFFECTIVE_DATE, 'YYYY') = TO_CHAR(SYSDATE, 'YYYY') THEN T.AMOUNT ELSE 0 END) SUM_AMOUNT2_MONEY,--已采购金额
+COUNT(CASE WHEN T.STATE IN ('7') AND TO_CHAR(T.EFFECTIVE_DATE, 'YYYY') = TO_CHAR(SYSDATE, 'YYYY') THEN 1 ELSE NULL END) SUM_AMOUNT2_COUNT--已采购数量
+FROM
+(
+  SELECT
+  R.*
+  FROM
+  (
+    SELECT
+    --ORG_NAME,
+    --DECODE(IS_PROJECT, 1, PROJECT_CODE, SUBJECT_CODE) FAD_SUBJECT_CODE,
+    --DECODE(IS_PROJECT, 1, PROJECT_NAME, FINANCIAL_SUBJECT) FAD_SUBJECT_NAME,
+    --PURCHASE_REQ_NO,
+    --SUBSTR(PURCHASE_REQ_NO, 5) ORDER_NO,
+    --TOTAL_MONEY,
+    SUM(FORK_MONEY) FORK_MONEY,
+    AMOUNT,
+    SCM_CONTRACT_CODE,
+    --SUPPLIER_NAME,
+    MAX(NVL2(SCM_CONTRACT_CODE, CONTRACT_STATE, STATE)) STATE,
+    --REQ_MONEY,
+    --MAKE_DATE,
+    --USER_NAME,
+    MAX(CREATE_TIME) CREATE_TIME,
+    EFFECTIVE_DATE
+    --,
+    --USED_DAY,
+    --SUPPLIES_DETAIL
+    FROM
+    (
+      SELECT
+      PPR.UUID,
+      PPR.OFFICE_ID,
+      SO.ORG_NAME,
+      NVL(PPR.IS_PROJECT, 0) IS_PROJECT,
+      PPR.PRM_PROJECT_MAIN_ID,
+      PPM.PROJECT_CODE,
+      PPM.PROJECT_NAME,
+      PPR.SUBJECT_CODE,
+      NPSS.FINANCIAL_SUBJECT,
+      PPR.PURCHASE_REQ_NO,
+      P.TOTAL_MONEY,
+      O.FORK_MONEY,
+      NVL(SC.AMOUNT, 0) AMOUNT,
+      SC.SCM_CONTRACT_CODE,
+      SC.SUPPLIER_NAME,
+      PPR.STATE,
+      --SC.CONTRACT_STATE,
+      DECODE
+      (
+        SC.CONTRACT_STATE,
+        NULL,
+        NULL,
+        0,
+        3,
+        1,
+        4,
+        2,
+        5,
+        3,
+        6,
+        7
+      ) CONTRACT_STATE,
+      FCR.REQ_MONEY,
+      FCR.MAKE_DATE,
+      SPR.PRINCIPAL,
+      SU.USER_NAME,
+      SPR.CREATE_TIME,
+      SC.EFFECTIVE_DATE,
+      NVL(SC.EFFECTIVE_DATE, SYSDATE) - SPR.CREATE_TIME + 1 / 3 USED_DAY,
+      DECODE(INSTR(SUPPLIES_DETAIL,';','10'),0,SUPPLIES_DETAIL,SUBSTR(SUPPLIES_DETAIL,1,INSTR(SUPPLIES_DETAIL, ';', '10') - 1)) SUPPLIES_DETAIL --主要内容
+      FROM
+      PRM_PURCHASE_REQ PPR
+      LEFT JOIN 
+      (
+        SELECT
+        P.PRM_PURCHASE_REQ_ID,
+        SUM(NVL(P.AMOUNT, 0) * NVL(P.EXPECTED_PRICE, 0)) TOTAL_MONEY
+        FROM
+        PRM_PURCHASE_REQ_DETAIL P
+        WHERE
+        P.PUUID IS NULL
+        GROUP BY P.PRM_PURCHASE_REQ_ID
+      ) P
+      ON
+      P.PRM_PURCHASE_REQ_ID = PPR.UUID
+      LEFT JOIN SCDP_ORG SO ON SO.ORG_CODE = PPR.OFFICE_ID
+      LEFT JOIN PRM_PROJECT_MAIN PPM ON PPM.UUID = PPR.PRM_PROJECT_MAIN_ID
+      LEFT JOIN NON_PROJECT_SUBJECT_SUBJECT NPSS ON NPSS.FINANCIAL_SUBJECT_CODE = PPR.SUBJECT_CODE
+      LEFT JOIN
+      (
+        SELECT
+        PPRD.PRM_PURCHASE_REQ_ID,
+        PPRD.SCM_PURCHASE_REQ_ID,
+        PPRD.SCM_CONTRACT_ID,
+        SUM(NVL(PPRD.AMOUNT, 0) * NVL(PPRD.EXPECTED_PRICE, 0)) FORK_MONEY,
+        LISTAGG((PPRD.NAME), ';') WITHIN GROUP (ORDER BY PPRD.SEQ_NO) SUPPLIES_DETAIL
+        FROM
+        PRM_PURCHASE_REQ_DETAIL PPRD
+        WHERE
+        NVL(PPRD.ISFALLBACK, 0) = 0
+        GROUP BY
+        PPRD.PRM_PURCHASE_REQ_ID,
+        PPRD.SCM_PURCHASE_REQ_ID,
+        PPRD.SCM_CONTRACT_ID
+      ) O
+      ON PPR.UUID = O.PRM_PURCHASE_REQ_ID
+      LEFT JOIN SCM_CONTRACT SC ON SC.UUID = O.SCM_CONTRACT_ID
+      LEFT JOIN SCM_PURCHASE_REQ SPR ON SPR.UUID = O.SCM_PURCHASE_REQ_ID
+      LEFT JOIN SCDP_USER SU ON SU.USER_ID = SPR.PRINCIPAL
+      LEFT JOIN
+      (
+        SELECT
+        FCR.PURCHASE_CONTRACT_ID,
+        FCR.MONEY REQ_MONEY,
+        DECODE(FCR.STATE,4,FCR.MAKE_DATE,NULL) MAKE_DATE
+        FROM
+        (
+          SELECT
+          FCR.PURCHASE_CONTRACT_ID,
+          FCR.MONEY,
+          FCR.STATE,
+          (
+            SELECT
+            MAX(MAKE_DATE)
+            FROM FAD_CERTIFICATE FC
+            WHERE
+            FC.BUSINESS_ID =
+            FCR.UUID
+          ) MAKE_DATE,
+          ROW_NUMBER() OVER(PARTITION BY FCR.PURCHASE_CONTRACT_ID ORDER BY FCR.CREATE_TIME) ROW_NUM
+          FROM
+          FAD_CASH_REQ FCR
+          WHERE
+          FCR.REQ_TYPE = 0
+          AND STATE <> 3
+        ) FCR
+        WHERE
+        FCR.ROW_NUM = 1
+      ) FCR
+      ON
+      FCR.PURCHASE_CONTRACT_ID = O.SCM_CONTRACT_ID
+      --部门（多选） 所属项目  申请单号  合同编号  负责人
+      
+      WHERE
+      (
+        (
+          '${officeId}' IS NULL
+        )
+        OR
+        PPR.OFFICE_ID IN
+        (
+          SELECT
+          REGEXP_SUBSTR(NVL('${officeId}', PPR.OFFICE_ID),'[^|]A+',1,LEVEL) STR
+          FROM
+          DUAL
+          CONNECT BY LEVEL <= LENGTH(NVL('${officeId}', PPR.OFFICE_ID)) - LENGTH(REPLACE(NVL('${officeId}', PPR.OFFICE_ID), '|', '')) - 1
+        )
+      )
+    ) R
+    GROUP BY
+    AMOUNT,
+    SCM_CONTRACT_CODE,
+    EFFECTIVE_DATE
+  ) R
+) T]]></Query>
+</TableData>
+<TableData name="T4" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--T4
+--请款支付金额与数量
+--进度支付金额与数量
+SELECT
+SUM(T.MONEY_YF + T.MONEY_QT) QK_MONEY,--请款支付金额(预付款请款+其他请款)
+SUM(T.REQ_COUNT) QK_COUNT,--请款支付数量
+
+SUM(T.MONEY_M + T.MONEY_L) JD_MONEY,--进度支付金额(支付讨论+临时支付)
+SUM(T.PAY_COUNT) JD_COUNT--进度支付数量
+FROM
+(
+  SELECT
+  R.REQ_COUNT,
+  P.PAY_COUNT,
+  SUBSTR(R.CUR_YEAR, 3) || '年' || R.CUR_MONTH || '月' YEAS_DATE,
+  NVL(MONEY_M, 0) MONEY_M,
+  NVL(MONEY_L, 0) MONEY_L,
+  NVL(MONEY_YF, 0) MONEY_YF,
+  NVL(MONEY_QT, 0) MONEY_QT
+  FROM
+  (
+    SELECT
+    COUNT(DISTINCT R.UUID) REQ_COUNT,
+    R.CUR_YEAR,
+    R.CUR_MONTH,
+    SUM(DECODE(NVL(R.IS_ADVANCE_PAYMENT, 0), 1, R.MONEY, 0)) MONEY_YF,
+    SUM(DECODE(NVL(R.IS_ADVANCE_PAYMENT, 0), 0, R.MONEY, 0)) MONEY_QT
+    FROM
+    (
+      SELECT
+      FR.UUID,
+      TO_CHAR(FR.CREATE_TIME, 'yyyy') CUR_YEAR,
+      TO_CHAR(FR.CREATE_TIME, 'mm') CUR_MONTH,
+      FR.MONEY,
+      FR.IS_ADVANCE_PAYMENT,
+      FR.CREATE_TIME,
+      FR.OFFICE_ID,
+      FR.FAD_SUBJECT_CODE,
+      FR.IS_PROJECT
+      FROM
+      FAD_CASH_REQ FR
+      LEFT JOIN SCM_SUPPLIER SR ON FR.SUPPLIER_ID = SR.UUID
+      WHERE
+      FR.STATE IN ('1', '2', '4', '8')
+      AND
+      FR.REQ_TYPE = '0'
+      AND
+      (
+        (
+          '${officeId}' IS NULL
+        )
+        OR
+        FR.OFFICE_ID IN
+        (
+          SELECT
+          REGEXP_SUBSTR(NVL('${officeId}', FR.OFFICE_ID),'[^|]A+',1,LEVEL) STR
+          FROM
+          DUAL
+          CONNECT BY LEVEL <= LENGTH(NVL('${officeId}', FR.OFFICE_ID)) - LENGTH(REPLACE(NVL('${officeId}', FR.OFFICE_ID), '|', '')) - 1
+        )
+      )
+    ) R
+    GROUP BY
+    R.CUR_YEAR,
+    R.CUR_MONTH
+  ) R
+    
+  LEFT JOIN
+  (
+    SELECT
+    COUNT(DISTINCT P.UUID) PAY_COUNT,
+    P.CUR_YEAR,
+    P.CUR_MONTH,
+    SUM(DECODE(P.REQ_TYPE, 1, AUDIT_MONEY, 0)) MONEY_M, --月度
+    SUM(DECODE(P.REQ_TYPE, 0, DECODE(P.STATE,2,AUDIT_MONEY,0), 0)) MONEY_L -- 临时
+    FROM
+    (
+      SELECT
+      PH.UUID,
+      NVL(PH.YEAR, TO_CHAR(PH.CREATE_TIME, 'yyyy')) CUR_YEAR,
+      NVL(PH.MONTH, TO_CHAR(PH.CREATE_TIME, 'mm')) CUR_MONTH,
+      PH.REQ_TYPE,
+      PH.STATE,
+      PC.AUDIT_MONEY,
+      DECODE(NVL(S.IS_PROJECT, 0),0,S.SUBJECT_CODE,PPM.PROJECT_CODE) FAD_SUBJECT_CODE
+      FROM
+      FAD_PAY_REQ_H PH
+      LEFT JOIN FAD_PAY_REQ_C PC ON PH.UUID = PC.PUUID
+      LEFT JOIN SCM_CONTRACT S ON S.UUID = PC.SCM_CONTRACT_ID
+      LEFT JOIN
+      (
+        SELECT
+        PROJECT_CODE,
+        PROJECT_NAME, UUID
+        FROM
+        PRM_PROJECT_MAIN PM
+      ) PPM
+      ON S.PROJECT_ID = PPM.UUID
+      WHERE
+      PH.STATE IN ('1', '2',  '4','9')
+      AND
+      PC.STATE IN ('1', '2', '4', '8')
+      AND
+      PH.CREATE_BY != 'CSNTADMIN'
+      AND
+      (
+        (
+          '${officeId}' IS NULL
+        )
+        OR
+        S.OFFICE_ID IN
+        (
+          SELECT
+          REGEXP_SUBSTR(NVL('${officeId}', S.OFFICE_ID),'[^|]A+',1,LEVEL) STR
+          FROM
+          DUAL
+          CONNECT BY LEVEL <= LENGTH(NVL('${officeId}', S.OFFICE_ID)) - LENGTH(REPLACE(NVL('${officeId}', S.OFFICE_ID), '|', '')) - 1
+        )
+      )
+    ) P
+    GROUP BY
+    P.CUR_YEAR,
+    P.CUR_MONTH
+  ) P
+  ON
+  R.CUR_YEAR = P.CUR_YEAR
+  AND
+  R.CUR_MONTH = P.CUR_MONTH
+  WHERE R.CUR_YEAR = TO_CHAR(SYSDATE, 'YYYY')
+) T]]></Query>
+</TableData>
+<TableData name="T5" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--T5
+--入账票据金额与数量
+SELECT
+SUM(T.AMOUNT_S + T.AMOUNT_W + AMOUNT_L) RZ_MONEY,--入账票据金额(预付款请款+其他请款)
+SUM(T.INVOICE_COUNT) RZ_COUNT--入账票据数量
+FROM
+(
+  SELECT
+  COUNT(DISTINCT R.UUID) INVOICE_COUNT,
+  SUBSTR(R.CUR_TIME, 0, 2) || '年' || SUBSTR(R.CUR_TIME, 3) || '月' AS YEAS_DATE,
+  SUM(AMOUNT_L) AS AMOUNT_L,
+  SUM(AMOUNT_S) AS AMOUNT_S,
+  SUM(AMOUNT_W) AS AMOUNT_W,
+  SUM(DECODE(ROW_NUMBER, 1, 1, 0)) AS QUANTITY
+  FROM
+  (
+    SELECT
+    F.UUID,
+    TO_CHAR(F.CREATE_TIME, 'YYMM') AS CUR_TIME,
+    DECODE(NVL(S.IS_PROJECT, 0),0,S.SUBJECT_CODE,PPM.PROJECT_CODE) AS PROJECT_CODE,
+    DECODE(S.PURCHASE_TYPES, '00', NVL(SI.AMOUNT, 0), 0) AS AMOUNT_L,
+    CASE WHEN (S.PURCHASE_TYPES != '00' AND S.CONTRACT_NATURE = '0') THEN NVL(SI.AMOUNT, 0) ELSE 0 END AS AMOUNT_S,
+    CASE WHEN (S.PURCHASE_TYPES != '00' AND S.CONTRACT_NATURE = '1') THEN NVL(SI.AMOUNT, 0) ELSE 0 END AS AMOUNT_W,
+    F.INVOICE_REQ_NO,
+    ROW_NUMBER() OVER(PARTITION BY F.UUID ORDER BY F.CREATE_TIME DESC) AS ROW_NUMBER
+    FROM FAD_INVOICE F
+    LEFT JOIN SCM_CONTRACT_INVOICE SI ON F.UUID = SI.FAD_INVOICE_ID
+    LEFT JOIN SCM_CONTRACT S ON SI.SCM_CONTRACT_ID = S.UUID
+    LEFT JOIN
+    (
+      SELECT
+      PROJECT_CODE,
+      PROJECT_NAME,
+      UUID
+      FROM
+      PRM_PROJECT_MAIN PM
+    ) PPM
+    ON
+    S.PROJECT_ID = PPM.UUID
+    WHERE
+    F.EXPENSES_TYPE = '0'
+    AND
+    (
+      (
+        '${officeId}' IS NULL
+      )
+      OR
+      S.OFFICE_ID IN
+      (
+        SELECT
+        REGEXP_SUBSTR(NVL('${officeId}', S.OFFICE_ID),'[^|]A+',1,LEVEL) STR
+        FROM
+        DUAL
+        CONNECT BY LEVEL <= LENGTH(NVL('${officeId}', S.OFFICE_ID)) - LENGTH(REPLACE(NVL('${officeId}', S.OFFICE_ID), '|', '')) - 1
+      )
+    )
+    AND
+    F.STATE <> '3'
+    AND
+    TO_CHAR(F.CREATE_TIME, 'YYYY') = TO_CHAR(SYSDATE, 'YYYY')
+  ) R
+  GROUP BY CUR_TIME
+) T]]></Query>
+</TableData>
+</TableDataMap>
+<ReportWebAttr>
+<ServerPrinter/>
+<WebPageContent>
+<ToolBars/>
+<WebPage isPage="true" isShowAsImage="false" isAutoScale="false" isTDHeavy="false"/>
+</WebPageContent>
+</ReportWebAttr>
+<Report class="com.fr.report.poly.PolyWorkSheet" name="sheet1">
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting>
+<PaperSize width="43200000" height="31680000"/>
+<Margin top="288000" left="864000" bottom="864000" right="864000"/>
+</PaperSetting>
+</ReportSettings>
+</ReportAttrSet>
+<Block class="com.fr.report.poly.PolyChartBlock">
+<PCBAttr blockName="block5" x="0" y="0" width="23888700" height="8801100"/>
+<CC>
+<LayoutAttr selectedIndex="0"/>
+<Chart name="默认" chartClass="com.fr.chart.chartattr.Chart">
+<Chart class="com.fr.chart.chartattr.Chart">
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-6908266"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<ChartAttr isJSDraw="true" isStyleGlobal="false"/>
+<Title>
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-6908266"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<O>
+<![CDATA[已采购合同额]]></O>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="微软雅黑" style="1" size="128"/>
+</Attr>
+</TextAttr>
+<TitleVisible value="true" position="0"/>
+</Title>
+<Plot class="com.fr.chart.chartattr.LinePlot">
+<CategoryPlot>
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<Attr isNullValueBreak="false" autoRefreshPerSecond="-1" seriesDragEnable="false" plotStyle="0" combinedSize="50.0"/>
+<newHotTooltipStyle>
+<AttrContents>
+<Attr showLine="false" position="1" isWhiteBackground="true" isShowMutiSeries="false" seriesLabel="${SERIES}${BR}${CATEGORY}${BR}${VALUE}"/>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00万元]]></Format>
+<PercentFormat>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.##%]]></Format>
+</PercentFormat>
+</AttrContents>
+</newHotTooltipStyle>
+<ConditionCollection>
+<DefaultAttr class="com.fr.chart.chartglyph.ConditionAttr">
+<ConditionAttr name="">
+<AttrList>
+<Attr class="com.fr.chart.base.AttrLineStyle">
+<AttrLineStyle>
+<newAttr lineStyle="5"/>
+</AttrLineStyle>
+</Attr>
+<Attr class="com.fr.chart.base.AttrMarkerType">
+<AttrMarkerType>
+<Attr markerType="RoundFilledMarker"/>
+</AttrMarkerType>
+</Attr>
+<Attr class="com.fr.chart.base.AttrContents">
+<AttrContents>
+<Attr showLine="false" position="1" isWhiteBackground="true" isShowMutiSeries="false" seriesLabel="${VALUE}"/>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="宋体" style="0" size="72"/>
+</Attr>
+</TextAttr>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<PercentFormat>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#.##%]]></Format>
+</PercentFormat>
+</AttrContents>
+</Attr>
+</AttrList>
+</ConditionAttr>
+</DefaultAttr>
+</ConditionCollection>
+<Legend>
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-6908266"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<Attr position="3" visible="true"/>
+<FRFont name="微软雅黑" style="0" size="48"/>
+</Legend>
+<DataSheet>
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="1" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-16777216"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<Attr isVisible="false"/>
+</DataSheet>
+<newPlotFillStyle>
+<AttrFillStyle>
+<AFStyle colorStyle="0"/>
+<FillStyleName fillStyleName=""/>
+<isCustomFillStyle isCustomFillStyle="false"/>
+</AttrFillStyle>
+</newPlotFillStyle>
+<RectanglePlotAttr interactiveAxisTooltip="false"/>
+<xAxis>
+<CategoryAxis class="com.fr.chart.chartattr.CategoryAxis">
+<Title>
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-16777216"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<O>
+<![CDATA[坐标轴标题]]></O>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="微软雅黑" style="0" size="72"/>
+</Attr>
+</TextAttr>
+<TitleVisible value="false" position="0"/>
+</Title>
+<newAxisAttr isShowAxisLabel="true"/>
+<AxisLineStyle AxisStyle="1" MainGridStyle="0"/>
+<newLineColor mainGridColor="-4144960" lineColor="-5197648"/>
+<AxisPosition value="3"/>
+<TickLine201106 type="2" secType="2"/>
+<ArrowShow arrowShow="false"/>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="微软雅黑" style="0" size="72"/>
+</Attr>
+</TextAttr>
+<AxisLabelCount value="=0"/>
+<AxisRange/>
+<AxisUnit201106 isCustomMainUnit="false" isCustomSecUnit="false" mainUnit="=0" secUnit="=0"/>
+<ZoomAxisAttr isZoom="false"/>
+<axisReversed axisReversed="false"/>
+</CategoryAxis>
+</xAxis>
+<yAxis>
+<ValueAxis class="com.fr.chart.chartattr.ValueAxis">
+<ValueAxisAttr201108 alignZeroValue="false"/>
+<Title>
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-16777216"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<O>
+<![CDATA[单位：万元]]></O>
+<TextAttr>
+<Attr alignText="1">
+<FRFont name="微软雅黑" style="0" size="72"/>
+</Attr>
+</TextAttr>
+<TitleVisible value="true" position="2"/>
+</Title>
+<newAxisAttr isShowAxisLabel="true"/>
+<AxisLineStyle AxisStyle="1" MainGridStyle="1"/>
+<newLineColor mainGridColor="-4144960" lineColor="-5197648"/>
+<AxisPosition value="2"/>
+<TickLine201106 type="2" secType="2"/>
+<ArrowShow arrowShow="false"/>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="Century Gothic" style="0" size="72"/>
+</Attr>
+</TextAttr>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0]]></Format>
+<AxisLabelCount value="=0"/>
+<AxisRange/>
+<AxisUnit201106 isCustomMainUnit="false" isCustomSecUnit="false" mainUnit="=0" secUnit="=0"/>
+<ZoomAxisAttr isZoom="false"/>
+<axisReversed axisReversed="false"/>
+</ValueAxis>
+</yAxis>
+<secondAxis>
+<ValueAxis class="com.fr.chart.chartattr.ValueAxis">
+<ValueAxisAttr201108 alignZeroValue="false"/>
+<newAxisAttr isShowAxisLabel="true"/>
+<AxisLineStyle AxisStyle="1" MainGridStyle="1"/>
+<newLineColor mainGridColor="-4144960" lineColor="-5197648"/>
+<AxisPosition value="4"/>
+<TickLine201106 type="2" secType="0"/>
+<ArrowShow arrowShow="false"/>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="Century Gothic" style="0" size="72"/>
+</Attr>
+</TextAttr>
+<AxisLabelCount value="=0"/>
+<AxisRange/>
+<AxisUnit201106 isCustomMainUnit="false" isCustomSecUnit="false" mainUnit="=0" secUnit="=0"/>
+<ZoomAxisAttr isZoom="false"/>
+<axisReversed axisReversed="false"/>
+</ValueAxis>
+</secondAxis>
+<CateAttr isStacked="false"/>
+<Show Curve="true"/>
+</CategoryPlot>
+</Plot>
+<DataProcessor class="com.fr.base.chart.chartdata.model.NormalDataModel"/>
+<ChartDefinition>
+<OneValueCDDefinition seriesName="时间状态" valueName="合同终额" function="com.fr.data.util.function.NoneFunction">
+<Top topCate="-1" topValue="-1" isDiscardOtherCate="false" isDiscardOtherSeries="false" isDiscardNullCate="false" isDiscardNullSeries="false"/>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[T1]]></Name>
+</TableData>
+<CategoryName value="已采购月"/>
+</OneValueCDDefinition>
+</ChartDefinition>
+</Chart>
+</Chart>
+</CC>
+</Block>
+<Block class="com.fr.report.poly.PolyChartBlock">
+<PCBAttr blockName="block1" x="0" y="8801100" width="41529000" height="9182100"/>
+<CC>
+<LayoutAttr selectedIndex="0"/>
+<Chart name="默认" chartClass="com.fr.chart.chartattr.Chart">
+<Chart class="com.fr.chart.chartattr.Chart">
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-6908266"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<ChartAttr isJSDraw="true" isStyleGlobal="false"/>
+<Title>
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-6908266"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<O>
+<![CDATA[采购应付款]]></O>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="微软雅黑" style="1" size="128"/>
+</Attr>
+</TextAttr>
+<TitleVisible value="true" position="0"/>
+</Title>
+<Plot class="com.fr.chart.chartattr.LinePlot">
+<CategoryPlot>
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<Attr isNullValueBreak="true" autoRefreshPerSecond="0" seriesDragEnable="false" plotStyle="0" combinedSize="50.0"/>
+<newHotTooltipStyle>
+<AttrContents>
+<Attr showLine="false" position="1" isWhiteBackground="true" isShowMutiSeries="false" seriesLabel="${VALUE}"/>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#.##]]></Format>
+<PercentFormat>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.##%]]></Format>
+</PercentFormat>
+</AttrContents>
+</newHotTooltipStyle>
+<ConditionCollection>
+<DefaultAttr class="com.fr.chart.chartglyph.ConditionAttr">
+<ConditionAttr name="">
+<AttrList>
+<Attr class="com.fr.chart.base.AttrMarkerType">
+<AttrMarkerType>
+<Attr markerType="NullMarker"/>
+</AttrMarkerType>
+</Attr>
+</AttrList>
+</ConditionAttr>
+</DefaultAttr>
+</ConditionCollection>
+<Legend>
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-6908266"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<Attr position="3" visible="true"/>
+<FRFont name="微软雅黑" style="0" size="72"/>
+</Legend>
+<DataSheet>
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="1" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-16777216"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<Attr isVisible="false"/>
+</DataSheet>
+<newPlotFillStyle>
+<AttrFillStyle>
+<AFStyle colorStyle="0"/>
+<FillStyleName fillStyleName=""/>
+<isCustomFillStyle isCustomFillStyle="false"/>
+</AttrFillStyle>
+</newPlotFillStyle>
+<RectanglePlotAttr interactiveAxisTooltip="false"/>
+<xAxis>
+<CategoryAxis class="com.fr.chart.chartattr.CategoryAxis">
+<newAxisAttr isShowAxisLabel="true"/>
+<AxisLineStyle AxisStyle="1" MainGridStyle="0"/>
+<newLineColor mainGridColor="-4144960" lineColor="-5197648"/>
+<AxisPosition value="3"/>
+<TickLine201106 type="2" secType="2"/>
+<ArrowShow arrowShow="false"/>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="微软雅黑" style="0" size="72"/>
+</Attr>
+</TextAttr>
+<AxisLabelCount value="=0"/>
+<AxisRange/>
+<AxisUnit201106 isCustomMainUnit="false" isCustomSecUnit="false" mainUnit="=0" secUnit="=0"/>
+<ZoomAxisAttr isZoom="false"/>
+<axisReversed axisReversed="false"/>
+</CategoryAxis>
+</xAxis>
+<yAxis>
+<ValueAxis class="com.fr.chart.chartattr.ValueAxis">
+<ValueAxisAttr201108 alignZeroValue="false"/>
+<Title>
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-16777216"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<O>
+<![CDATA[单位：万元]]></O>
+<TextAttr>
+<Attr alignText="1">
+<FRFont name="微软雅黑" style="0" size="72"/>
+</Attr>
+</TextAttr>
+<TitleVisible value="true" position="0"/>
+</Title>
+<newAxisAttr isShowAxisLabel="true"/>
+<AxisLineStyle AxisStyle="1" MainGridStyle="1"/>
+<newLineColor mainGridColor="-4144960" lineColor="-5197648"/>
+<AxisPosition value="2"/>
+<TickLine201106 type="2" secType="2"/>
+<ArrowShow arrowShow="false"/>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="Century Gothic" style="0" size="72"/>
+</Attr>
+</TextAttr>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0]]></Format>
+<AxisLabelCount value="=0"/>
+<AxisRange/>
+<AxisUnit201106 isCustomMainUnit="false" isCustomSecUnit="false" mainUnit="=0" secUnit="=0"/>
+<ZoomAxisAttr isZoom="false"/>
+<axisReversed axisReversed="false"/>
+</ValueAxis>
+</yAxis>
+<secondAxis>
+<ValueAxis class="com.fr.chart.chartattr.ValueAxis">
+<ValueAxisAttr201108 alignZeroValue="false"/>
+<newAxisAttr isShowAxisLabel="true"/>
+<AxisLineStyle AxisStyle="1" MainGridStyle="1"/>
+<newLineColor mainGridColor="-4144960" lineColor="-5197648"/>
+<AxisPosition value="4"/>
+<TickLine201106 type="2" secType="0"/>
+<ArrowShow arrowShow="false"/>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="Century Gothic" style="0" size="72"/>
+</Attr>
+</TextAttr>
+<AxisLabelCount value="=0"/>
+<AxisRange/>
+<AxisUnit201106 isCustomMainUnit="false" isCustomSecUnit="false" mainUnit="=0" secUnit="=0"/>
+<ZoomAxisAttr isZoom="false"/>
+<axisReversed axisReversed="false"/>
+</ValueAxis>
+</secondAxis>
+<CateAttr isStacked="false"/>
+<Show Curve="false"/>
+</CategoryPlot>
+</Plot>
+<DataProcessor class="com.fr.base.chart.chartdata.model.NormalDataModel"/>
+<ChartDefinition>
+<OneValueCDDefinition seriesName="时间状态" valueName="合同应付账款" function="com.fr.data.util.function.NoneFunction">
+<Top topCate="-1" topValue="-1" isDiscardOtherCate="false" isDiscardOtherSeries="false" isDiscardNullCate="false" isDiscardNullSeries="false"/>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[T2]]></Name>
+</TableData>
+<CategoryName value="已采购月"/>
+</OneValueCDDefinition>
+</ChartDefinition>
+</Chart>
+</Chart>
+</CC>
+</Block>
+<Block class="com.fr.report.poly.PolyECBlock">
+<ReportPageAttr>
+<HR/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[723900,723900,720000,720000,720000,720000,720000,720000,720000,720000,720000,720000,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[5040000,2160000,1440000,5040000,2160000,2743200,2743200,2743200,2743200,2743200,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="2" s="0">
+<O>
+<![CDATA[待采购金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="2" s="0">
+<O>
+<![CDATA[数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="2" s="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="2" s="0">
+<O>
+<![CDATA[请款支付金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="2" s="0">
+<O>
+<![CDATA[数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="3" s="1">
+<O t="DSColumn">
+<Attributes dsName="T3" columnName="SUM_FORK_MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="3" s="0">
+<O t="DSColumn">
+<Attributes dsName="T3" columnName="SUM_FORK_COUNT"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="3" s="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="3" s="1">
+<O t="DSColumn">
+<Attributes dsName="T4" columnName="QK_MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="3" s="0">
+<O t="DSColumn">
+<Attributes dsName="T4" columnName="QK_COUNT"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="4" s="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="4" s="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="4" s="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="4" s="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="4" s="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="5" s="0">
+<O>
+<![CDATA[审批中金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="5" s="0">
+<O>
+<![CDATA[数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="5" s="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="5" s="0">
+<O>
+<![CDATA[进度支付金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="5" s="0">
+<O>
+<![CDATA[数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="6" s="1">
+<O t="DSColumn">
+<Attributes dsName="T3" columnName="SUM_AMOUNT_MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="6" s="0">
+<O t="DSColumn">
+<Attributes dsName="T3" columnName="SUM_AMOUNT_COUNT"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="6" s="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="6" s="1">
+<O t="DSColumn">
+<Attributes dsName="T4" columnName="JD_MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="6" s="0">
+<O t="DSColumn">
+<Attributes dsName="T4" columnName="JD_COUNT"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="7" s="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="7" s="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="7" s="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="7" s="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="7" s="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="8" s="0">
+<O>
+<![CDATA[已采购金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="8" s="0">
+<O>
+<![CDATA[数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="8" s="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="8" s="0">
+<O>
+<![CDATA[入账票据金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="8" s="0">
+<O>
+<![CDATA[数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="9" s="1">
+<O t="DSColumn">
+<Attributes dsName="T3" columnName="SUM_AMOUNT2_MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="9" s="0">
+<O t="DSColumn">
+<Attributes dsName="T3" columnName="SUM_AMOUNT2_COUNT"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="9" s="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="9" s="1">
+<O t="DSColumn">
+<Attributes dsName="T5" columnName="RZ_MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="9" s="0">
+<O t="DSColumn">
+<Attributes dsName="T5" columnName="RZ_COUNT"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<PECBAttr blockName="block2" x="23888700" y="0" width="15840000" height="7924800"/>
+</Block>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="false" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="4" imageLayout="1">
+<FRFont name="SimSun" style="1" size="80"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="1" size="80"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

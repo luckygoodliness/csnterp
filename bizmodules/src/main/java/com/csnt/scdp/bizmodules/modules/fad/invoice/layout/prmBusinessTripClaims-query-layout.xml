@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>invoice-dao</daotype>
+        <daokey>prm_trip_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="A1:A1" fieldLabel_s="invoiceReqNo" cid="invoiceReqNo" field="invoice_req_no"/>
+        <JText pos="B1:B1" fieldLabel_s="invoiceNo" cid="invoiceNo" field="invoice_no"/>
+        <JText pos="C1:C1" fieldLabel_s="expensesMoney" cid="expensesMoneyQ"  field="expenses_money"/>
+        <JText pos="D1:D1" cid="fadSubjectCode" fieldLabel_s="fadSubjectCode" field="fad_Subject_Code"/>
+        <JHidden cid="officeId_QDesc"/>
+        <JErpDepartMent pos="A2:A2" fieldLabel_s="officeId" cid="officeId_Q"
+                      field="office_Id"/>
+        <JHidden  fieldLabel_s="renderPerson" cid="renderPerson_Q" field="render_person"/>
+        <JUserGrid pos="B2:B2" fieldLabel_s="renderPerson" cid="renderPersonName"
+                   refer_j='[{"refField":"renderPerson_Q","valueField":"userId"}]'/>
+        <JCombo pos="C2:C2" cid="state" fieldLabel_s="state"
+                comboType="scdp_fmcode" codeType="FAD_BILL_STATE" displayDesc_b="true" field="state"/>
+        <JProject pos="D2:D2" fieldLabel_s="项目" cid="prmProjectName" valueField="projectName"
+                      allowBlank_b="true" refer_j='[{"refField":"prmProjectMainId_Q","valueField":"uuid"}]'/>
+        <JHidden cid="prmProjectMainId_Q" fieldLabel_s="prmProjectMainId" allowBlank_b="true"  field="prm_Project_main_id"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="invoiceReqNo" dataIndex="invoiceReqNo" width_n="120"/>
+        <JTextCol text_s="state" dataIndex="stateName" width_n="120"/>
+        <JTextCol text_s="renderOffice" dataIndex="officeNameR" width_n="120"/>
+        <JTextCol text_s="prmProjectMainId" dataIndex="projectName" width_n="120"/>
+        <JTextCol text_s="fadSubjectCode" dataIndex="fadSubjectCode" width_n="120"/>
+        <JTextCol text_s="tripName" dataIndex="renderPersonR" width_n="120"/>
+        <JTextCol text_s="tripLocation" dataIndex="tripLocation" width_n="120"/>
+        <JCurCol text_s="invoiceTotalValue" dataIndex="invoiceTotalValue" width_n="150"/>
+        <JCurCol text_s="expensesMoney" dataIndex="expensesMoney" width_n="150"/>
+        <JCurCol text_s="payCash" dataIndex="payCash" width_n="150"/>
+        <JDatetimeCol text_s="tripBeginDate" dataIndex="tripBeginDate" width_n="150"/>
+        <JDatetimeCol text_s="tripEndDate" dataIndex="tripEndDate" width_n="150"/>
+        <JIntCol text_s="tripDays" dataIndex="tripDays" width_n="100"/>
+        <JTextCol text_s="tripReason" dataIndex="tripReason" width_n="120"/>
+        <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+    </results>
+</commonquery>

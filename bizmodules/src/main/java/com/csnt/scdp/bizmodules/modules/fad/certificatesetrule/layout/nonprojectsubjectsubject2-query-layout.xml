@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>certificatesetrule-dao</daotype>
+        <daokey>non_project_subject_subject</daokey>
+    </querysql>
+    <defaultSort>financial_subject_code asc</defaultSort>
+    <conditions columns="2">
+        <JText pos="A1:A1" cid="financialSubjectCode" field="financial_subject_code"
+               fieldLabel_s="financialSubjectCode"/>
+        <JText pos="A2:A2" cid="financialSubject" field="financial_subject" fieldLabel_s="financialSubject"/>
+        <JHidden cid="officeDesc" field="office_desc"/>
+        <JHidden cid="office" field="office"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="financialSubjectCode" dataIndex="financialSubjectCode" width_n="100"/>
+        <JTextCol text_s="financialSubject" dataIndex="financialSubject" width_n="120"/>
+    </results>
+</commonquery>

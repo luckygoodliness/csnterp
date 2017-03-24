@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonreport version="1.0">
+    <report>
+        <reporttype>L</reporttype>
+        <reporttemplate>erp/scm/M6_NRPT7_支付分析报表.cpt</reporttemplate>
+        <reportcache>false</reportcache>
+    </report>
+    <conditions columns="4">
+        <JDate pos="A1:A1" cid="dateStart" fieldLabel_s="dateStart" field="dateStart" labelWidth_n="100"
+               allowBlank_b="false"/>
+        <JDate pos="B1:B1" cid="dateOver" fieldLabel_s="dateOver" field="dateOver" labelWidth_n="100"
+               allowBlank_b="false"/>
+        <JText pos="C1:C1" cid="supplierName" fieldLabel_s="supplier" field="supplierName"/>
+
+        <JHidden cid="officeIdDesc" field="officeIdDesc"/>
+        <JErpDepartMent pos="D1:D1" cid="officeId" fieldLabel_s="officeId" field="officeId" labelWidth_n="100"/>
+    </conditions>
+</commonreport>

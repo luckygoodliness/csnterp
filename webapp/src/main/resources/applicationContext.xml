@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+        http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-4.0.xsd
+        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd">
+    <aop:aspectj-autoproxy/>
+
+    <context:annotation-config/>
+
+    <!-- 注解扫描包 -->
+    <context:component-scan base-package="com.csnt"/>
+
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+    <task:annotation-driven/>
+
+    <bean class="com.csnt.scdp.framework.core.spring.DecryptPropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath*:/database.properties</value>
+                <value>classpath*:/sysconfig.properties</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="cacheImpl" class="com.csnt.scdp.framework.core.cache.impl.LocalCacheImpl" scope="prototype"/>
+    <bean id="userInfoImpl" class="com.csnt.scdp.sysmodules.modules.sys.user.services.impl.ScdpUserInfoImpl"/>
+    <bean id="sysModuleInitListener" class="com.csnt.scdp.bizmodules.listener.ErpInitListener"/>
+    <bean id="scdpUserValidator" class="com.csnt.scdp.sysmodules.modules.sys.user.services.impl.ScdpUserValidator"/>
+    <bean id="loadQueryFilter" class="com.csnt.scdp.sysmodules.modules.sys.queryfilter.impl.ScdpLoadQueryFilterImpl"/>
+    <bean id="dataFilter" class="com.csnt.scdp.sysmodules.modules.sys.role.services.impl.ScdpActionDataFilterImpl"/>
+    <bean id="actionHisWriterImpl" class="com.csnt.scdp.framework.core.actionfacade.impl.ActionHistoryQueueWriter"/>
+
+    <bean id="ehCacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+        <property name="configLocation" value="classpath:ehcache.xml"/>
+    </bean>
+
+    <!--JMX Performance Monitor -->
+    <bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean">
+        <property name="locateExistingServerIfPossible" value="true"/>
+    </bean>
+
+    <!--ehCache-->
+    <bean id="managementService" class="net.sf.ehcache.management.ManagementService"
+          init-method="init"
+          destroy-method="dispose">
+        <constructor-arg ref="ehCacheManager"/>
+        <constructor-arg ref="mbeanServer"/>
+        <constructor-arg index="2" value="true"/>
+        <constructor-arg index="3" value="true"/>
+        <constructor-arg index="4" value="true"/>
+        <constructor-arg index="5" value="true"/>
+    </bean>
+
+    <!--Hibernate-->
+    <bean id="hibernateStatisticsMBean" class="com.csnt.scdp.framework.core.persistence.HibernateStatisticsFactoryBean">
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
+
+    <bean id="jmxExporter" class="org.springframework.jmx.export.MBeanExporter">
+        <property name="beans">
+            <map>
+                <entry key="Hibernate:application=Statistics" value-ref="hibernateStatisticsMBean"/>
+            </map>
+        </property>
+    </bean>
+
+    <!-- FreeMarker -->
+    <bean id="freemarkerSettings" class="org.springframework.beans.factory.config.PropertiesFactoryBean"
+          lazy-init="true">
+        <property name="location" value="classpath:freemarker.properties"/>
+    </bean>
+
+    <bean id="freeMarkerFileConfiguration" class="org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean"
+          lazy-init="true">
+        <property name="freemarkerSettings" ref="freemarkerSettings"/>
+        <property name="templateLoaderPaths">
+            <list>
+                <value>classpath:templates</value>
+            </list>
+        </property>
+    </bean>
+    <bean id="stringTemplateLoader" class="freemarker.cache.StringTemplateLoader"/>
+    <bean id="freeMarkerMessageConfiguration"
+          class="org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean"
+          lazy-init="true">
+        <property name="freemarkerSettings" ref="freemarkerSettings"/>
+        <property name="postTemplateLoaders" ref="stringTemplateLoader"/>
+    </bean>
+
+    <bean id="defaultMailServer" class="com.csnt.scdp.framework.bo.mail.MailServerConfig">
+        <property name="server" value=""/>
+        <property name="fromAddress" value=""/>
+        <property name="user" value=""/>
+        <property name="pass" value=""/>
+    </bean>
+
+    <bean id="smsServer" class="com.csnt.scdp.framework.bo.SMSConfig">
+        <property name="key" value=""/>
+        <property name="password" value=""/>
+        <property name="prefix" value="【】"/>
+        <property name="priority" value="3"/>
+    </bean>
+
+    <bean id="workFlowImpl" class="com.csnt.scdp.framework.core.workflow.impl.WorkFlowImpl">
+        <property name="repositoryService" ref="repositoryService"/>
+        <property name="runtimeService" ref="runtimeService"/>
+        <property name="taskService" ref="taskService"/>
+        <property name="formService" ref="formService"/>
+        <property name="historyService" ref="historyService"/>
+        <property name="identityService" ref="identityService"/>
+    </bean>
+
+    <bean id="captchaProducer" class="com.google.code.kaptcha.impl.DefaultKaptcha">
+        <property name="config">
+            <bean class="com.google.code.kaptcha.util.Config">
+                <constructor-arg>
+                    <props>
+                        <prop key="kaptcha.textproducer.font.size">20</prop>
+                        <prop key="kaptcha.image.width">80</prop>
+                        <prop key="kaptcha.image.height">25</prop>
+                        <prop key="kaptcha.textproducer.char.length">4</prop>
+                        <prop key="kaptcha.noise.impl">com.google.code.kaptcha.impl.NoNoise</prop>
+                        <prop key="kaptcha.obscurificator.impl">com.google.code.kaptcha.impl.ShadowGimpy</prop>
+                    </props>
+                </constructor-arg>
+            </bean>
+        </property>
+    </bean>
+
+</beans>

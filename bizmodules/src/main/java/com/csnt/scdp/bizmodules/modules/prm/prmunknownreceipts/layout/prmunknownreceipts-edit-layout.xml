@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JTab pos="A1:A1" row="flex" col="1*1" border_n="1">
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="待确认收款" border_n="0">
+            <JForm pos="A1:A1" cid="prmUnknownReceiptsDto" row="23*4" col="0.25*4" title_s="" border_n="1">
+                <JHidden cid="uuid"/>
+                <JHidden cid="tblVersion"/>
+                <JText pos="A1:A1" cid="receiptNo" fieldLabel_s="receiptNo" allowBlank_b="true" readOnly="true"
+                       adaptable_b="false"/>
+                <JDec pos="B1:B1" cid="money" fieldLabel_s="money" allowBlank_b="true" minValue_n="0.00"/>
+                <JCombo pos="C1:C1" cid="moneyType" fieldLabel_s="moneyType" comboType="scdp_fmcode"
+                        codeType="MONEY_TYPE" displayDesc_b="true"/>
+                <JHidden cid="payerDesc"/>
+                <JCustomer pos="D1:D1" cid="payer" valueField_s="uuid" displayField_s="customerName"
+                           displayDesc_b="true" fieldLabel_s="payer" allowBlank_b="true"/>
+                <JDatetime pos="A2:A2" cid="actualDate" fieldLabel_s="actualDate" allowBlank_b="true"/>
+                <!--<JCombo pos="B2:B2" cid="state" fieldLabel_s="state" allowBlank_b="true" comboType="scdp_fmcode"-->
+                <!--readOnly="true" adaptable_b="false" codeType="CDM_BILL_STATE" displayDesc_b="true"-->
+                <!--fullInfo_b="false" multiSelect_b="false"/>-->
+            </JForm>
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="项目收款" border_n="0">
+            <JEGrid pos="A1:A1" cid="prmReceiptsDto" store="Receipts.store.ReceiptsStore" withToolbar_b="false">
+                <JTextCol text_s="projectId" dataIndex="projectName" width_n="300"/>
+                <JTextCol text_s="customerName" dataIndex="customerName" width_n="300"/>
+                <JDecCol text_s="actualMoney" dataIndex="actualMoney" width_n="120"/>
+                <JDecCol text_s="moneyType" dataIndex="moneyTypeDesc" width_n="120"/>
+                <JTextCol text_s="departmentCode" dataIndex="deptName" width_n="300"/>
+            </JEGrid>
+        </JPanel>
+    </JTab>
+</view>

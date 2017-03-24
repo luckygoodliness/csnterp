@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="fadSupplierMappingDto" row="23*1" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JHidden cid="supplierToUuidDesc" />
+        <JText pos="A1:B1" cid="supplierFromName" fieldLabel_s="supplierFromName" allowBlank_b="false"/>
+        <JSupplierGrid pos="C1:D1" fieldLabel_s="supplierToUuid" cid="supplierToUuid"
+                       valueField="uuid" descField="completeName" allowBlank_b="false" />
+        <JHidden cid="dataFrom"/>
+        <JTextArea pos="A2:D2" cid="remark" fieldLabel_s="remark" allowBlank_b="true"/>
+    </JForm>
+</view>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="scmDepartmentBuyerDto" row="23*1" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JHidden cid="officeCodeDesc"/>
+        <JUserGrid pos="A1:A1" fieldLabel_s="buyer" cid="buyerName" allowBlank_b="false"
+                   refer_j='[{"refField":"buyer","valueField":"userId"},{"refField":"officeCode","valueField":"orgCode"}]'/>
+        <JHidden pos="A5:A5" cid="buyer"/>
+        <JErpDepartMent pos="B1:B1" fieldLabel_s="officeCode" cid="officeCode"
+                      field="office_Code" allowBlank_b="false" readOnly_b="true" adaptable_b="false"/>
+        <JTextArea pos="A2:C4" cid="remark" fieldLabel_s="remark" allowBlank_b="true" wrap_b="true"/>
+    </JForm>
+</view>

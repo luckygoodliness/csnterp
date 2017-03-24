@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>prmprojectmainc-dao</daotype>
+        <daokey>grid_budget_common_query</daokey>
+    </querysql>
+    <defaultSort>budget_name desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="A1:A1" fieldLabel_s="projectMainId" cid="projectMainId" field="project_main_id"/>
+        <JText pos="B1:B1" fieldLabel_s="projectCode" cid="projectCode" field="project_code"/>
+        <JText pos="C1:C1" fieldLabel_s="projectName" cid="projectName" field="project_name"/>
+        <JText pos="D1:D1" fieldLabel_s="budgetCode" cid="budgetCode" field="budget_code"/>
+        <JText pos="A2:A2" fieldLabel_s="budgetName" cid="budgetName" field="budget_name"/>
+    </conditions>
+    <quickquery>
+        <QueryCids>projectCode,projectName,budgetCode,budgetName</QueryCids>
+        <ForceQueryCids></ForceQueryCids>
+    </quickquery>
+    <results>
+        <JHidden  dataIndex="projectMainId"/>
+        <!--<JTextCol text_s="项目代号" dataIndex="projectCode"/>-->
+        <!--<JTextCol text_s="项目名称" dataIndex="projectName"/>-->
+        <!--<JTextCol text_s="科目代码" dataIndex="budgetCode"/>-->
+        <JTextCol text_s="科目名称" dataIndex="budgetName"/>
+        <!--<JTextCol text_s="当年调整" dataIndex="thisYearChanged"/>-->
+        <JHidden  dataIndex="budgetId"/>
+        <JHidden  dataIndex="packageId"/>
+        <!--<JTextCol text_s="包号" dataIndex="packageNo"/>-->
+        <!--<JTextCol text_s="包名" dataIndex="packageName"/>-->
+        <JTextCol text_s="预算金额" dataIndex="costControlMoney"/>
+        <JTextCol text_s="已占用预算" dataIndex="lockedBudget"/>
+        <JTextCol text_s="剩余预算" dataIndex="remainBudget"/>
+    </results>
+</commonquery>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select * from (
+        select su.*, nvl(scl.code_desc, sc.code_desc) as USER_SEX_DESC, so.org_name,so.org_code
+          from scdp_user su
+          left join scdp_code sc
+            on sc.code_type = 'SEX_TYPE'
+           and sc.sys_code = su.user_sex
+          left join scdp_code_localdesc scl
+            on sc.uuid = scl.puuid
+           and scl.lang_id = 'zh_CN'
+          left join scdp_org so
+            on so.uuid = su.org_uuid
+         where su.org_uuid <> '*' and su.company_uuid <> '*')
+           where ('${companyuuid}' = '*' or company_uuid = '${companyuuid}') and ${orgfilter} and ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+</DAO>

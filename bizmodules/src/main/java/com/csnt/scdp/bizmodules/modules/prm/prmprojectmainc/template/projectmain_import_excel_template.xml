@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<excel>
+    <entity name="立项主信息" code="PrmProjectMainC">
+        <column name="序号" code="sn" type="String"/>
+        <column name="合同名称" code="prmContractIdDesc" type="String"/>
+        <column name="项目名称" code="projectName" type="String">
+            <rules>
+                <rule name="nullable" message="项目名称不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="是否预立项" code="isPreProject" type="String"/>
+        <column name="合同运行额（元）" code="projectMoney" type="BigDecimal"/>
+        <column name="成本控制额（元）" code="costControlMoney" type="BigDecimal"/>
+        <!--<column name="业主单位" code="customerId" type="String"/>-->
+        <column name="承担部门" code="contractorOffice" type="String"/>
+        <column name="项目负责人" code="projectManager" type="String"/>
+        <column name="工期" code="contractDuration" type="String"/>
+        <column name="计划开始时间" code="scheduledBeginDate" type="Date"/>
+        <column name="计划完成时间" code="scheduledEndDate" type="Date"/>
+        <column name="代号类型" code="prmCodeType" type="String"/>
+        <column name="立项经费说明" code="fundsExplanation" type="String"/>
+        <column name="备注" code="remark" type="String"/>
+    </entity>
+    <entity name="关联单位" code="PrmAssociatedUnitsC">
+        <column name="序号" code="sn" type="String"/>
+        <column name="关联单位名称" code="associatedUnitsName" type="String">
+            <rules>
+                <rule name="nullable" message="关联单位名称不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="关联单位类型" code="associatedType" type="String">
+            <rules>
+                <rule name="nullable" message="关联单位类型不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="备注" code="remark" type="String"/>
+    </entity>
+    <entity name="项目成员表" code="PrmMemberDetailPC">
+        <column name="序号" code="sn" type="String"/>
+        <column name="成员姓名" code="staffId" type="String">
+            <rules>
+                <rule name="nullable" message="成员姓名不允许为空"></rule>
+            </rules>
+        </column>
+        <!--<column name="头衔" code="title" type="String"/>-->
+        <column name="项目角色" code="post" type="String">
+            <rules>
+                <rule name="nullable" message="项目角色不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="专业分工" code="jobShare" type="String">
+            <rules>
+                <rule name="nullable" message="专业分工不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="进入项目日期" code="enterDate" type="Date">
+            <rules>
+                <rule name="nullable" message="进入项目日期不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="离开项目日期" code="outDate" type="Date"/>
+        <column name="投入百分比（%）" code="percent" type="BigDecimal"/>
+    </entity>
+    <entity name="开支计划" code="PrmPayDetailPC">
+        <column name="序号" code="sn" type="String"/>
+        <column name="项目阶段" code="projectStage" type="String">
+            <rules>
+                <rule name="nullable" message="项目阶段不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="开支内容" code="payContent" type="String">
+            <rules>
+                <rule name="nullable" message="开支内容不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="预计开支金额（元）" code="payMoney" type="BigDecimal">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="预计开支金额（元）不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+        <column name="开始时间" code="beginDate" type="Date">
+            <rules>
+                <rule name="nullable" message="开始时间不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="结束时间" code="endDate" type="Date">
+            <rules>
+                <rule name="nullable" message="结束时间不允许为空"></rule>
+            </rules>
+        </column>
+    </entity>
+    <entity name="进度计划" code="PrmProgressDetailPC">
+        <column name="序号" code="sn" type="String"/>
+        <column name="项目阶段" code="projectStage" type="String">
+            <rules>
+                <rule name="nullable" message="项目阶段不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="计划起始时间" code="schemingBeginDate" type="Date">
+            <rules>
+                <rule name="nullable" message="计划起始时间不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="计划结束时间" code="schemingEndDate" type="Date">
+            <rules>
+                <rule name="nullable" message="计划结束时间不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="实际起始时间" code="actualBeginDate" type="Date">
+        </column>
+        <column name="实际结束时间" code="actualEndDate" type="Date">
+        </column>
+    </entity>
+    <entity name="结算计划" code="PrmSquareDetailPC">
+        <column name="序号" code="sn" type="String"/>
+        <column name="计划结算时间" code="schemingSquareDate" type="Date">
+            <rules>
+                <rule name="nullable" message="计划结算时间不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="计划结算金额（元）" code="schemingSquareMoney" type="BigDecimal">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="计划结算金额（元）不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+        <column name="计划结算成本金额（元）" code="schemingSquareCost" type="BigDecimal">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="计划结算成本金额不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+        <column name="计划结算利润金额（元）" code="schemingSquareProfits" type="BigDecimal">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="计划结算利润金额不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+        <column name="说明" code="explanation" type="String">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="说明不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+    </entity>
+    <entity name="收款计划" code="PrmReceiptsDetailPC">
+        <column name="序号" code="sn" type="String"/>
+        <column name="项目阶段" code="projectStage" type="String">
+            <rules>
+                <rule name="nullable" message="项目阶段不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="计划收款时间" code="schemingReceiptsDate" type="Date">
+            <rules>
+                <rule name="nullable" message="计划收款时间不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="计划收款金额（元）" code="schemingReceiptsMoney" type="BigDecimal">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="计划收款金额（元）不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+        <column name="说明" code="explanation" type="String">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="说明不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+    </entity>
+    <entity name="质量安全计划" code="PrmQsPC">
+        <column name="序号" code="sn" type="String"/>
+        <column name="安全负责人" code="safePrincipal" type="String">
+            <rules>
+                <rule name="nullable" message="安全负责人不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="安全联系人" code="safeContact" type="String">
+            <rules>
+                <rule name="nullable" message="安全联系人不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="安全体系文件" code="safeDocument" type="String">
+            <rules>
+                <rule name="nullable" message="安全体系文件不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="安全保障措施" code="safeMeasure" type="String">
+            <rules>
+                <rule name="nullable" message="安全保障措施不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="质量负责人" code="qualityPrincipal" type="String">
+            <rules>
+                <rule name="nullable" message="质量负责人不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="质量联系人" code="qualityContact" type="String">
+            <rules>
+                <rule name="nullable" message="质量联系人不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="质量体系文件" code="qualityDocument" type="String">
+            <rules>
+                <rule name="nullable" message="质量体系文件不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="质量保障措施" code="qualityMeasure" type="String">
+            <rules>
+                <rule name="nullable" message="质量保障措施不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="外部编号" code="outerNo" type="String"/>
+        <column name="备注" code="remark" type="String">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="备注不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+    </entity>
+    <entity name="立项预算汇总" code="PrmBudgetDetailC">
+        <column name="序号" code="serialNumber" type="String"/>
+        <column name="名称" code="budgetCode" type="String"/>
+        <column name="原合同价（元）" code="contractMoney" type="BigDecimal"/>
+        <!--<column name="联合设计上报（元）" code="jointDesignMoney" type="BigDecimal"/>-->
+        <column name="说明" code="explanation" type="String"/>
+        <column name="计划预算金额（元）" code="costControlMoney" type="BigDecimal"/>
+        <column name="备注" code="remark" type="String"/>
+    </entity>
+    <entity name="外协" code="PrmBudgetOutsourceC">
+        <column name="序号" code="serialNumber" type="String"/>
+        <column name="名称" code="supplierCode" type="String">
+            <rules>
+                <rule name="nullable" message="名称不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="主要外协内容" code="content" type="String">
+            <rules>
+                <rule name="nullable" message="主要外协内容不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="数量" code="amount" type="BigDecimal">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="数量不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+        <column name="单位" code="unit" type="String">
+            <rules>
+                <rule name="nullable" message="单位不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="计划单价（元）" code="price" type="BigDecimal">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="计划单价不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+        <column name="计划总价（元）" code="totalValue" type="BigDecimal">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="计划总价不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+        <column name="备注" code="remark" type="String"/>
+    </entity>
+    <entity name="主材" code="PrmBudgetPrincipalC">
+        <column name="序号" code="serialNumber" type="String">
+            <rules>
+                <rule name="nullable" message="序号不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="设备名称" code="equipmentName" type="String">
+            <rules>
+                <rule name="nullable" message="设备名称不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="型号规格" code="equipmentModel" type="String">
+            <rules>
+                <rule name="nullable" message="型号规格不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="生产厂家" code="factory" type="String">
+            <rules>
+                <rule name="nullable" message="生产厂家不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="单位" code="unit" type="String">
+            <rules>
+                <rule name="nullable" message="单位不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="合同数量" code="contractAmount" type="BigDecimal">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="数量不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+        <column name="合同单价（元）" code="contractPrice" type="BigDecimal">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="合同单价不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+        <column name="合同总价（元）" code="contractTotalValue" type="BigDecimal">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="合同总价不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+        <column name="计划数量" code="amount" type="BigDecimal">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="数量不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+        <column name="计划单价（元）" code="schemingPrice" type="BigDecimal">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="计划单价不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+        <column name="计划总价（元）" code="schemingTotalValue" type="BigDecimal">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="计划总价不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+        <column name="计划毛利（元）" code="schemingGrossProfit" type="BigDecimal">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="计划毛利不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+        <column name="备注" code="remark" type="String"/>
+    </entity>
+    <entity name="辅材" code="PrmBudgetAccessoryC">
+        <column name="序号" code="serialNumber" type="String">
+            <rules>
+                <rule name="nullable" message="序号不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="材料名称" code="accessoryName" type="String">
+            <rules>
+                <rule name="nullable" message="材料名称不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="规格" code="accessoryModel" type="String">
+            <rules>
+                <rule name="nullable" message="规格不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="数量" code="amount" type="BigDecimal">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="数量不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+        <column name="计划单价（元）" code="price" type="BigDecimal">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="计划单价不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+        <column name="计划总价（元）" code="totalValue" type="BigDecimal">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="计划总价不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+        <column name="备注" code="remark" type="String"/>
+    </entity>
+    <entity name="运行" code="PrmBudgetRunC">
+        <column name="序号" code="serialNumber" type="String">
+            <rules>
+                <rule name="nullable" message="序号不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="名称" code="financialSubjectCode" type="String">
+            <rules>
+                <rule name="nullable" message="名称不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="单位" code="unit" type="String">
+            <rules>
+                <rule name="nullable" message="单位不允许为空"></rule>
+            </rules>
+        </column>
+        <column name="数量" code="amount" type="BigDecimal">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="数量不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+        <column name="计划单价（元）" code="price" type="BigDecimal">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="计划单价不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+        <column name="计划总价（元）" code="totalValue" type="BigDecimal">
+            <!--<rules>-->
+            <!--<rule name="nullable" message="计划总价不允许为空"></rule>-->
+            <!--</rules>-->
+        </column>
+        <column name="备注" code="remark" type="String"/>
+    </entity>
+</excel>
+        <!--2015.11.10 数字类型（Integer, BigDecimal）非空验证由以前的输出报错信息改为自动补零-->

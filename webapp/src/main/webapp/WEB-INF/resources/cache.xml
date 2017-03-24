@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CacheParameters xmlVersion="20141222" releaseVersion="8.0.0">
+<Basic cacheDirectory="C:\Users\Bronco\.FineReport80\cache" maxMemSize="4194304"/>
+<DBConfig>
+<CacheConfig maxElementsInMemory="10" memoryStoreEvictionPolicy="LRU" timeToIdleSeconds="200" timeToLiveSeconds="40"/>
+</DBConfig>
+<CPTConfig>
+<CacheConfig maxElementsInMemory="10" memoryStoreEvictionPolicy="LRU" timeToIdleSeconds="200" timeToLiveSeconds="40"/>
+</CPTConfig>
+<AlwaysReloadTpl>
+<![CDATA[false]]></AlwaysReloadTpl>
+</CacheParameters>

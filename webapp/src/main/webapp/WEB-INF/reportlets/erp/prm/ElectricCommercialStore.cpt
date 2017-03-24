@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20141222" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="FAD_CASH_REQ" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="uuid"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT T.*,
+       U.USER_NAME AS STAFF_NAME,
+       U.USER_NAME || '(' || OPERATOR_NAME || ')' AS NAME,
+       SCODE.CODE_DESC
+  FROM FAD_CASH_REQ T
+  LEFT JOIN SCDP_USER U
+    ON T.STAFF_ID = U.USER_ID
+  LEFT JOIN (SELECT *
+               FROM SCDP_CODE
+              WHERE CODE_TYPE = 'ELECTRIC_COMMERCIAL_STORE') SCODE
+    ON SCODE.SYS_CODE = T.ELECTRIC_COMMERCIAL_STORE
+WHERE T.UUID='${uuid}'  ]]></Query>
+</TableData>
+<TableData name="AUDIT" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="uuid"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT LISTAGG(BIZ.USER_NAME, ',') WITHIN GROUP(ORDER BY BIZ.END_TIME_ ASC) AS AUDIT_NAME
+  FROM (SELECT DISTINCT U.USER_NAME, MIN(S.END_TIME_) AS END_TIME_
+          FROM ACT_HI_TASKINST S
+          LEFT JOIN ACT_HI_PROCINST P
+            ON S.PROC_INST_ID_ = P.ID_
+          LEFT JOIN SCDP_USER U
+            ON S.ASSIGNEE_ = U.USER_ID
+         WHERE P.BUSINESS_KEY_ = '${uuid}'
+           AND P.PROC_INST_ID_ =
+               (SELECT MAX(PROC_INST_ID_)
+                  FROM ACT_HI_PROCINST P
+                 WHERE P.BUSINESS_KEY_ = '${uuid}')
+         GROUP BY U.USER_NAME) BIZ]]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[723900,723900,838200,1728000,1728000,1728000,1728000,1728000,1728000,1728000,1728000,495300,1219200,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[1524000,4152900,4800600,2743200,2743200,2743200,3086100,2743200,2743200,2743200,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="0" cs="6" rs="2" s="0">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=FAD_CASH_REQ.select(CODE_DESC) + "支付请款申请表"]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="1">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="2" s="1">
+<O>
+<![CDATA[申请时间：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="2" cs="5" s="2">
+<O t="DSColumn">
+<Attributes dsName="FAD_CASH_REQ" columnName="APPLY_DATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="3" cs="2" s="3">
+<O>
+<![CDATA[流水号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="3" cs="4" s="4">
+<O t="DSColumn">
+<Attributes dsName="FAD_CASH_REQ" columnName="RUNNING_NO"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="4" cs="2" s="3">
+<O>
+<![CDATA[非项目代号/项目代号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="4" cs="4" s="4">
+<O t="DSColumn">
+<Attributes dsName="FAD_CASH_REQ" columnName="FAD_SUBJECT_CODE"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="5" cs="2" s="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=FAD_CASH_REQ.select(CODE_DESC) + "用户名"]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="5" cs="4" s="4">
+<O t="DSColumn">
+<Attributes dsName="FAD_CASH_REQ" columnName="JD_NAME"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="6" cs="2" s="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=FAD_CASH_REQ.select(CODE_DESC) + "登录密码"]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="6" cs="4" s="4">
+<O t="DSColumn">
+<Attributes dsName="FAD_CASH_REQ" columnName="JD_PASSWORD"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="7" cs="2" s="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=FAD_CASH_REQ.select(CODE_DESC) + "订单号"]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="7" cs="4" s="4">
+<O t="DSColumn">
+<Attributes dsName="FAD_CASH_REQ" columnName="JD_ORDER_NO"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="8" cs="2" s="3">
+<O>
+<![CDATA[支付金额（元）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="8" cs="4" s="5">
+<O t="DSColumn">
+<Attributes dsName="FAD_CASH_REQ" columnName="MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="9" cs="2" s="3">
+<O>
+<![CDATA[下单时间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="9" cs="4" s="6">
+<O t="DSColumn">
+<Attributes dsName="FAD_CASH_REQ" columnName="JD_ORDER_DATE"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="10" cs="2" s="3">
+<O>
+<![CDATA[要求最后支付时间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="10" cs="4" s="6">
+<O t="DSColumn">
+<Attributes dsName="FAD_CASH_REQ" columnName="JD_LAST_DATE"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="12" s="1">
+<O>
+<![CDATA[申请人(经办人)：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="12">
+<O t="DSColumn">
+<Attributes dsName="FAD_CASH_REQ" columnName="NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="12" s="1">
+<O>
+<![CDATA[ 审批人：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="12" cs="3">
+<O t="DSColumn">
+<Attributes dsName="AUDIT" columnName="AUDIT_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting>
+<Margin top="986400" left="2743200" bottom="986400" right="2743200"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="128"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style imageLayout="1">
+<Format class="java.text.SimpleDateFormat">
+<![CDATA[yyyy年MM月dd日]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="96"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="2" imageLayout="1" paddingLeft="27">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="2" imageLayout="1" paddingLeft="27">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="2" imageLayout="1" paddingLeft="27">
+<Format class="java.text.SimpleDateFormat">
+<![CDATA[yyyy年MM月dd日]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

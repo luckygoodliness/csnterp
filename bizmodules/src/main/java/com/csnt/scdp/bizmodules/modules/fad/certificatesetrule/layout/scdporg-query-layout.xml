@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>certificatesetrule-dao</daotype>
+        <daokey>scdp_org</daokey>
+    </querysql>
+    <defaultSort>seq_no asc</defaultSort>
+    <conditions columns="2">
+        <JText pos="A1:A1" cid="orgCode" field="org_code" fieldLabel_s="orgCode"/>
+        <JText pos="A2:A2" cid="orgName" field="org_name" fieldLabel_s="orgName"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="orgCode" dataIndex="orgCode" width_n="100"/>
+        <JTextCol text_s="orgName" dataIndex="orgName" width_n="120"/>
+    </results>
+</commonquery>

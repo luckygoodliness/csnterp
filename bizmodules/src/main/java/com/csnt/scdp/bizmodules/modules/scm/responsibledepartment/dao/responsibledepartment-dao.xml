@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[
+                SELECT (SELECT A.CODE_DESC
+                          FROM SCDP_CODE A
+                         WHERE A.CODE_TYPE = 'SCM_PURCHASEREQ_IS_PROJECT'
+                           AND A.SYS_CODE = T.IS_PROJECT) AS IS_PROJECT_COMBO,
+                       (SELECT A.USER_NAME FROM SCDP_USER A WHERE A.USER_ID = T.PRINCIPAL) AS PRINCIPAL_NAME,
+                       (SELECT A.USER_NAME FROM SCDP_USER A WHERE A.USER_ID = T.ATTACHE) AS ATTACHE_NAME,
+                       (SELECT ORG_NAME
+                          FROM SCDP_ORG A
+                         WHERE A.ORG_CODE = T.RESPONSIBLE_DEPARTMENT) AS RESPONSIBLE_DEPARTMENT_NAME,
+                       T.*
+                  FROM SCM_RESPONSIBLE_DEPARTMENT T
+            where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+</DAO>

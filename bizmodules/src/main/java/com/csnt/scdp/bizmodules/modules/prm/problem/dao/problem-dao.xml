@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select * from prm_problem where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+
+    <common_query_department>
+        <common>
+            <![CDATA[select     p.uuid,
+                                p.prm_project_main_id,
+                                p.prm_weekly_id,
+                                p.post_date,
+                                p.problem_type,
+                                p.description,
+                                p.post_person,
+                                p.proposal_solution,
+                                p.proposal_date,
+                                p.provider,
+                                p.remark,
+                                p.state,
+                                p.company_code,
+                                p.project_id,
+                                p.department_code,
+                                p.create_by,
+                                p.create_time,
+                                p.update_by,
+                                p.update_time,
+                                p.loc_timezone,
+                                p.tbl_version,
+                                p.is_void,
+                               o.org_name,
+                               (select a.project_name  from (select ppm.*,pc.contract_name
+                                                                from prm_project_main ppm
+                                                                 left join PRM_CONTRACT  pc
+                                                               on ppm.prm_contract_id = pc.uuid ) a
+                                where a.uuid=p.prm_project_main_id) as project_name,
+                                (SELECT A.USER_NAME FROM SCDP_USER A WHERE A.user_id = p.post_person) AS post_person_name,
+                                (SELECT A.USER_NAME FROM SCDP_USER A WHERE A.user_id = p.provider) AS provider_name,
+                                (select c.code_desc from scdp_code c where c.code_type='PRM_PROBLEM_TYPE'  and  c.sys_code= p.problem_type) as PRM_PROBLEM_TYPE_COMBO,
+                                 (select c.code_desc from scdp_code c where c.code_type='CDM_BILL_STATE'  and  c.sys_code= p.state) as CDM_BILL_STATE_COMBO
+                        from   prm_problem p
+                        left join scdp_org o
+                        on     p.department_code = o.org_code
+                        where 1=1 and ${conditions}]]>
+        </common>
+    </common_query_department>
+</DAO>

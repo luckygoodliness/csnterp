@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>responsiblesubject-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JUserGrid pos="A1:A1" fieldLabel_s="principal" cid="principal_query"
+                   refer_j='[{"refField":"principal","valueField":"userId"}]'/>
+        <JHidden pos="A2:A2" cid="principal" field="principal"/>
+        <JFSubjectGrid pos="B1:B1" fieldLabel_s="subjectCode" cid="subjectCode_query"
+                       refer_j='[{"refField":"subjectCode","valueField":"uuid"}]'/>
+        <JHidden pos="A2:A2" cid="subjectCode" field="subject_code"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="principal" dataIndex="principalName" width_n="120"/>
+        <JTextCol text_s="subjectCode" dataIndex="subjectCodeName" width_n="120"/>
+        <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+        <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+        <JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+        <JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>
+        <!--<JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120"/>-->
+        <!--<JTextCol text_s="projectId" dataIndex="projectId" width_n="120"/>-->
+        <!--<JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120"/>-->
+        <!--<JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120"/>-->
+        <!--<JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120"/>-->
+    </results>
+</commonquery>

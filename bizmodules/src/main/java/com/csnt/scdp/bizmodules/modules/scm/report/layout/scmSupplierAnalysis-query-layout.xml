@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonreport version="1.0">
+    <report>
+        <reporttype>L</reporttype>
+        <reporttemplate>erp/scm/M6_NRPT8_供应商分析报表.cpt</reporttemplate>
+        <reportcache>false</reportcache>
+    </report>
+    <conditions columns="4">
+        <JHidden cid="officeIdDesc" field="officeIdDesc"/>
+        <JErpDepartMent pos="A1:A1" cid="officeId" fieldLabel_s="officeId" field="officeId" labelWidth_n="100"/>
+
+        <JText pos="B1:B1" cid="project" fieldLabel_s="project" field="project"/>
+
+        <JText pos="C1:C1" cid="materialClass" fieldLabel_s="materialClass" field="materialClass"/>
+
+        <JText pos="A2:A2" cid="supplier" fieldLabel_s="supplier" field="supplier"/>
+
+        <JCombo pos="B2:B2" cid="materialType" fieldLabel_s="materialType" field="materialType" comboType="scdp_fmcode"
+                codeType="SCM_MATERIAL_TYPE" displayDesc_b="true"/>
+
+        <JHidden cid="dateStartHidden" field="dateStart"/>
+        <JDatetime pos="C2:C2" cid="dateStart" fieldLabel_s="dateStart" labelWidth_n="100"/>
+
+        <JHidden cid="dateOverHidden" field="dateOver"/>
+        <JDatetime pos="D2:D2" cid="dateOver" fieldLabel_s="dateOver" labelWidth_n="100"/>
+    </conditions>
+</commonreport>

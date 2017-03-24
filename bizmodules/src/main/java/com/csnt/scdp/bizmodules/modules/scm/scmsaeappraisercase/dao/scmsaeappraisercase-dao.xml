@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select * from scm_sae_appraiser_case where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+    <grid_query>
+        <common>
+            <![CDATA[select * from scm_sae_appraiser_case where ${conditions} and ${voidfilter} and isactive = '1' ]]>
+        </common>
+    </grid_query>
+</DAO>

@@ -1,0 +1,550 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="T1" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="project"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="materialClass"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="supplier"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="materialType"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStart"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateOver"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+
+ROW_NUMBER() OVER
+(
+  ORDER BY
+  SCM_SUPPLIER.SUPPLIER_CODE ASC,
+  SCM_MATERIAL_CLASS.CODE ASC,
+  SCM_SUPPLIER.LEVEL_CODE ASC,
+  SCM_SUPPLIER.SUPPLIER_GENRE ASC,
+  SUM(SCM_CONTRACT.AMOUNT) ASC
+) ROW_NUMBER, --序号
+
+SCM_MATERIAL_CLASS.MATERIAL_TYPE,
+DECODE(SCM_MATERIAL_CLASS.MATERIAL_TYPE,0,'采购','1','外协','') MATERIAL_TYPE_NAME,--合同性质
+
+SCM_MATERIAL_CLASS.CODE MATERIAL_CLASS_CODE,
+SCM_MATERIAL_CLASS.NAME MATERIAL_CLASS_NAME,--物料科目
+
+SCM_SUPPLIER.UUID SUPPLIER_ID,
+SCM_SUPPLIER.SUPPLIER_CODE,
+SCM_SUPPLIER.COMPLETE_NAME,--供应商
+
+SUM(SCM_CONTRACT.AMOUNT) SCM_AMOUNT,--合同金额
+COUNT(DISTINCT SCM_CONTRACT.UUID) SCM_COUNT,--合同数量
+
+SCM_SUPPLIER.LEVEL_CODE,
+DECODE(SCM_SUPPLIER.LEVEL_CODE,NULL,'普通供方','D','不合格供方',SCM_SUPPLIER.LEVEL_CODE||'级年度合格供方') LEVEL_TYPES,--供应商级别
+
+SCM_SUPPLIER.SUPPLIER_GENRE,
+DECODE(SCM_SUPPLIER.SUPPLIER_GENRE,'0','合格供方','1','普通供方','2','零星供方','3','报销供方','4','其他','') SUPPLIER_GENRE_NAME,--供方类型
+
+CASE 
+WHEN
+  SCM_MATERIAL_CLASS.MATERIAL_TYPE = '0'
+THEN
+  '市场价格:' || TO_CHAR(ROUND(AVG(SCM_SUPPLIER_EVALUATION.PRICE),2)) || '\n\n'
+  ||
+  '经营商务:' || TO_CHAR(ROUND(AVG(SCM_SUPPLIER_EVALUATION.BUSINESS),2)) || '\n\n'
+  ||
+  '到货:' || TO_CHAR(ROUND(AVG(SCM_SUPPLIER_EVALUATION.ARRIVAL_TIME),2)) || '\n\n'
+  ||
+  '质量服务:' || TO_CHAR(ROUND(AVG(SCM_SUPPLIER_EVALUATION.EQUIPMENT_QUALITY),2)) || '\n\n'
+  ||
+  '综合评价:' || TO_CHAR(ROUND(AVG(SCM_SUPPLIER_EVALUATION.COMPREHENSIVE),2))
+WHEN
+  SCM_MATERIAL_CLASS.MATERIAL_TYPE = '1'
+THEN
+  '市场价格:' || TO_CHAR(ROUND(AVG(SCM_SUPPLIER_EVALUATION.PRICE),2)) || '\n\n'
+  ||
+  '经营商务:' || TO_CHAR(ROUND(AVG(SCM_SUPPLIER_EVALUATION.BUSINESS),2)) || '\n\n'
+  ||
+  '施工质量:' || TO_CHAR(ROUND(AVG(SCM_SUPPLIER_EVALUATION.PERSON_QUALITY),2)) || '\n\n'
+  ||
+  '施工组织能力:' || TO_CHAR(ROUND(AVG(SCM_SUPPLIER_EVALUATION.ORGANIZING_CAPABILITY),2)) || '\n\n'
+  ||
+  '服从管理:' || TO_CHAR(ROUND(AVG(SCM_SUPPLIER_EVALUATION.COMPLIANCE),2)) || '\n\n'
+  ||
+  '施工安全管理:' || TO_CHAR(ROUND(AVG(SCM_SUPPLIER_EVALUATION.SECURITY_MANAGEMENT),2)) || '\n\n'
+  ||
+  '结算:' || TO_CHAR(ROUND(AVG(SCM_SUPPLIER_EVALUATION.FINAL_ESTIMATE),2)) || '\n\n'
+  ||
+  '综合评价:' || TO_CHAR(ROUND(AVG(SCM_SUPPLIER_EVALUATION.COMPREHENSIVE),2))
+ELSE
+  ''
+END SERIES_SCORE,
+
+ROUND(SCM_SAE_OBJECT.COMPREHENSIVE,2) COMPREHENSIVE
+
+FROM
+SCM_SUPPLIER
+
+INNER JOIN
+SCM_CONTRACT 
+ON
+SCM_SUPPLIER.UUID = SCM_CONTRACT.SUPPLIER_CODE
+
+INNER JOIN
+PRM_PURCHASE_REQ_DETAIL
+ON
+SCM_CONTRACT.UUID = PRM_PURCHASE_REQ_DETAIL.SCM_CONTRACT_ID
+
+INNER JOIN
+PRM_PURCHASE_PACKAGE
+ON
+PRM_PURCHASE_REQ_DETAIL.PURCHASE_PACKAGE_ID = PRM_PURCHASE_PACKAGE.UUID
+
+INNER JOIN
+SCM_MATERIAL_CLASS
+ON
+PRM_PURCHASE_PACKAGE.MATERIAL_CLASS_CODE = SCM_MATERIAL_CLASS.CODE
+
+LEFT JOIN
+PRM_PROJECT_MAIN
+ON
+SCM_CONTRACT.PROJECT_ID = PRM_PROJECT_MAIN.UUID
+
+LEFT JOIN
+SCM_SUPPLIER_EVALUATION
+ON
+SCM_SUPPLIER.UUID = SCM_SUPPLIER_EVALUATION.SCM_SUPPLIER_ID
+AND
+SCM_CONTRACT.UUID = SCM_SUPPLIER_EVALUATION.SCM_CONTRACT_ID
+
+LEFT JOIN
+(
+  SELECT
+  SUPPLIER_ID,
+  AVG(COMPREHENSIVE) COMPREHENSIVE
+  FROM
+  SCM_SAE_OBJECT
+  GROUP BY
+  SUPPLIER_ID
+) SCM_SAE_OBJECT
+ON
+SCM_SUPPLIER.UUID = SCM_SAE_OBJECT.SUPPLIER_ID
+
+WHERE
+--部门
+('${officeId}' IS NULL OR SCM_CONTRACT.OFFICE_ID = '${officeId}')
+AND
+--项目
+(
+  --项目代号
+  ('${project}' IS NULL OR NVL(PRM_PROJECT_MAIN.PROJECT_CODE, SCM_CONTRACT.SUBJECT_CODE) LIKE '%${project}%')
+  OR
+  --项目名称
+  ('${project}' IS NULL OR NVL(PRM_PROJECT_MAIN.PROJECT_NAME, (SELECT FINANCIAL_SUBJECT FROM NON_PROJECT_SUBJECT_SUBJECT WHERE FINANCIAL_SUBJECT_CODE = SCM_CONTRACT.SUBJECT_CODE)) LIKE '%${project}%')
+)
+AND
+--物料科目
+(
+  ('${materialClass}' IS NULL OR SCM_MATERIAL_CLASS.CODE LIKE '${materialClass}')
+  OR
+  ('${materialClass}' IS NULL OR SCM_MATERIAL_CLASS.NAME LIKE '${materialClass}')
+)
+AND
+--供应商
+(
+  ('${supplier}' IS NULL OR SCM_SUPPLIER.SUPPLIER_CODE LIKE '%${supplier}%')
+  OR
+  ('${supplier}' IS NULL OR SCM_SUPPLIER.COMPLETE_NAME LIKE '%${supplier}%')
+)
+AND
+--合同性质
+('${materialType}' IS NULL OR SCM_MATERIAL_CLASS.MATERIAL_TYPE = '${materialType}')
+AND
+--合同生效日期从
+('${dateStart}' IS NULL OR SCM_CONTRACT.EFFECTIVE_DATE >= TO_DATE('${dateStart}','yyyy-mm-dd hh24:mi:ss'))
+AND
+--合同生效日期到
+('${dateOver}' IS NULL OR SCM_CONTRACT.EFFECTIVE_DATE <= TO_DATE('${dateOver}','yyyy-mm-dd hh24:mi:ss'))
+
+GROUP BY
+SCM_MATERIAL_CLASS.MATERIAL_TYPE,
+DECODE(SCM_MATERIAL_CLASS.MATERIAL_TYPE,0,'采购','1','外协',''),--合同性质
+
+SCM_MATERIAL_CLASS.CODE,
+SCM_MATERIAL_CLASS.NAME,--物料科目
+
+SCM_SUPPLIER.UUID,
+SCM_SUPPLIER.SUPPLIER_CODE,
+SCM_SUPPLIER.COMPLETE_NAME,--供应商
+
+SCM_SUPPLIER.LEVEL_CODE,
+DECODE(SCM_SUPPLIER.LEVEL_CODE,NULL,'普通供方','D','不合格供方',SCM_SUPPLIER.LEVEL_CODE||'级年度合格供方'),--供应商级别
+
+SCM_SUPPLIER.SUPPLIER_GENRE,
+DECODE(SCM_SUPPLIER.SUPPLIER_GENRE,'0','合格供方','1','普通供方','2','零星供方','3','报销供方','4','其他',''),--供方类型
+
+ROUND(SCM_SAE_OBJECT.COMPREHENSIVE,2)]]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR F="0" T="1"/>
+<FR/>
+<HC/>
+<FC/>
+<UPFCR COLUMN="false" ROW="true"/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[720000,720000,720000,723900,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[1440000,3600000,2743200,3600000,9105900,3600000,3600000,3600000,3600000,10439400,3600000,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" cs="11" s="0">
+<O>
+<![CDATA[供应商分析报表]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" s="1">
+<O>
+<![CDATA[序号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" s="1">
+<O>
+<![CDATA[合同性质]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="1" s="1">
+<O>
+<![CDATA[科目编码]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="1" s="1">
+<O>
+<![CDATA[物料名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="1" s="1">
+<O>
+<![CDATA[供应商]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="1" s="1">
+<O>
+<![CDATA[合同金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="1" s="1">
+<O>
+<![CDATA[合同数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="1" s="1">
+<O>
+<![CDATA[供应商级别]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="1" s="1">
+<O>
+<![CDATA[供方类型]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="1" s="1">
+<O>
+<![CDATA[系列评分]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="1" s="1">
+<O>
+<![CDATA[年度考评打分]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="ROW_NUMBER"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="MATERIAL_TYPE_NAME"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="MATERIAL_CLASS_CODE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="MATERIAL_CLASS_NAME"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="COMPLETE_NAME"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="SCM_AMOUNT"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="SCM_COUNT"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="LEVEL_TYPES"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="SUPPLIER_GENRE_NAME"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="SERIES_SCORE"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="10" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="COMPREHENSIVE"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting orientation="1">
+<PaperSize width="30240000" height="51840000"/>
+<Margin top="986400" left="1440000" bottom="986400" right="1440000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="96"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

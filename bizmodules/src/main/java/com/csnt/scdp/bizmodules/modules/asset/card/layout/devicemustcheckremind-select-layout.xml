@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="assetCardDto" row="24*6" col="0.25*4" title_s="" border_n="1" labelWidth_n="90">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+
+        <JText pos="A1:B1" cid="assetCode" fieldLabel_s="assetCode" allowBlank_b="true" readOnly_b="true"
+               adaptable_b="false"/>
+
+        <JText pos="C1:D1" cid="assetName" fieldLabel_s="assetName" allowBlank_b="false" maxLength_n="250"
+               readOnly_b="true" adaptable_b="false"/>
+
+        <JText pos="A2:B2" cid="model" fieldLabel_s="model" allowBlank_b="true" maxLength_n="250" readOnly_b="true"
+               adaptable_b="false"/>
+
+        <JHidden cid="officeIdDesc"/>
+        <JErpDepartMent pos="A3:B3" fieldLabel_s="officeId" cid="officeId"
+                        readOnly_b="true" adaptable_b="false"/>
+
+        <JHidden cid="endUserCode"/>
+        <JUserGrid pos="C3:D3" cid="endUserName" fieldLabel_s="endUserName" allowBlank_b="true"
+                   refer_j='[{"refField":"endUserCode","valueField":"userId"},{"refField":"officeId","valueField":"orgCode"}]'
+                   readOnly_b="true" adaptable_b="false"/>
+
+        <JDate pos="A4:B4" cid="purchaseTime" fieldLabel_s="purchaseTime" allowBlank_b="true" readOnly_b="true"
+               adaptable_b="false"/>
+
+        <JDate pos="C4:D4" cid="checkedDate" fieldLabel_s="checkedDate"
+               allowBlank_b="true" readOnly_b="false" adaptable_b="false"/>
+    </JForm>
+</view>

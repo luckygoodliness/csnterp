@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[
+                    SELECT BS.*,
+                    (SELECT CODE_DESC
+                    FROM SCDP_CODE A
+                    WHERE A.CODE_TYPE = 'NONPRM_FINANCIAL_SUBJECT_TYPE'
+                    AND A.SYS_CODE = BS.SUBJECT_TYPE) AS FINANCIAL_COMBO,
+                    (SELECT CODE_DESC
+                    FROM SCDP_CODE A
+                    WHERE A.CODE_TYPE = 'SUBJECT_CATEGORY'
+                    AND A.SYS_CODE = BS.SUBJECT_CATEGORY) AS SUBJECT_CATEGORY_DESC
+                    FROM FAD_BASE_SUBJECT BS
+                   where ${conditions} and ${selfconditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+    <fm_financial_subject_no>
+        <common>
+            <![CDATA[
+            select t.* from fad_base_subject t where t.isenabled=1 and t.subject_type in ('1','2') order by t.seq_no asc
+            ]]>
+        </common>
+    </fm_financial_subject_no>
+</DAO>

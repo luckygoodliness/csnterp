@@ -1,0 +1,1096 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="T1" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="dateStart"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateOver"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="supplierName"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="scmContractCode"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="project"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[      SELECT
+      TD.UUID,
+      TD.IS_PROJECT,
+      TD.CERTIFICATE_CREATE_TIME,--支付时间
+      TD.SUPPLIER_CODE,
+      TD.SUPPLIER_NAME,--供应商
+      TD.PROJECT_ID,
+      TD.TOPIC_CODE,--课题代号
+      TD.TOPIC_NAME,--课题名称
+      TD.PROJECT_MONEY,
+      TD.SCM_CONTRACT_ID,
+      TD.SCM_CONTRACT_CODE,--合同编号
+      TD.MONEY,--支付小计
+      TD.MONTH_PAY,--支付会支付
+      TD.MONTH_APP,--支付会核定
+      TD.TEMP_PAY,--临时支付
+      TD.ADVANCE_PAY,--预付款请款
+      TD.OTHER_PAY,--其他请款
+      TD.PUR_REI,--采购报销
+      TD.AMOUNT,--合同金额
+      TD.IAMOUNT,--发票金额
+      
+      TD.NO_PAY,--未付金额
+      TD.ALREADY_PAY,--已付金额
+      TD.ABLE_PAY,--应付金额
+      
+      CASE WHEN TD.IS_PROJECT = '1' AND TD.PROJECT_MONEY <> 0 THEN NVL(SUM(P.ACTUAL_MONEY), 0) / TD.PROJECT_MONEY ELSE NULL END RECEIVABLES_RATE,--收款比例
+      
+      TD.OFFICE_ID,
+      TD.ORG_NAME,--部门
+      TD.ORG_SEQ_NO,
+      TD.RUNNING_NO--申请编号
+      FROM
+      (    
+            SELECT
+            T.UUID,
+            T.IS_PROJECT,
+            T.CERTIFICATE_CREATE_TIME,--支付时间
+            T.SUPPLIER_CODE,
+            T.SUPPLIER_NAME,--供应商
+            T.PROJECT_ID,
+            T.TOPIC_CODE,--课题代号
+            T.TOPIC_NAME,--课题名称
+            T.PROJECT_MONEY,
+            T.SCM_CONTRACT_ID,
+            T.SCM_CONTRACT_CODE,--合同编号
+            T.MONEY,--支付小计
+            T.MONTH_PAY,--支付会支付
+            T.MONTH_APP,--支付会核定
+            T.TEMP_PAY,--临时支付
+            T.ADVANCE_PAY,--预付款请款
+            T.OTHER_PAY,--其他请款
+            T.PUR_REI,--采购报销
+            T.AMOUNT,--合同金额
+            T.IAMOUNT,--发票金额
+            
+            SUB_NEGATIVE_TO_0(T.AMOUNT,SUM(D.MONEY)) NO_PAY,--未付金额
+            SUM(D.MONEY) ALREADY_PAY,--已付金额
+            SUB_NEGATIVE_TO_0(T.IAMOUNT,SUM(D.MONEY)) ABLE_PAY,--应付金额
+                        
+            T.OFFICE_ID,
+            T.ORG_NAME,--部门
+            T.ORG_SEQ_NO,
+            T.RUNNING_NO--申请编号
+            FROM
+            (        
+              SELECT
+              VW_BUDGET_FAD_DETAIL_P.UUID,
+              VW_BUDGET_FAD_DETAIL_P.IS_PROJECT,
+              TO_CHAR(VW_BUDGET_FAD_DETAIL_P.CERTIFICATE_CREATE_TIME,'yyyy-mm-dd hh24:mi:ss') CERTIFICATE_CREATE_TIME,--支付时间
+              SCM_CONTRACT.SUPPLIER_CODE,
+              SCM_CONTRACT.SUPPLIER_NAME,--供应商
+              
+              CASE WHEN VW_BUDGET_FAD_DETAIL_P.IS_PROJECT = '1' THEN PRM_PROJECT_MAIN.UUID ELSE NULL END PROJECT_ID,
+              NVL(CASE WHEN VW_BUDGET_FAD_DETAIL_P.IS_PROJECT = '1' THEN PRM_PROJECT_MAIN.PROJECT_CODE ELSE NULL END, SCM_CONTRACT.SUBJECT_CODE) TOPIC_CODE,--课题代号
+              NVL(CASE WHEN VW_BUDGET_FAD_DETAIL_P.IS_PROJECT = '1' THEN PRM_PROJECT_MAIN.PROJECT_NAME ELSE NULL END, (SELECT FINANCIAL_SUBJECT FROM NON_PROJECT_SUBJECT_SUBJECT WHERE FINANCIAL_SUBJECT_CODE = SCM_CONTRACT.SUBJECT_CODE)) TOPIC_NAME,--课题名称
+              NVL(CASE WHEN VW_BUDGET_FAD_DETAIL_P.IS_PROJECT = '1' THEN PRM_PROJECT_MAIN.PROJECT_MONEY ELSE NULL END, 0) PROJECT_MONEY,
+              
+              SCM_CONTRACT.UUID SCM_CONTRACT_ID,
+              SCM_CONTRACT.SCM_CONTRACT_CODE,--合同编号
+              
+              NVL(VW_BUDGET_FAD_DETAIL_P.MONEY, 0) MONEY,--支付小计
+              CASE WHEN VW_BUDGET_FAD_DETAIL_P.DETAIL_TYPE = '月度支付' THEN NVL(VW_BUDGET_FAD_DETAIL_P.MONEY, 0) ELSE 0 END MONTH_PAY,--支付会支付
+              CASE WHEN VW_BUDGET_FAD_DETAIL_P.DETAIL_TYPE = '月度支付' THEN NVL((SELECT FAD_PAY_REQ_C.AUDIT_MONEY FROM FAD_PAY_REQ_C WHERE FAD_PAY_REQ_C.UUID = VW_BUDGET_FAD_DETAIL_P.UUID), 0) ELSE 0 END MONTH_APP,--支付会核定
+              CASE WHEN VW_BUDGET_FAD_DETAIL_P.DETAIL_TYPE = '临时支付' THEN NVL(VW_BUDGET_FAD_DETAIL_P.MONEY, 0) ELSE 0 END TEMP_PAY,--临时支付
+              CASE WHEN VW_BUDGET_FAD_DETAIL_P.DETAIL_TYPE IN ('日常请款','差旅请款','采购请款') THEN NVL((SELECT FAD_CASH_REQ.MONEY FROM FAD_CASH_REQ WHERE FAD_CASH_REQ.UUID = VW_BUDGET_FAD_DETAIL_P.UUID AND NVL(FAD_CASH_REQ.IS_ADVANCE_PAYMENT, 0) = 1), 0) ELSE 0 END ADVANCE_PAY,--预付款请款
+              CASE WHEN VW_BUDGET_FAD_DETAIL_P.DETAIL_TYPE IN ('日常请款','差旅请款','采购请款') THEN NVL((SELECT FAD_CASH_REQ.MONEY FROM FAD_CASH_REQ WHERE FAD_CASH_REQ.UUID = VW_BUDGET_FAD_DETAIL_P.UUID AND NVL(FAD_CASH_REQ.IS_ADVANCE_PAYMENT, 0) <> 1), 0) ELSE 0 END OTHER_PAY,--其他请款
+              CASE WHEN VW_BUDGET_FAD_DETAIL_P.DETAIL_TYPE = '发票支付' THEN NVL(VW_BUDGET_FAD_DETAIL_P.MONEY, 0) ELSE 0 END PUR_REI,--采购报销
+              
+              NVL(SCM_CONTRACT.AMOUNT, 0) AMOUNT,--合同金额
+              NVL(INVOICE_CONTRACT.AMOUNT, 0) IAMOUNT,--发票金额
+              
+              SCM_CONTRACT.OFFICE_ID,
+              ORG.ORG_NAME,--部门
+              ORG.SEQ_NO ORG_SEQ_NO,
+              
+              VW_BUDGET_FAD_DETAIL_P.RUNNING_NO--申请编号
+              FROM
+              (
+                SELECT
+                STATE,
+                DETAIL_TYPE,
+                UUID,
+                IS_PROJECT,
+                SCM_CONTRACT_ID,
+                PROJECT_ID,
+                RUNNING_NO,
+                CERTIFICATE_CREATE_TIME,
+                MONEY
+                FROM
+                VW_BUDGET_FAD_DETAIL
+                WHERE
+                (
+                  (
+                    STATE = '4'
+                    AND
+                    DETAIL_TYPE IN ('日常请款','差旅请款','采购请款','临时支付','月度支付','发票支付')
+                  )
+                  OR
+                  (
+                    STATE IN ('2','8')
+                    AND
+                    DETAIL_TYPE IN ('月度支付')
+                  )
+                )
+                AND
+                --开始
+                (CERTIFICATE_CREATE_TIME >= TO_DATE(NVL('${dateStart}',TO_CHAR(SYSDATE,'yyyy-mm') || '-01 00:00:00'),'yyyy-mm-dd hh24:mi:ss'))
+                AND
+                --截止
+                (CERTIFICATE_CREATE_TIME <= TO_DATE(NVL('${dateOver}',TO_CHAR(SYSDATE,'yyyy-mm-dd') || ' 23:59:59'),'yyyy-mm-dd hh24:mi:ss'))
+              ) VW_BUDGET_FAD_DETAIL_P,
+              (
+                SELECT
+                UUID,
+                OFFICE_ID,
+                SUPPLIER_CODE,
+                SUPPLIER_NAME,
+                SCM_CONTRACT_CODE,
+                SUBJECT_CODE,
+                AMOUNT
+                FROM
+                SCM_CONTRACT
+                WHERE
+                --部门
+                ('${officeId}' IS NULL OR SCM_CONTRACT.OFFICE_ID = '${officeId}')
+                AND
+                --供应商
+                ('${supplierName}' IS NULL OR SCM_CONTRACT.SUPPLIER_NAME LIKE '%${supplierName}%')
+                AND
+                --合同编号
+                ('${scmContractCode}' IS NULL OR SCM_CONTRACT.SCM_CONTRACT_CODE LIKE '%${scmContractCode}%')
+              ) SCM_CONTRACT,
+              (
+                SELECT
+                SCM_CONTRACT_INVOICE.SCM_CONTRACT_ID,
+                SUM(SCM_CONTRACT_INVOICE.AMOUNT) AMOUNT--发票金额
+                FROM
+                (
+                  SELECT
+                  UUID,
+                  CERTIFICATE_CREATE_TIME
+                  FROM
+                  FAD_INVOICE
+                  WHERE
+                  EXPENSES_TYPE = '0'
+                  AND
+                  STATE IN ('4')
+                  AND
+                  NVL(IS_VOID, '0') = '0'
+                ) FAD_INVOICE,
+                (
+                  SELECT
+                  FAD_INVOICE_ID,
+                  SCM_CONTRACT_ID,
+                  AMOUNT
+                  FROM
+                  SCM_CONTRACT_INVOICE
+                ) SCM_CONTRACT_INVOICE
+                WHERE
+                FAD_INVOICE.UUID = SCM_CONTRACT_INVOICE.FAD_INVOICE_ID
+                GROUP BY SCM_CONTRACT_INVOICE.SCM_CONTRACT_ID
+              ) INVOICE_CONTRACT,
+              (
+                SELECT
+                UUID,
+                PROJECT_CODE,
+                PROJECT_NAME,
+                PROJECT_MONEY
+                FROM
+                PRM_PROJECT_MAIN
+              ) PRM_PROJECT_MAIN,
+              (
+                SELECT
+                SCDP_ORG.ORG_CODE,
+                SCDP_ORG.ORG_NAME,
+                SCDP_ORG.SEQ_NO
+                FROM
+                SCDP_ORG
+                INNER JOIN
+                (SELECT DATA_UUID FROM SCDP_EXPAND_ROW WHERE EXPAND_CODE = 'DEPT_PROP' AND EXPAND_VALUE = '事业部') SCDP_EXPAND_ROW
+                ON
+                SCDP_ORG.UUID = SCDP_EXPAND_ROW.DATA_UUID
+              ) ORG
+              WHERE
+              VW_BUDGET_FAD_DETAIL_P.SCM_CONTRACT_ID = SCM_CONTRACT.UUID
+              AND
+              VW_BUDGET_FAD_DETAIL_P.SCM_CONTRACT_ID = INVOICE_CONTRACT.SCM_CONTRACT_ID(+)
+              AND
+              VW_BUDGET_FAD_DETAIL_P.PROJECT_ID = PRM_PROJECT_MAIN.UUID(+)
+              AND
+              SCM_CONTRACT.OFFICE_ID = ORG.ORG_CODE
+              AND
+              (
+                --项目代号
+                ('${project}' IS NULL OR NVL(PRM_PROJECT_MAIN.PROJECT_CODE, SCM_CONTRACT.SUBJECT_CODE) LIKE '%${project}%')
+                OR
+                --项目名称
+                ('${project}' IS NULL OR NVL(PRM_PROJECT_MAIN.PROJECT_NAME, (SELECT FINANCIAL_SUBJECT FROM NON_PROJECT_SUBJECT_SUBJECT WHERE FINANCIAL_SUBJECT_CODE = SCM_CONTRACT.SUBJECT_CODE)) LIKE '%${project}%')
+              )
+            ) T
+            
+            LEFT JOIN
+            (
+              SELECT
+              TO_CHAR(CERTIFICATE_CREATE_TIME,'yyyy-mm-dd hh24:mi:ss') CERTIFICATE_CREATE_TIME,
+              SCM_CONTRACT_ID,
+              NVL(MONEY, 0) MONEY
+              FROM
+              VW_BUDGET_FAD_DETAIL
+              WHERE
+              (
+                STATE = '4'
+                AND
+                DETAIL_TYPE IN ('日常请款','差旅请款','采购请款','临时支付','月度支付','日常请款现金核销','差旅请款现金核销','采购请款现金核销','发票支付')
+              )
+            ) D
+            ON
+            T.SCM_CONTRACT_ID = D.SCM_CONTRACT_ID
+            AND
+            T.CERTIFICATE_CREATE_TIME >= D.CERTIFICATE_CREATE_TIME
+            
+            GROUP BY
+            T.UUID,
+            T.IS_PROJECT,
+            T.CERTIFICATE_CREATE_TIME,--支付时间
+            T.SUPPLIER_CODE,
+            T.SUPPLIER_NAME,--供应商
+            T.PROJECT_ID,
+            T.TOPIC_CODE,--课题代号
+            T.TOPIC_NAME,--课题名称
+            T.PROJECT_MONEY,
+            T.SCM_CONTRACT_ID,
+            T.SCM_CONTRACT_CODE,--合同编号
+            T.MONEY,--支付小计
+            T.MONTH_PAY,--支付会支付
+            T.MONTH_APP,--支付会核定
+            T.TEMP_PAY,--临时支付
+            T.ADVANCE_PAY,--预付款请款
+            T.OTHER_PAY,--其他请款
+            T.PUR_REI,--采购报销
+            T.AMOUNT,--合同金额
+            T.IAMOUNT,--发票金额
+            
+            T.OFFICE_ID,
+            T.ORG_NAME,--部门
+            T.ORG_SEQ_NO,
+            T.RUNNING_NO--申请编号
+      ) TD
+                  
+      LEFT JOIN
+      (
+        SELECT
+        TO_CHAR(ACTUAL_DATE,'yyyy-mm-dd') || ' 23:59:59' ACTUAL_DATE,
+        PRM_PROJECT_MAIN_ID,
+        NVL(ACTUAL_MONEY, 0) ACTUAL_MONEY
+        FROM PRM_RECEIPTS
+        WHERE STATE IN ('2','4','8')
+      ) P
+      ON
+      TD.PROJECT_ID = P.PRM_PROJECT_MAIN_ID
+      AND
+      TD.CERTIFICATE_CREATE_TIME >= P.ACTUAL_DATE
+      
+      GROUP BY
+      TD.UUID,
+      TD.IS_PROJECT,
+      TD.CERTIFICATE_CREATE_TIME,--支付时间
+      TD.SUPPLIER_CODE,
+      TD.SUPPLIER_NAME,--供应商
+      TD.PROJECT_ID,
+      TD.TOPIC_CODE,--课题代号
+      TD.TOPIC_NAME,--课题名称
+      TD.PROJECT_MONEY,
+      TD.SCM_CONTRACT_ID,
+      TD.SCM_CONTRACT_CODE,--合同编号
+      TD.MONEY,--支付小计
+      TD.MONTH_PAY,--支付会支付
+      TD.MONTH_APP,--支付会核定
+      TD.TEMP_PAY,--临时支付
+      TD.ADVANCE_PAY,--预付款请款
+      TD.OTHER_PAY,--其他请款
+      TD.PUR_REI,--采购报销
+      TD.AMOUNT,--合同金额
+      TD.IAMOUNT,--发票金额
+      
+      TD.NO_PAY,--未付金额
+      TD.ALREADY_PAY,--已付金额
+      TD.ABLE_PAY,--应付金额
+      
+      TD.OFFICE_ID,
+      TD.ORG_NAME,--部门
+      TD.ORG_SEQ_NO,
+      TD.RUNNING_NO--申请编号
+      
+      ORDER BY
+      --TD.ORG_SEQ_NO ASC,
+      --TD.SUPPLIER_NAME ASC,
+      TD.CERTIFICATE_CREATE_TIME DESC]]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR F="0" T="1"/>
+<FR/>
+<HC/>
+<FC/>
+<UPFCR COLUMN="false" ROW="true"/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1371600,720000,720000,720000,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[0,3600000,10080000,3600000,10080000,4320000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,2743200,5040000,3600000,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="0" cs="19" s="0">
+<O>
+<![CDATA[支付明细报表]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" s="1">
+<O>
+<![CDATA[项目ID]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" s="1">
+<O>
+<![CDATA[支付时间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="1" s="1">
+<O>
+<![CDATA[供应商]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="1" s="1">
+<O>
+<![CDATA[课题代号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="1" s="1">
+<O>
+<![CDATA[项目名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="1" s="1">
+<O>
+<![CDATA[合同编号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="1" s="1">
+<O>
+<![CDATA[支付小计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="1" s="1">
+<O>
+<![CDATA[支付会支付]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="1" s="1">
+<O>
+<![CDATA[支付会核定]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="1" s="1">
+<O>
+<![CDATA[临时支付]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="1" s="1">
+<O>
+<![CDATA[预付款请款]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="1" s="1">
+<O>
+<![CDATA[其他请款]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="1" s="1">
+<O>
+<![CDATA[采购报销]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="1" s="1">
+<O>
+<![CDATA[合同金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="14" r="1" s="1">
+<O>
+<![CDATA[未付金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="1" s="1">
+<O>
+<![CDATA[已付金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="16" r="1" s="1">
+<O>
+<![CDATA[应付金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="17" r="1" s="1">
+<O>
+<![CDATA[收款比例]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="18" r="1" s="1">
+<O>
+<![CDATA[部门]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="19" r="1" s="1">
+<O>
+<![CDATA[申请编号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="PROJECT_ID"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="CERTIFICATE_CREATE_TIME"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="SUPPLIER_NAME"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="TOPIC_CODE"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="网络报表1">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters>
+<Parameter>
+<Attributes name="project_id"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=A3]]></Attributes>
+</O>
+</Parameter>
+</Parameters>
+<TargetFrame>
+<![CDATA[_blank]]></TargetFrame>
+<Features width="600" height="400"/>
+<ReportletName showPI="true" byPost="true">
+<![CDATA[/erp/ygb/YG009.cpt]]></ReportletName>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand dir="0"/>
+</C>
+<C c="4" r="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="TOPIC_NAME"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="SCM_CONTRACT_CODE"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="2" s="6">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="2" s="6">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="MONTH_PAY"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="2" s="6">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="MONTH_APP"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="2" s="6">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="TEMP_PAY"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="10" r="2" s="6">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="ADVANCE_PAY"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="11" r="2" s="6">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="OTHER_PAY"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="12" r="2" s="6">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="PUR_REI"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="13" r="2" s="6">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="AMOUNT"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="14" r="2" s="6">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="NO_PAY"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="15" r="2" s="6">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="ALREADY_PAY"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="16" r="2" s="6">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="ABLE_PAY"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="17" r="2" s="7">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="RECEIVABLES_RATE"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="18" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="ORG_NAME"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="19" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="RUNNING_NO"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="3" s="1">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="3" s="1">
+<O>
+<![CDATA[累计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="3" s="1">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="3" s="1">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="3" s="1">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="3" s="1">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="3" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(G3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="3" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(H3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="3" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(I3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="3" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(J3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="3" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(K3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="3" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(L3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="3" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(M3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="3" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(N3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="14" r="3" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(O3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="3" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(P3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="16" r="3" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(Q3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="17" r="3" s="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="18" r="3" s="1">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="19" r="3" s="1">
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting orientation="1">
+<PaperSize width="30240000" height="85680000"/>
+<Margin top="986400" left="1440000" bottom="986400" right="1440000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="144"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72" foreground="-16776961" underline="1"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.00%]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="1" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="1" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

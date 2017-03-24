@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="prmBriefDto" row="23*6" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JNoneFinishedProject pos="A1:A1" cid="projectName" fieldLabel_s="prmProjectMainId" allowBlank_b="false"
+                      refer_j='[{"refField":"prmProjectMainId","valueField":"uuid"},
+                             {"refField":"departmentCode","valueField":"contractorOffice"}]'/>
+        <JHidden pos="A1:A1" cid="prmProjectMainId"/>
+        <!--<JText pos="B1:B1" cid="prmWeeklyId" fieldLabel_s="prmWeeklyId" allowBlank_b="true"/>-->
+        <JHidden cid="prmWeeklyId"/>
+        <JHidden cid="departmentCodeDesc"/>
+        <JErpDepartMent pos="B1:B1" fieldLabel_s="departmentCode" cid="departmentCode"
+                      field="org_uuid" labelWidth_n="100"
+                      readOnly_b="true" adaptable_b="false" allowBlank_b="false"/>
+        <JCombo pos="C1:C1" cid="type" fieldLabel_s="type" comboType="scdp_fmcode"
+                codeType="PRM_BRIEF_TYPE" displayDesc_b="true"  allowBlank_b="false" />
+        <JDate pos="D1:D1" cid="createTime" fieldLabel_s="createTime" allowBlank_b="false"/>
+        <JTextArea pos="A2:D6" cid="content" fieldLabel_s="content" allowBlank_b="false"/>
+        <!--<JText pos="A2:A2" cid="state" fieldLabel_s="state" allowBlank_b="true"/>-->
+        <!--<JText pos="B2:B2" cid="companyCode" fieldLabel_s="companyCode" allowBlank_b="true"/>-->
+        <!--<JHidden pos="C2:C2" cid="projectId"/>-->
+        <!--<JOrg pos="D2:D2" cid="departmentCode" fieldLabel_s="departmentCode" allowBlank_b="true"/>-->
+        <!--<JText pos="A3:A3" cid="createOffice" fieldLabel_s="createOffice" allowBlank_b="true"/>-->
+        <!--<JText pos="B3:B3" cid="updateOffice" fieldLabel_s="updateOffice" allowBlank_b="true"/>-->
+    </JForm>
+</view>

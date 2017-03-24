@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JTab pos="A1:A1" row="flex" col="1*1" border_n="1">
+        <JPanel pos="A1:A1" row="flex,200" col="1*1" title_s="prmArchiving" border_n="1">
+            <JForm pos="A1:A1" cid="prmArchivingDto" row="23*4" col="0.25*4" title_s="" border_n="1">
+                <JHidden cid="uuid"/>
+                <JHidden cid="tblVersion"/>
+                <JHidden cid="prmContractorOffice"/>
+                <JProject pos="A1:A1" cid="projectNameMain" fieldLabel_s="projectName" allowBlank_b="false"
+                          refer_j='[{"refField":"prmProjectMainId","valueField":"uuid"},
+                          {"refField":"prmContractorOffice","valueField":"contractorOffice"},
+                          {"refField":"projectCode","valueField":"projectCode"}]'/>
+                <JHidden cid="prmProjectMainId"/>
+                <JDate pos="B1:B1" cid="archivingDate" fieldLabel_s="archivingDate" allowBlank_b="false"/>
+                <JCombo pos="C1:C1" fieldLabel_s="state" allowBlank_b="true" cid="state"
+                        comboType="scdp_fmcode"
+                        codeType="CDM_BILL_STATE" displayDesc_b="true" readOnly_b="true" adaptable_b="false" />
+                <JDate pos="D1:D1" cid="archivingReqDate" fieldLabel_s="archivingReqDate" allowBlank_b="false"
+                           readOnly_b="true" adaptable_b="false"/>
+                <JText pos="A2:A2" cid="projectCode" fieldLabel_s="projectCode" readOnly_b="true" adaptable_b="false"/>
+            </JForm>
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="prmArchivingDetail" border_n="1">
+            <JEGrid pos="A1:A1" cid="prmArchivingDetailDto" store="Archiving.store.PrmArchivingDetailStore">
+                <JTextCol text_s="volumeName" dataIndex="volumeName" width_n="120">
+                    <JText allowBlank_b="true" maxLength_n="50"/>
+                </JTextCol>
+                <JIntCol text_s="amount" dataIndex="amount" width_n="120">
+                    <JInt allowBlank_b="true" maxLength_n="50" minValue_n="0"/>
+                </JIntCol>
+                <JIntCol text_s="pageNumber" dataIndex="pageNumber" width_n="120">
+                    <JInt allowBlank_b="true" maxLength_n="50" minValue_n="0"/>
+                </JIntCol>
+                <JComboCol text_s="type" dataIndex="type" width_n="120">
+                    <JCombo pos="A1:A4" cid="type"  comboType="scdp_fmcode"
+                            codeType="PRM_ARCHIVING_DETAIL_TYPE" displayDesc_b="true"
+                            fullInfo_b="true" multiSelect_b="false" />
+                </JComboCol>
+            </JEGrid>
+        </JPanel>
+
+        <JPanel pos="A1:A1" row="flex,25" col="0.1*10" title_s="附件信息" border_n="1">
+            <JEGrid pos="A1:J1" cid="cdmFileRelationDto" store="Cdmfile.store.CdmFileRelationStore"
+                    withToolbar_b="false">
+                <JTextCol text_s="fileType" dataIndex="fileType" width_n="100"/>
+                <JTextCol text_s="fileName" dataIndex="fileName" width_n="120"/>
+                <JTextCol text_s="fileSize" dataIndex="convertedFileSize" width_n="120"/>
+                <JTextCol text_s="remark" dataIndex="remark" width_n="200"/>
+                <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+                <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+            </JEGrid>
+            <JButton pos="A2:A2" cid="fileUpload" text_s="附件上传" iconCls="file_upload_icon" />
+            <JButton pos="B2:B2" cid="fileDownload" text_s="附件下载" iconCls="file_download_icon" />
+            <JButton pos="C2:C2" cid="fileDelete" text_s="附件删除" iconCls="delete_btn" />
+        </JPanel>
+    </JTab>
+</view>

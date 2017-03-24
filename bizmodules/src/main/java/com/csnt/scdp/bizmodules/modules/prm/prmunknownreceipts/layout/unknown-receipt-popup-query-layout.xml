@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>prmunknownreceipts-dao</daotype>
+        <daokey>popup_query</daokey>
+    </querysql>
+    <defaultSort>pre.create_time desc</defaultSort>
+    <conditions columns="4">
+        <JHidden cid="payerDesc"/>
+        <JCustomer pos="A1:B1" cid="payer" valueField_s="uuid" displayField_s="customerName"
+                   field="pre.payer" displayDesc_b="true" fieldLabel_s="payer"/>
+        <JFromTo pos="C1:D1" subXtype="JDatetime" fieldLabel_s="actualDate" cid="actualDate" field="actual_date"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="receiptNo" dataIndex="receiptNo" width_n="160"/>
+        <JTextCol text_s="payer" dataIndex="payerName" width_n="120"/>
+        <JDecCol text_s="money" dataIndex="money" width_n="150"/>
+        <JTextCol text_s="moneyType" dataIndex="moneyTypeDesc" width_n="120"/>
+        <JDateCol text_s="actualDate" dataIndex="actualDate" width_n="150"/>
+        <JTextCol text_s="state" dataIndex="wfStatus" width_n="120"/>
+        <JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120"/>
+        <JTextCol text_s="departmentCode" dataIndex="orgName" width_n="120"/>
+        <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+        <JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>
+        <JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>
+    </results>
+</commonquery>

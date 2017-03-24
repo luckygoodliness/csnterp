@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonreport version="1.0">
+    <report>
+        <reporttype>L</reporttype>
+        <reporttemplate>erp/scm/ScmContractQuantityAnalyze.cpt</reporttemplate>
+        <reportcache>false</reportcache>
+    </report>
+    <conditions columns="4">
+        <JHidden cid="officeDesc"/>
+        <JHidden cid="createBy"  field="createBy"/>
+        <JErpDepartMent pos="A1:A1" fieldLabel_s="office" cid="office" field="office"/>
+        <JText pos="B1:B1" cid="fadSubjectCode" fieldLabel_s="fadSubjectCode" field="fadSubjectCode"/>
+        <JDate pos="C1:C1" cid="nowBegin" fieldLabel_s="nowBegin" field="nowBegin"/>
+        <JDate pos="D1:D1" cid="nowEnd" fieldLabel_s="nowEnd" field="nowEnd"/>
+        <JUserGrid pos="A2:A2" fieldLabel_s="createBy" cid="createByName"
+                   refer_j='[{"refField":"createBy","valueField":"userId"}]'/>
+        <JCombo pos="B2:B2" cid="isProject" fieldLabel_s="isProject"
+                comboType="scdp_fmcode"
+                codeType="CDM_YES_OR_NO" displayDesc_b="true" field="isProject"/>
+        <JDate pos="C2:C2" cid="lastBegin" fieldLabel_s="lastBegin" field="lastBegin" readOnly_b="true" adaptable_b="false"/>
+        <JDate pos="D2:D2" cid="lastEnd" fieldLabel_s="lastEnd" field="lastEnd" readOnly_b="true" adaptable_b="false"/>
+    </conditions>
+</commonreport>

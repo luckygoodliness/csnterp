@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[
+                   SELECT R.*, PR.PRINCIPAL
+                     FROM (SELECT REQ.UUID UUID,
+                   REQ.PURCHASE_REQ_NO PURCHASE_REQ_NO,
+                   REQ.STATE STATE,
+                   SCODE.CODE_DESC STATE_NM,
+                   REQ.REMARK REMARK,
+                   REQ.COMPANY_CODE COMPANY_CODE,
+                   REQ.DEPARTMENT_CODE DEPARTMENT_CODE,
+                   REQ.SUBJECT_CODE SUBJECT_CODE,
+                   NVL(ORG.ORG_NAME, '') ORG_NAME,
+                   NVL(SUB.FINANCIAL_SUBJECT, '') FINANCIAL_SUBJECT,
+                   NVL(SUB.SUBJECT_CODE, '') FINANCIAL_SUBJECT_CODE,
+                   REQ.CREATE_BY CREATE_BY,
+                   REQ.CREATE_TIME CREATE_TIME,
+                   REQ.UPDATE_BY UPDATE_BY,
+                   REQ.UPDATE_TIME UPDATE_TIME,
+                   REQ.TBL_VERSION TBL_VERSION,
+                   REQ.IS_VOID IS_VOID,
+                   REQ.SEQ_NO SEQ_NO,
+                   REQ.OFFICE_ID OFFICE_ID,
+                   REQ.IS_PROJECT IS_PROJECT,
+                   REQ.PURCHASE_LEVEL PURCHASE_LEVEL,
+                   SCODE2.CODE_DESC PURCHASE_LEVEL_NAME,
+                   SUB.REMAIN_BUDGET REMAIN_MONEY,
+                   TMP.TOTAL_EXPECTED_PRICE TOTAL_EXPECTED_PRICE,
+                   U.USER_NAME,
+                   DETAIL.SNAME
+              FROM PRM_PURCHASE_REQ REQ,
+                   SCDP_CODE SCODE,
+                   SCDP_ORG ORG,
+                   SCDP_CODE SCODE2,
+                   SCDP_USER U,
+                   VW_NON_BUDGET_EXECUTE SUB,
+                   (SELECT RD.PRM_PURCHASE_REQ_ID,
+                           NVL(SUM(RD.AMOUNT * RD.EXPECTED_PRICE), 0) TOTAL_EXPECTED_PRICE
+                      FROM PRM_PURCHASE_REQ REQ, PRM_PURCHASE_REQ_DETAIL RD
+                     WHERE 1 = 1
+                       AND REQ.UUID = RD.PRM_PURCHASE_REQ_ID
+                       AND (RD.ISFALLBACK IS NULL OR RD.ISFALLBACK <> '1')
+                       AND ${selfconditions}
+                     GROUP BY RD.PRM_PURCHASE_REQ_ID) TMP,
+                   (SELECT S.PRM_PURCHASE_REQ_ID, S.NAME || '等' AS SNAME
+                      FROM (SELECT ROW_NUMBER() OVER(PARTITION BY PRM_PURCHASE_REQ_ID ORDER BY D.PURCHASE_BUDGET_MONEY DESC) RN,
+                                   D.*
+                              FROM PRM_PURCHASE_REQ_DETAIL D) S
+                     WHERE RN = 1) DETAIL
+             WHERE SCODE.CODE_TYPE(+) = 'CDM_BILL_STATE'
+               AND REQ.STATE = SCODE.SYS_CODE(+)
+               AND SCODE2.CODE_TYPE(+) = 'PRM_PURCHASE_LEVEL'
+               AND REQ.PURCHASE_LEVEL = SCODE2.SYS_CODE(+)
+               AND REQ.DEPARTMENT_CODE = ORG.ORG_CODE(+)
+               AND REQ.IS_PROJECT = '0'
+               AND (REQ.IS_VOID='0' OR REQ.IS_VOID IS NULL)
+               AND REQ.CREATE_BY = U.USER_ID(+)
+               AND REQ.UUID = TMP.PRM_PURCHASE_REQ_ID(+)
+               AND REQ.BUGDET_ID = SUB.UUID(+)
+               AND ${selfconditions2}
+               AND REQ.UUID = DETAIL.PRM_PURCHASE_REQ_ID(+)
+               AND ${selfconditions}) R
+  LEFT JOIN (SELECT PRM_PURCHASE_REQ_ID, LISTAGG(USER_NAME, ';') WITHIN
+              GROUP(
+              ORDER BY PRM_PURCHASE_REQ_ID) AS PRINCIPAL
+               FROM (SELECT DISTINCT SU.USER_NAME, SPR.PRM_PURCHASE_REQ_ID
+                       FROM SCM_PURCHASE_REQ SPR
+                       LEFT JOIN SCDP_USER SU ON SU.USER_ID = SPR.PRINCIPAL)
+              GROUP BY PRM_PURCHASE_REQ_ID) PR ON PR.PRM_PURCHASE_REQ_ID =
+                                                  R.UUID
+                       ]]>
+        </common>
+    </common_query>
+
+
+    <nonproject_budget_query>
+        <common>
+            <!--<![CDATA[select * from non_project_budget_c_d where ${conditions} and ${voidfilter}]]>-->
+            <![CDATA[SELECT
+                CD.*
+                , (CD.AMOUNT - NVL(REQD.APPLIEDAMOUNT,0)) REMAIN_AMOUNT
+                , (CD.AMOUNT - NVL(REQD.APPLIEDAMOUNT,0)) * NVL(CD.PRICE,0) REMAIN_PRICE
+                FROM NON_PROJECT_BUDGET_C_D CD
+                 ,(SELECT REQ.PURCHASE_PACKAGE_ID
+                      ,SUM(DECODE(NVL(CON.UUID, '') ,'',REQ.AMOUNT,REQ.HANDLE_AMOUNT) ) APPLIEDAMOUNT
+                      ,SUM(DECODE(NVL(CON.UUID, '') ,'',NVL(REQ.AMOUNT,0),NVL(REQ.HANDLE_AMOUNT,0)) * NVL(REQ.EXPECTED_PRICE, 0)) APPLIEDPRICE
+                  FROM PRM_PURCHASE_REQ_DETAIL REQ
+                      ,PRM_PURCHASE_REQ RH
+                      ,SCM_CONTRACT CON
+                 WHERE RH.STATE IN('1','2','9')
+                   AND RH.UUID = REQ.PRM_PURCHASE_REQ_ID
+                   AND (REQ.ISFALLBACK IS NULL OR REQ.ISFALLBACK <> '1')
+                   AND REQ.SCM_CONTRACT_ID = CON.UUID(+)
+                   AND CON.STATE(+) = '2'
+                 GROUP BY REQ.PURCHASE_PACKAGE_ID ) REQD
+                WHERE ${conditions} and ${voidfilter} AND CD.UUID = REQD.PURCHASE_PACKAGE_ID(+) ]]>
+        </common>
+    </nonproject_budget_query>
+
+    <query_load_reqdetail>
+        <common>
+            <![CDATA[SELECT REQ.*
+                ,(CD.AMOUNT - NVL(REQD.APPLIEDAMOUNT, 0)) REMAIN_AMOUNT
+                ,(CD.AMOUNT - NVL(REQD.APPLIEDAMOUNT, 0)) * NVL(PRICE,0) REMAIN_PRICE
+                ,PRICE PRICE
+                ,SC.CODE_DESC CONTRACT_STATE
+                ,U.USER_NAME UNDERTAKER
+            FROM NON_PROJECT_BUDGET_C_D CD
+                ,(
+                    SELECT REQ.PURCHASE_PACKAGE_ID
+                    ,SUM(DECODE(NVL(CON.UUID, ''),'',REQ.AMOUNT,REQ.HANDLE_AMOUNT)) APPLIEDAMOUNT
+                    ,SUM(DECODE(NVL(CON.UUID, ''),'',NVL(REQ.AMOUNT, 0),NVL(REQ.HANDLE_AMOUNT, 0)) * NVL(REQ.EXPECTED_PRICE, 0)) APPLIEDPRICE
+                    FROM PRM_PURCHASE_REQ_DETAIL REQ
+                        ,PRM_PURCHASE_REQ RH
+                        ,SCM_CONTRACT CON
+                    WHERE RH.STATE IN('1','2','9')
+                        AND RH.UUID = REQ.PRM_PURCHASE_REQ_ID
+                        AND REQ.SCM_CONTRACT_ID = CON.UUID(+)
+                        AND CON.STATE(+) = '2'
+                        AND (REQ.ISFALLBACK IS NULL OR REQ.ISFALLBACK <> '1')
+                        AND REQ.PURCHASE_PACKAGE_ID IN(
+                                SELECT PURCHASE_PACKAGE_ID
+                                FROM PRM_PURCHASE_REQ_DETAIL
+                                WHERE PRM_PURCHASE_REQ_ID = '${qryCondition}')
+                    GROUP BY REQ.PURCHASE_PACKAGE_ID ) REQD
+                 ,PRM_PURCHASE_REQ_DETAIL REQ
+                 ,SCM_CONTRACT CON
+                 ,SCDP_CODE SC
+                 ,SCDP_USER U
+            WHERE REQ.PURCHASE_PACKAGE_ID = CD.UUID(+)
+                AND REQ.PURCHASE_PACKAGE_ID = REQD.PURCHASE_PACKAGE_ID(+)
+                AND REQ.SCM_CONTRACT_ID = CON.UUID(+)
+                AND CON.CREATE_BY = U.USER_ID(+)
+                AND CON.CONTRACT_STATE = SC.SYS_CODE(+)
+                AND SC.CODE_TYPE(+) = 'SCM_CONTRACT_STATE'
+                AND REQ.PRM_PURCHASE_REQ_ID = '${qryCondition}'
+            ]]>
+        </common>
+    </query_load_reqdetail>
+
+    <query_check_fixed_assets>
+        <common>
+           <![CDATA[
+                SELECT RSLT.TOTAL - NVL(CD.REMAIN_BUDGET,0) REMAIN
+                FROM VW_NON_BUDGET_EXECUTE CD
+                    ,(SELECT TMP.BUGDET_ID, SUM(TMP.SUBTOTAL) TOTAL FROM (
+                        SELECT RH.BUGDET_ID,RD.PURCHASE_PACKAGE_ID CD_UUID
+                            ,SUM(DECODE(NVL(CON.UUID, ''),'',NVL(RD.AMOUNT, 0),NVL(RD.HANDLE_AMOUNT, 0)) * NVL(RD.EXPECTED_PRICE, 0)) SUBTOTAL
+                        FROM PRM_PURCHASE_REQ_DETAIL RD
+                            ,PRM_PURCHASE_REQ RH
+                            ,SCM_CONTRACT CON
+                        WHERE 1 = 1
+                            AND RH.UUID = RD.PRM_PURCHASE_REQ_ID
+                            AND RD.SCM_CONTRACT_ID = CON.UUID(+)
+                            AND CON.STATE(+) = '2'
+                            AND (RD.ISFALLBACK IS NULL OR RD.ISFALLBACK <> '1')
+                            AND RD.PRM_PURCHASE_REQ_ID = '${qryCondition}'
+
+                        GROUP BY RD.PURCHASE_PACKAGE_ID, RH.BUGDET_ID
+                    ) TMP
+                    GROUP BY TMP.BUGDET_ID ) RSLT
+                WHERE RSLT.BUGDET_ID = CD.UUID
+            ]]>
+         </common>
+    </query_check_fixed_assets>
+</DAO>

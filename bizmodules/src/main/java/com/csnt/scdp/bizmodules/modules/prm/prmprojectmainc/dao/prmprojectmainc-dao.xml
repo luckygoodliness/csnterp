@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select t1.*,t3.user_name as project_manager_name,
+            t4.customer_name,t6.code_desc as state_desc,t5.org_name as contractor_office_name
+            from prm_project_main_c t1
+            left join scdp_user t3 on t3.user_id=t1.project_manager
+            left join prm_customer t4 on t4.uuid=t1.customer_id
+            left join scdp_org t5 on t1.contractor_office=t5.org_code
+            left join scdp_code t6 on t6.code_type='CDM_BILL_STATE' and t6.sys_code=t1.state
+            where (t1.is_void is null or t1.is_void=0) and ${conditions}  and ${selfconditions}]]>
+        </common>
+    </common_query>
+    <common_query2>
+        <common>
+            <![CDATA[select t1.*,t3.user_name as project_manager_name,
+            t4.customer_name,t6.code_desc as state_desc,t5.org_name as contractor_office_name
+            from prm_project_main_c t1
+            left join scdp_user t3 on t3.user_id=t1.project_manager
+            left join prm_customer t4 on t4.uuid=t1.customer_id
+            left join scdp_org t5 on t1.contractor_office=t5.org_code
+            left join scdp_code t6 on t6.code_type='CDM_BILL_STATE' and t6.sys_code=t1.state
+            where (t1.is_void is null or t1.is_void=0) and ${conditions} and ${selfconditions}]]>
+        </common>
+    </common_query2>
+
+    <grid_budget_common_query>
+        <common>
+            <![CDATA[select t.* from  vw_prm_budget t where t.project_main_id = '${prmProjectMainId}' and  t.package_id is null  and ${conditions} and ${selfconditions}]]>
+        </common>
+    </grid_budget_common_query>
+
+    <financial_subject_descp_null>
+        <common>
+            select t.subject_name,t.subject_no from fad_base_subject t
+            where t.isenabled=1 and t.subject_type='1'
+            order by t.seq_no
+        </common>
+    </financial_subject_descp_null>
+    <financial_subject_descp_run>
+        <common>
+            select t.subject_name,t.subject_no,t.seq_no from fad_base_subject t
+            where t.isenabled=1 and t.subject_type='2'
+            order by t.seq_no
+        </common>
+    </financial_subject_descp_run>
+    <common_query3>
+        <common>
+            select t.*
+            from prm_project_main_c t
+            where (t.is_void is null or t.is_void = 0)
+            and t.project_name = ?
+            and t.detail_type = ?
+        </common>
+    </common_query3>
+    <update-project-main-change-code>
+        <common>
+            update prm_project_main_c t1 set t1.project_code=? where (t1.is_void is null or t1.is_void =0) and
+            ( t1.uuid=? or t1.prm_project_main_id=?)
+        </common>
+    </update-project-main-change-code>
+    <update-project-main-code>
+        <common>
+            update prm_project_main t1 set t1.project_code=? where (t1.is_void is null or t1.is_void =0) and t1.uuid=?
+        </common>
+    </update-project-main-code>
+    <common_query4>
+        <common>
+            select t.*
+            from prm_project_main_c t
+            where (t.is_void is null or t.is_void = 0)
+            and t.detail_type = '*' and t.project_name=?
+        </common>
+    </common_query4>
+    <prm-actual-budget>
+        <common>
+            select v1.* from vw_prm_budget v1 where v1.budget_code is not null and v1.project_main_id=?
+        </common>
+    </prm-actual-budget>
+    <validate_project_name>
+        <common>
+            select uuid as prm_project_main_id,'' as uuid,project_name,project_short_name from prm_project_main
+            where project_name=? or (project_short_name is not null and project_short_name=?)
+            union
+            select prm_project_main_id,uuid,project_name,project_short_name from prm_project_main_c
+            where project_name=? or (project_short_name is not null and project_short_name=?)
+            and prm_project_main_id is null
+            union
+            select prm_project_main_id,uuid,project_name,project_short_name
+            from (select row_number() over(partition by
+            prm_project_main_id order by create_time desc) rn,prm_project_main_c.* from prm_project_main_c)
+            where project_name=? or (project_short_name is not null and project_short_name=?)
+            and rn=1 and detail_type!='NEW'
+        </common>
+    </validate_project_name>
+</DAO>

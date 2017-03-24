@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select * from fad_interest_rate where ${conditions} and ${voidfilter} and ${selfconditions}]]>
+        </common>
+    </common_query>
+
+    <validate_query>
+        <common>
+            <![CDATA[
+              select (select count(1)
+                      from fad_interest_rate fad
+                     where fad.validity_date_from <=
+                           to_date('${dateFrom}', 'yyyy-mm-dd')
+                       and to_date('${dateFrom}', 'yyyy-mm-dd') < fad.validity_date_to
+                       ${selfSql}) +
+                   (select count(1)
+                      from fad_interest_rate fad
+                     where fad.validity_date_from <=
+                           to_date('${dateTo}', 'yyyy-mm-dd')
+                       and to_date('${dateTo}', 'yyyy-mm-dd') < fad.validity_date_to
+                       ${selfSql}) +
+                   (select count(1)
+                      from fad_interest_rate fad
+                     where to_date('${dateFrom}', 'yyyy-mm-dd') <=
+                           fad.validity_date_from
+                       and fad.validity_date_to <= to_date('${dateTo}', 'yyyy-mm-dd')
+                       ${selfSql}) as num
+              from dual
+            ]]>
+        </common>
+    </validate_query>
+</DAO>

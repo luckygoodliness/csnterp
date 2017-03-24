@@ -1,0 +1,709 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20141222" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="ContractProgressDs" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="purchaseReqNo"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="office"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="projectId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT T.*, MOD(ROWNUM, 2) AS FOR_COLOUR
+FROM(SELECT R.*,
+       NVL(STATE_SC, STATE_PR) AS 采购状态,
+       TO_CHAR(NVL(NVL(NVL(NVL(EFFECTIVE_DATE, UPDATE_TIME_SC),
+                           CREATE_TIME_SC),
+                       UPDATE_TIME_PR),
+                   CREATE_TIME_PR),
+               'YYYY-MM-DD HH24:MM:SS') AS 更新时间
+  FROM (SELECT (SELECT O.ORG_NAME
+                  FROM SCDP_ORG O
+                 WHERE O.ORG_CODE = PR.OFFICE_ID) AS 部门,
+               M.PROJECT_CODE AS 项目代号,
+               M.PROJECT_NAME AS 项目名称,
+               (SELECT PP.PACKAGE_NAME
+                  FROM PRM_PURCHASE_PACKAGE PP
+                 WHERE PP.UUID = PRD.PURCHASE_PACKAGE_ID) AS 分包名,
+               PR.PURCHASE_REQ_NO AS 申请单号,
+               (SELECT C.CODE_DESC
+                  FROM SCDP_CODE C
+                 WHERE C.CODE_TYPE = 'SCM_CONTRACT_STATE'
+                   AND C.SYS_CODE = SC.CONTRACT_STATE) AS STATE_SC,--合同状态
+               DECODE(PR.STATE,
+                      0,
+                      '申请新增',
+                      1,
+                      '申请提交',
+                      2,
+                      '申请已审批',
+                      (SELECT C.CODE_DESC
+                         FROM SCDP_CODE C
+                        WHERE C.CODE_TYPE = 'CDM_BILL_STATE'
+                          AND C.SYS_CODE = PR.STATE)) AS STATE_PR,--申请单状态
+               PRD.SERIAL_NUMBER AS 清单编号,
+               PRD.NAME AS 设备名称,
+               PRD.MODEL AS 型号规格,
+               PRD.UNIT AS 单位,
+               PRD.AMOUNT AS 申请数量,
+               PRD.EXPECTED_PRICE AS 申请单价,
+               PRD.BUDGET_PRICE AS 预算单价,
+               PRD.EXPECTED_PRICE * PRD.AMOUNT AS 申请总价,
+               PRD.SUPPLIER_ID AS 申请供方,
+               (SELECT C.CODE_DESC
+                  FROM SCDP_CODE C
+                 WHERE C.SYS_CODE = PRD.SUPPLIER_PROPERTY
+                   AND C.CODE_TYPE = 'PRM_SUPPLIER_PROPERTY') AS 供方属性,
+               SC.SCM_CONTRACT_CODE AS 采购合同编号,
+               SC.AMOUNT AS 合同金额,
+               SC.SUPPLIER_NAME AS 供应商,
+               PRD.CONSIGNEE AS 联系人,
+               PRD.CONTACT_WAY AS 联系方式,
+               (SELECT U.USER_NAME
+                  FROM SCDP_USER U
+                 WHERE U.USER_ID = SC.CREATE_BY) AS 采购办理人,
+               (SELECT U.USER_MOBILE
+                  FROM SCDP_USER U
+                 WHERE U.USER_ID = SC.CREATE_BY) AS 联系电话,
+               SC.EFFECTIVE_DATE,
+               SC.CREATE_TIME AS CREATE_TIME_SC,
+               SC.UPDATE_TIME AS UPDATE_TIME_SC,
+               PR.CREATE_TIME AS CREATE_TIME_PR,
+               PR.UPDATE_TIME AS UPDATE_TIME_PR,
+               SUBSTR(PURCHASE_REQ_NO,5) AS SEQ_NO,
+               SC.REMARK AS 存在问题
+          FROM PRM_PURCHASE_REQ PR
+          LEFT JOIN PRM_PURCHASE_REQ_DETAIL PRD ON PR.UUID =
+                                                   PRD.PRM_PURCHASE_REQ_ID
+          LEFT JOIN PRM_PROJECT_MAIN M ON PR.PRM_PROJECT_MAIN_ID = M.UUID
+          LEFT JOIN SCM_CONTRACT SC ON PRD.SCM_CONTRACT_ID = SC.UUID
+         WHERE (PR.OFFICE_ID = '${office}' OR '${office}' IS NULL)
+                   AND (M.UUID = '${projectId}' OR '${projectId}' IS NULL)
+                   AND (PR.PURCHASE_REQ_NO LIKE '%${purchaseReqNo}%' OR
+                       '${purchaseReqNo}' IS NULL)
+        ) R
+ ORDER BY SEQ_NO DESC
+)T]]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="采购状态进度表">
+<ReportPageAttr>
+<HR F="0" T="1"/>
+<FR/>
+<HC/>
+<FC/>
+<UPFCR COLUMN="false" ROW="true"/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1295400,1152000,864000,723900,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[4419600,3505200,9029700,3124200,4876800,4267200,5257800,7048500,7772400,2933700,3009900,3600000,3600000,3600000,3600000,6781800,3886200,4457700,3600000,7810500,3429000,5524500,3543300,4648200,4608000,7315200,0,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" cs="26" s="0">
+<O>
+<![CDATA[采购明细总览]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" s="1">
+<O>
+<![CDATA[部门]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" s="1">
+<O>
+<![CDATA[项目代号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="1" s="1">
+<O>
+<![CDATA[项目名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="1" s="1">
+<O>
+<![CDATA[分包名]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="1" s="1">
+<O>
+<![CDATA[申请单号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="1" s="1">
+<O>
+<![CDATA[采购状态]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="1" s="1">
+<O>
+<![CDATA[清单序号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="1" s="1">
+<O>
+<![CDATA[设备名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="1" s="1">
+<O>
+<![CDATA[规格型号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="1" s="1">
+<O>
+<![CDATA[单位]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="1" s="1">
+<O>
+<![CDATA[申请数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="1" s="1">
+<O>
+<![CDATA[预算单价]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="1" s="1">
+<O>
+<![CDATA[意向单价]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="1" s="1">
+<O>
+<![CDATA[ 预算总价 ]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="14" r="1" s="1">
+<O>
+<![CDATA[ 意向总价]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="1" s="1">
+<O>
+<![CDATA[申请供方]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="16" r="1" s="1">
+<O>
+<![CDATA[供方属性]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="17" r="1" s="1">
+<O>
+<![CDATA[采购合同编号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="18" r="1" s="1">
+<O>
+<![CDATA[合同金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="19" r="1" s="1">
+<O>
+<![CDATA[供应商]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="20" r="1" s="1">
+<O>
+<![CDATA[联系人]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="21" r="1" s="1">
+<O>
+<![CDATA[联系方式]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="22" r="1" s="1">
+<O>
+<![CDATA[采购办理人]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="23" r="1" s="1">
+<O>
+<![CDATA[联系电话]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="24" r="1" s="1">
+<O>
+<![CDATA[更新时间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="25" r="1" s="1">
+<O>
+<![CDATA[问题备注]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="26" r="1" s="2">
+<PrivilegeControl/>
+</C>
+<C c="0" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ContractProgressDs" columnName="部门"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ContractProgressDs" columnName="项目代号"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ContractProgressDs" columnName="项目名称"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ContractProgressDs" columnName="分包名"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ContractProgressDs" columnName="申请单号"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ContractProgressDs" columnName="采购状态"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ContractProgressDs" columnName="清单编号"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ContractProgressDs" columnName="设备名称"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ContractProgressDs" columnName="型号规格"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ContractProgressDs" columnName="单位"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="10" r="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="ContractProgressDs" columnName="申请数量"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="11" r="2" s="6">
+<O t="DSColumn">
+<Attributes dsName="ContractProgressDs" columnName="预算单价"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="12" r="2" s="6">
+<O t="DSColumn">
+<Attributes dsName="ContractProgressDs" columnName="申请单价"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="13" r="2" s="6">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=K3 * L3]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="14" r="2" s="6">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=K3 * M3]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="15" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ContractProgressDs" columnName="申请供方"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="A3"/>
+</C>
+<C c="16" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ContractProgressDs" columnName="供方属性"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="17" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ContractProgressDs" columnName="采购合同编号"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="18" r="2" s="6">
+<O t="DSColumn">
+<Attributes dsName="ContractProgressDs" columnName="合同金额"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="19" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ContractProgressDs" columnName="供应商"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="20" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ContractProgressDs" columnName="联系人"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="21" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ContractProgressDs" columnName="联系方式"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="22" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ContractProgressDs" columnName="采购办理人"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="23" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ContractProgressDs" columnName="联系电话"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="24" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ContractProgressDs" columnName="更新时间"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="25" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ContractProgressDs" columnName="存在问题"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="26" r="2">
+<O t="DSColumn">
+<Attributes dsName="ContractProgressDs" columnName="FOR_COLOUR"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[backgroundColour]]></Name>
+<Condition class="com.fr.data.condition.ObjectCondition">
+<Compare op="0">
+<O>
+<![CDATA[1]]></O>
+</Compare>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Scope val="1"/>
+<Background name="ColorBackground" color="-4144960"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting>
+<PaperSize width="146880000" height="720000000"/>
+<Margin top="144000" left="144000" bottom="144000" right="144000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="144"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="88"/>
+<Background name="ColorBackground" color="-1"/>
+<Border>
+<Top style="1" color="-16777216"/>
+<Bottom style="1" color="-16777216"/>
+<Left style="1" color="-16777216"/>
+<Right style="1" color="-16777216"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="2" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

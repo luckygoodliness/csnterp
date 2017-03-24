@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>materialclass-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>code</defaultSort>
+    <conditions columns="4">
+        <JText pos="A1:A1" fieldLabel_s="code" cid="code" field="code"/>
+        <JText pos="B1:B1" fieldLabel_s="shortCode" cid="shortCode" field="short_code"/>
+        <JText pos="C1:C1" fieldLabel_s="name" cid="name" field="name"/>
+        <JCombo pos="D1:D1" cid="classLevel" fieldLabel_s="classLevel" field="class_level" allowBlank_b="true"
+                comboType="scdp_fmcode"
+                codeType="SCM_MATERIAL_CLASS_LEVEL" displayDesc_b="true"/>
+        <JCombo pos="A2:A2" cid="isRigid" fieldLabel_s="isRigid" field="is_rigid" allowBlank_b="true"
+                comboType="scdp_fmcode"
+                codeType="SCM_DEFAULTPROPERTY" displayDesc_b="true"/>
+        <JCombo pos="B2:B2" cid="operativeSegments_query" fieldLabel_s="operativeSegments" allowBlank_b="true"
+                comboType="scdp_fmcode" field="operative_Segments"
+                codeType="PRM_OPERATIVE_SEGMENTS" displayDesc_b="true"/>
+        <!--<JMaterialItemGrid pos="C2:C2" fieldLabel_s="itemClass" cid="itemClass_query"-->
+                           <!--allowBlank_b="true" refer_j='[{"refField":"itemClass","valueField":"uuid"}]'/>-->
+        <!--<JSupplierGrid pos="B2:B2" fieldLabel_s="supplierName" cid="supplierName_query"-->
+        <!--refer_j='[{"refField":"supplierCode","valueField":"uuid"}]'-->
+        />
+        <!--<JHidden cid="itemClass" field="item_Class"/>-->
+    </conditions>
+    <results  resultGridConfig="{'autoResizeColumn':false}">
+        <JTextCol text_s="code" dataIndex="code" width_n="100"/>
+        <JTextCol text_s="name" dataIndex="name" width_n="300"/>
+        <JTextCol text_s="operativeSegments" dataIndex="operativeSegmentsCombo" width_n="120"/>
+        <!--<JTextCol text_s="itemClass" dataIndex="itemClassCombo" width_n="120"/>-->
+        <!--<JTextCol text_s="itemClass" dataIndex="itemClass" hidden_b="true"/>-->
+        <JTextCol text_s="classLevel" dataIndex="classLevelCombo" width_n="120"/>
+        <JIntCol text_s="cycle" dataIndex="cycle" width_n="100"/>
+        <JTextCol text_s="isRigid" dataIndex="isRigidCombo" width_n="120"/>
+        <JTextCol text_s="materialType" dataIndex="materialTypeName" width_n="120"/>
+        <JTextCol text_s="shortCode" dataIndex="shortCode" width_n="120"/>
+        <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+        <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+        <JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+        <JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>
+        <JTextCol text_s="operativeSegments" dataIndex="operativeSegments" hidden_b="true"/>
+    </results>
+</commonquery>

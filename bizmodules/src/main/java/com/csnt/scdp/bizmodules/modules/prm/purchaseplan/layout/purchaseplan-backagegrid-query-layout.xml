@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>purchaseplan-dao</daotype>
+        <daokey>materialClassCode_common_query</daokey>
+    </querysql>
+    <defaultSort>t1.create_time desc</defaultSort>
+    <conditions>
+
+        <JText pos="A1:A1" fieldLabel_s="code" cid="code" field="t1.code"/>
+        <JText pos="B1:B1" fieldLabel_s="name" cid="name" field="t1.name"/>
+        <JText pos="B1:B1" fieldLabel_s="shortCode" cid="shortCode" field="t1.short_code"/>
+    </conditions>
+    <quickquery>
+        <QueryCids>code,name,shortCode</QueryCids>
+        <ForceQueryCids></ForceQueryCids>
+    </quickquery>
+    <results>
+        <JTextCol text_s="code" dataIndex="code" width_n="120"/>
+        <JTextCol text_s="name" dataIndex="name" width_n="120"/>
+        <JTextCol text_s="classLevel" dataIndex="classLevelDesc" width_n="120"/>
+        <JTextCol text_s="isRigid" dataIndex="isRigidDesc" width_n="120"/>
+        <JTextCol text_s="cycle" dataIndex="cycle" width_n="120"/>
+        <JTextCol dataIndex="classLevel" hidden_b="true"/>
+        <JTextCol dataIndex="isRigid" hidden_b="true"/>
+    </results>
+</commonquery>

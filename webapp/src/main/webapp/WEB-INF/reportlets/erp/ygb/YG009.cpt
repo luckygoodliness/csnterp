@@ -1,0 +1,2895 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="RPM_MASTER_DATA" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="project_id"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[/*项目即时数据*/
+SELECT M.*,
+       NVL(PRMC.CONTRACT_SIGN_MONEY, 0) AS FIRST_SIGN_MONEY,
+       NVL(CC.CONTRACT_NOW_MONEY, 0) AS CONTRACT_NOW_MONEY,
+       C.COST_CONTROL_MONEY AS FIRST_COST_CONTROL,
+       NVL(PRMC.PROJECT_MONEY,0) AS FIRST_PROJECT_MONEY,
+       NVL(PL.REMAIN_BUDGET, 0) AS REMAIN_BUDGET,
+       CASE
+         WHEN M.PROJECT_MONEY <> 0 THEN
+          (M.PROJECT_MONEY - M.COST_CONTROL_MONEY) / M.PROJECT_MONEY
+         ELSE
+          0
+       END AS PLAN_PROFIT_RATE,
+       CASE
+         WHEN M.PROJECT_MONEY <> 0 THEN
+          (M.PROJECT_MONEY - M.COST_CONTROL_MONEY + NVL(PL.REMAIN_BUDGET, 0)) /
+          M.PROJECT_MONEY
+         ELSE
+          0
+       END AS NOW_PROFIT_RATE,
+       CASE
+         WHEN C.PROJECT_MONEY <> 0 THEN
+          (C.PROJECT_MONEY - C.COST_CONTROL_MONEY) / C.PROJECT_MONEY
+         ELSE
+          0
+       END AS FIRST_PROFIT_RATE
+  FROM PRM_PROJECT_MAIN M,
+       PRM_PROJECT_MAIN_C C,
+       (SELECT CDC.PRM_PROJECT_MAIN_ID,
+               SUM(C.CONTRACT_NOW_MONEY) AS CONTRACT_NOW_MONEY
+          FROM PRM_CONTRACT_DETAIL CDC, PRM_CONTRACT C
+         WHERE CDC.PRM_CONTRACT_ID = C.UUID
+         GROUP BY CDC.PRM_PROJECT_MAIN_ID) CC,
+       (SELECT *
+          FROM (SELECT MC.PRM_PROJECT_MAIN_ID,
+                       SUM(C.CONTRACT_SIGN_MONEY) AS CONTRACT_SIGN_MONEY,
+                       MC.PROJECT_MONEY AS PROJECT_MONEY,
+                       ROW_NUMBER() OVER(PARTITION BY MC.PRM_PROJECT_MAIN_ID ORDER BY MC.CREATE_TIME ASC) AS ROW_NUM
+                  FROM PRM_PROJECT_MAIN_C    MC,
+                       PRM_CONTRACT_DETAIL_C CDC,
+                       PRM_CONTRACT          C
+                 WHERE MC.UUID = CDC.PRM_PROJECT_MAIN_C_ID
+                   AND CDC.PRM_CONTRACT_ID = C.UUID
+                   AND MC.STATE = '2'
+                   AND MC.IS_PRE_PROJECT <> 1
+                 GROUP BY MC.PRM_PROJECT_MAIN_ID, MC.CREATE_TIME,MC.PROJECT_MONEY) MMC
+         WHERE MMC.ROW_NUM = 1) PRMC,
+       (SELECT VPB.PROJECT_MAIN_ID,
+               SUM(NVL(VPB.PACKAGE_BALANCE, 0)) REMAIN_BUDGET
+          FROM VW_PRM_BUDGET VPB
+         WHERE VPB.BUDGET_FIRST_TYPE <> 'RUN'
+         GROUP BY VPB.PROJECT_MAIN_ID) PL
+ WHERE M.UUID = C.PRM_PROJECT_MAIN_ID
+   AND M.UUID = CC.PRM_PROJECT_MAIN_ID(+)
+   AND M.UUID = PRMC.PRM_PROJECT_MAIN_ID(+)
+   AND M.UUID = PL.PROJECT_MAIN_ID(+)
+   AND C.IS_VOID <> '1'
+   AND C.DETAIL_TYPE = 'NEW'
+   AND M.UUID = '${project_id}'
+]]></Query>
+</TableData>
+<TableData name="PRM_CLEARING" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="project_id"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[/*项目结算*/
+SELECT *
+  FROM PRM_FINAL_ESTIMATE PFE
+ WHERE (EXISTS
+        (SELECT 1
+           FROM ACT_HI_TASKINST TA, ACT_HI_PROCINST PR
+          WHERE TA.PROC_INST_ID_ = PR.ID_
+            AND TA.NAME_ = '运管部主任'
+            AND TA.END_TIME_ IS NOT NULL
+            AND TA.DELETE_REASON_ = 'completed'
+            AND TA.END_TIME_ = (SELECT MAX(T.END_TIME_)
+                                  FROM ACT_HI_TASKINST T, ACT_HI_PROCINST P
+                                 WHERE P.ID_ = T.PROC_INST_ID_
+                                   AND T.NAME_ = '运管部主任'
+                                   AND T.END_TIME_ IS NOT NULL
+                                   AND P.DELETE_REASON_ IS NULL
+                                   AND P.BUSINESS_KEY_ = PFE.UUID
+                                 GROUP BY P.BUSINESS_KEY_)
+            AND PR.BUSINESS_KEY_ = PFE.UUID) OR PFE.TBL_VERSION = 'old')
+            and PRM_PROJECT_MAIN_ID='${project_id}']]></Query>
+</TableData>
+<TableData name="PRM_RECEIPTS" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="project_id"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[/*项目收款*/
+select UUID,PRM_PROJECT_MAIN_ID,ACTUAL_MONEY
+from prm_receipts
+where state in ('2','4','8') and PRM_PROJECT_MAIN_ID='${project_id}']]></Query>
+</TableData>
+<TableData name="PRM_BUDGET_DETAIL" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="project_id"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT T.*,ROWNUM FROM (SELECT *
+FROM VW_PRM_BUDGET_DETAIL 
+WHERE  PRM_PROJECT_MAIN_ID='${project_id}'
+ORDER BY SEQ_NO)T]]></Query>
+</TableData>
+<TableData name="PRM_NON_PUR_INFO" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="project_id"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT T.*,ROWNUM FROM (SELECT *
+FROM VW_PRM_NON_PUR_INFO
+WHERE  PRM_PROJECT_MAIN_ID='${project_id}'
+AND BUDGET_FIRST_TYPE='RUN'
+ORDER BY SEQ_NO)T]]></Query>
+</TableData>
+</TableDataMap>
+<ReportWebAttr>
+<ServerPrinter/>
+<WebPageContent>
+<ToolBars>
+<ToolBarManager>
+<Location>
+<Embed position="1"/>
+</Location>
+<ToolBar>
+<Widget class="com.fr.report.web.button.page.First">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-First')}]]></Text>
+<IconName>
+<![CDATA[first]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Previous">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-Previous')}]]></Text>
+<IconName>
+<![CDATA[previous]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.PageNavi">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Next">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-Next')}]]></Text>
+<IconName>
+<![CDATA[next]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Last">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-Last')}]]></Text>
+<IconName>
+<![CDATA[last]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.FlashPrint">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Utils-Print[Client]A')}]]></Text>
+<IconName>
+<![CDATA[flashprint]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.Print">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Print')}]]></Text>
+<IconName>
+<![CDATA[print]]></IconName>
+<PrintButtons/>
+</Widget>
+<Widget class="com.fr.report.web.button.Export">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Export')}]]></Text>
+<IconName>
+<![CDATA[export]]></IconName>
+<Buttons pdf="true" excelP="true" excelO="true" excelS="true" word="true" image="true" html="true"/>
+</Widget>
+<Widget class="com.fr.report.web.button.Email">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Email')}]]></Text>
+<IconName>
+<![CDATA[email]]></IconName>
+</Widget>
+</ToolBar>
+</ToolBarManager>
+</ToolBars>
+<WebPage isPage="false" isShowAsImage="false" isAutoScale="false" isTDHeavy="false"/>
+</WebPageContent>
+</ReportWebAttr>
+<ReportExportAttr>
+<ExcelExportAttr hideColumn="false" hideRow="false"/>
+<PDFExportAttr/>
+<HTMLExportAttr/>
+<WordExportAttr/>
+</ReportExportAttr>
+<Report class="com.fr.report.worksheet.WorkSheet" name="NOW">
+<ReportPageAttr>
+<HR/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1905000,1143000,1143000,723900,1143000,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,0,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[3086100,2743200,4000500,3200400,6400800,4876800,4762500,4457700,5040000,2743200,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" s="0">
+<O>
+<![CDATA[项目代号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="0" cs="2">
+<O t="DSColumn">
+<Attributes dsName="RPM_MASTER_DATA" columnName="PROJECT_CODE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="0" cs="2" s="1">
+<O>
+<![CDATA[项目名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="0" cs="4">
+<O t="DSColumn">
+<Attributes dsName="RPM_MASTER_DATA" columnName="PROJECT_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="1" cs="9" s="2">
+<O>
+<![CDATA[项目总览]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="2" s="3">
+<O>
+<![CDATA[合同]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="2" s="4">
+<O>
+<![CDATA[初始合同额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="RPM_MASTER_DATA" columnName="FIRST_SIGN_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="2" s="4">
+<O>
+<![CDATA[初始运行额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="RPM_MASTER_DATA" columnName="FIRST_PROJECT_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="2" s="4">
+<O>
+<![CDATA[初始计划成本]]></O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="RPM_MASTER_DATA" columnName="FIRST_COST_CONTROL"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="2" s="4">
+<O>
+<![CDATA[初始计划利润率]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="2" s="6">
+<O t="DSColumn">
+<Attributes dsName="RPM_MASTER_DATA" columnName="FIRST_PROFIT_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="3" s="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="3" s="8">
+<O>
+<![CDATA[合同额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="3" s="9">
+<O t="DSColumn">
+<Attributes dsName="RPM_MASTER_DATA" columnName="CONTRACT_NOW_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="3" s="8">
+<O>
+<![CDATA[运行额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="3" s="9">
+<O t="DSColumn">
+<Attributes dsName="RPM_MASTER_DATA" columnName="PROJECT_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="3" s="8">
+<O>
+<![CDATA[计划成本]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="3" s="9">
+<O t="DSColumn">
+<Attributes dsName="RPM_MASTER_DATA" columnName="COST_CONTROL_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="3" s="8">
+<O>
+<![CDATA[计划利润率]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="3" s="10">
+<O t="DSColumn">
+<Attributes dsName="RPM_MASTER_DATA" columnName="PLAN_PROFIT_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="4" s="11">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="4" s="12">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="4" s="13">
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="4" s="12">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="4" s="12">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="4" s="14">
+<O>
+<![CDATA[采购节余]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="4" s="15">
+<O t="DSColumn">
+<Attributes dsName="RPM_MASTER_DATA" columnName="REMAIN_BUDGET"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="4" s="12">
+<O>
+<![CDATA[动态利润率]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="4" s="16">
+<O t="DSColumn">
+<Attributes dsName="RPM_MASTER_DATA" columnName="NOW_PROFIT_RATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="6">
+<O>
+<![CDATA[]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="6">
+<O>
+<![CDATA[]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="6" s="17">
+<O>
+<![CDATA[（总）计划额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="6" cs="2" s="17">
+<O>
+<![CDATA[（总）发生（完成）额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="6" cs="2" s="17">
+<O>
+<![CDATA[（总）未发生（未完成）额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="7" rs="5" s="3">
+<O>
+<![CDATA[成本]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="7" cs="2" s="4">
+<O>
+<![CDATA[计划成本]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="7" cs="2" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(D9:D12)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="7" cs="2" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(F9:F12)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="7" cs="2" s="18">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D8 - F8]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="8" cs="2" s="8">
+<O>
+<![CDATA[1.采购预算]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="8" cs="2" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(D29:D31)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="8" cs="2" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(F29:F31)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="8" cs="2" s="19">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D9 - F9]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="9" cs="2" s="8">
+<O>
+<![CDATA[2.运行费预算]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="9" cs="2" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D32]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="9" cs="2" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=F32]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="9" cs="2" s="19">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D10 - F10]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="10" cs="2" s="8">
+<O>
+<![CDATA[3.税金]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="10" cs="2" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D33]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="10" cs="2" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=F33]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="10" cs="2" s="19">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D11 - F11]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="11" cs="2" s="8">
+<O>
+<![CDATA[4.印花税]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="11" cs="2" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D34]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="11" cs="2" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=F34]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="11" cs="2" s="19">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D12 - F12]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="12" s="20">
+<O>
+<![CDATA[利润]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="12" cs="2" s="8">
+<O>
+<![CDATA[计划利润（含管理费）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="12" cs="2" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=E4 - G4]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="12" cs="2" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=H19]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="12" cs="2" s="19">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D13 - F13]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="13" s="11">
+<O>
+<![CDATA[收款]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="13" cs="2" s="12">
+<O>
+<![CDATA[项目收款]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="13" cs="2" s="15">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=E4]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="13" cs="2" s="15">
+<O t="DSColumn">
+<Attributes dsName="PRM_RECEIPTS" columnName="ACTUAL_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="13" cs="2" s="21">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D14 - F14]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="15" cs="3" s="22">
+<O>
+<![CDATA[项目盈亏(合同/收票/资金)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="15" cs="2" s="23">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=F14 - F35]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="15" cs="2" s="23">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=F14 - H35]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="15" cs="2" s="24">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=F14 - I35]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="16">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="16">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="16">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="16">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="16">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="16">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="16">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="17" rs="2" s="3">
+<O>
+<![CDATA[结算]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="17" cs="2" s="4">
+<O>
+<![CDATA[]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="17" cs="2" s="25">
+<O>
+<![CDATA[运行额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="17" cs="2" s="25">
+<O>
+<![CDATA[成本]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="17" cs="2" s="26">
+<O>
+<![CDATA[利润]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="18" cs="2" s="8">
+<O>
+<![CDATA[已结算总额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="18" cs="2" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(D20)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="18" cs="2" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(F20)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="18" cs="2" s="19">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(H20)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="19" s="11">
+<O>
+<![CDATA[已结算明细]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="19" cs="2" s="15">
+<O t="DSColumn">
+<Attributes dsName="PRM_CLEARING" columnName="SQUARE_DATE"/>
+<Complex order="1"/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<SortFormula>
+<![CDATA[SQUARE_DATE]]></SortFormula>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="19" cs="2" s="15">
+<O t="DSColumn">
+<Attributes dsName="PRM_CLEARING" columnName="SQUARE_PROJECT_MONEY"/>
+<Complex order="1"/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<SortFormula>
+<![CDATA[SQUARE_DATE]]></SortFormula>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="19" cs="2" s="15">
+<O t="DSColumn">
+<Attributes dsName="PRM_CLEARING" columnName="SQUARE_COST"/>
+<Complex order="1"/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<SortFormula>
+<![CDATA[SQUARE_DATE]]></SortFormula>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="19" cs="2" s="21">
+<O t="DSColumn">
+<Attributes dsName="PRM_CLEARING" columnName="SQUARE_GROSS_PROFIT"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex order="1"/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<SortFormula>
+<![CDATA[SQUARE_DATE]]></SortFormula>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="21" rs="4" s="27">
+<O>
+<![CDATA[在册执行情况]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="21" cs="2" rs="2" s="4">
+<O>
+<![CDATA[在册计划]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="21" cs="2" s="25">
+<O>
+<![CDATA[在册运行额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="21" cs="2" s="25">
+<O>
+<![CDATA[在册计划成本]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="21" cs="2" s="26">
+<O>
+<![CDATA[在册利润]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="22" cs="2" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=E4 - D19]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="22" cs="2" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=G4 - F19]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="22" cs="2" s="19">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D23 - F23]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="23" cs="2" rs="2" s="12">
+<O>
+<![CDATA[在册发生]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="23" cs="2" s="28">
+<O>
+<![CDATA[在册收款]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="23" s="28">
+<O>
+<![CDATA[在册发生成本（合同）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="23" s="28">
+<O>
+<![CDATA[在册发生成本（收票）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="23" s="28">
+<O>
+<![CDATA[在册盈亏（合同）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="23" s="29">
+<O>
+<![CDATA[在册盈亏（收票）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="24" cs="2" s="15">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=F14 - D19]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="24" s="15">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=F35 - F19]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="24" s="15">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=H35 - F19]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="24" s="15">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D25 - F25]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="24" s="21">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D25 - G25]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="26" s="3">
+<O>
+<![CDATA[分表1]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="26" cs="2" s="4">
+<O>
+<![CDATA[预算科目]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="26" cs="2" s="25">
+<O>
+<![CDATA[计划额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="26" s="25">
+<O>
+<![CDATA[发生额（合同）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="26" s="25">
+<O>
+<![CDATA[未发生额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="26" s="25">
+<O>
+<![CDATA[发生额（收票）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="26" s="26">
+<O>
+<![CDATA[财务支出]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="27" s="7">
+<O t="I">
+<![CDATA[1]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="27" cs="2" s="8">
+<O>
+<![CDATA[总则]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="27" cs="2" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="COST_CONTROL_MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[PROFILE]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="27" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="LOCKED_BUDGET"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[PROFILE]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="27" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D28 - F28]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="27" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="INVOICE_MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[PROFILE]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="27" s="19">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="PAY_MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[PROFILE]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="28" s="7">
+<O t="I">
+<![CDATA[2]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="28" cs="2" s="30">
+<O>
+<![CDATA[外协费]]></O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="网络报表1">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters>
+<Parameter>
+<Attributes name="projectId"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=A48]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="subjectName"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=B29]]></Attributes>
+</O>
+</Parameter>
+</Parameters>
+<TargetFrame>
+<![CDATA[_blank]]></TargetFrame>
+<Features width="600" height="400"/>
+<ReportletName showPI="true" byPost="true">
+<![CDATA[/erp/scm/ScmContractQuery.cpt]]></ReportletName>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand/>
+</C>
+<C c="3" r="28" cs="2" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="COST_CONTROL_MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[OUTSOURCE]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="28" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="LOCKED_BUDGET"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[OUTSOURCE]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="28" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D29 - F29]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="28" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="INVOICE_MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[OUTSOURCE]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="28" s="19">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="PAY_MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[OUTSOURCE]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="29" s="7">
+<O t="I">
+<![CDATA[3]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="29" cs="2" s="30">
+<O>
+<![CDATA[设备材料费]]></O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="网络报表1">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters>
+<Parameter>
+<Attributes name="projectId"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=A48]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="subjectName"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=B30]]></Attributes>
+</O>
+</Parameter>
+</Parameters>
+<TargetFrame>
+<![CDATA[_blank]]></TargetFrame>
+<Features width="600" height="400"/>
+<ReportletName showPI="true" byPost="true">
+<![CDATA[/erp/scm/ScmContractQuery.cpt]]></ReportletName>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand/>
+</C>
+<C c="3" r="29" cs="2" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="COST_CONTROL_MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[PRINCIPAL]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="29" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="LOCKED_BUDGET"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[PRINCIPAL]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="29" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D30 - F30]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="29" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="INVOICE_MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[PRINCIPAL]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="29" s="19">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="PAY_MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[PRINCIPAL]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="30" s="7">
+<O t="I">
+<![CDATA[4]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="30" cs="2" s="8">
+<O>
+<![CDATA[辅助材料费]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="30" cs="2" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="COST_CONTROL_MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[ACCESSORY]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="30" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="LOCKED_BUDGET"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[ACCESSORY]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="30" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D31 - F31]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="30" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="INVOICE_MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[ACCESSORY]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="30" s="19">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="PAY_MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[ACCESSORY]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="31" s="7">
+<O t="I">
+<![CDATA[5]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="31" cs="2" s="8">
+<O>
+<![CDATA[项目运行成本]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="31" cs="2" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(D46)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="31" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(F46)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="31" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(G46)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="31" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(H46)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="31" s="19">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(I46)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="32" s="7">
+<O t="I">
+<![CDATA[6]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="32" cs="2" s="8">
+<O>
+<![CDATA[税金（不含印花税）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="32" cs="2" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="COST_CONTROL_MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[TAX_NO_STAMP]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="32" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="LOCKED_BUDGET"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[TAX_NO_STAMP]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="32" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D33 - F33]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="32" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=F33]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="32" s="19">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=F33]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="33" s="7">
+<O t="I">
+<![CDATA[7]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="33" cs="2" s="8">
+<O>
+<![CDATA[印花税]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="33" cs="2" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="COST_CONTROL_MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[STAMP_TAX]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="33" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="LOCKED_BUDGET"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[STAMP_TAX]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="33" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D34 - F34]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="33" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=F34]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="33" s="19">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=F34]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="34" s="7">
+<O t="I">
+<![CDATA[8]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="34" cs="2" s="8">
+<O>
+<![CDATA[预算成本合计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="34" cs="2" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="COST_CONTROL_MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[ESTIMATED_COST]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="34" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(F28:F34)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="34" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D35 - F35]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="34" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(H28:H34)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="34" s="19">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(I28:I34)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="35" s="7">
+<O t="I">
+<![CDATA[9]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="35" cs="2" s="8">
+<O>
+<![CDATA[内部管理费]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="35" cs="2" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="COST_CONTROL_MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[INNER_MANAGEMENT]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="35" s="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="35" s="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="35" s="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="35" s="19">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="36" s="7">
+<O t="I">
+<![CDATA[10]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="36" cs="2" s="8">
+<O>
+<![CDATA[计划利润（含管理费）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="36" cs="2" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="COST_CONTROL_MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[PLANNED_PROFIT]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="36" s="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="36" s="9">
+<O>
+<![CDATA[ ]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="36" s="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="36" s="19">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="37" s="7">
+<O t="I">
+<![CDATA[11]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="37" cs="2" s="8">
+<O>
+<![CDATA[原合同暂定金]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="37" cs="2" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="COST_CONTROL_MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[HAND_MONEY]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="37" s="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="37" s="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="37" s="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="37" s="19">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="38" s="7">
+<O t="I">
+<![CDATA[12]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="38" cs="2" s="8">
+<O>
+<![CDATA[指定分包]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="38" cs="2" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="COST_CONTROL_MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[SUBPACKAGE]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="38" s="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="38" s="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="38" s="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="38" s="19">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="39" s="7">
+<O t="I">
+<![CDATA[13]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="39" cs="2" s="8">
+<O>
+<![CDATA[项目技术服务费]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="39" cs="2" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="COST_CONTROL_MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[TECHNICAL_FEE_H]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="39" s="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="39" s="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="39" s="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="39" s="19">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="40" s="7">
+<O t="I">
+<![CDATA[14]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="40" cs="2" s="8">
+<O>
+<![CDATA[项目不可预见费]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="40" cs="2" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="COST_CONTROL_MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[CONTINGENCY_ALLOWANCE_H]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="40" s="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="40" s="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="40" s="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="40" s="19">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="41" s="7">
+<O t="I">
+<![CDATA[15]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="41" cs="2" s="8">
+<O>
+<![CDATA[合同合计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="41" cs="2" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="COST_CONTROL_MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[CONTRACT_TOTAL]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="41" s="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="41" s="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="41" s="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="41" s="19">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="42" s="31">
+<O t="I">
+<![CDATA[16]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="42" cs="2" s="12">
+<O>
+<![CDATA[项目运行额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="42" cs="2" s="15">
+<O t="DSColumn">
+<Attributes dsName="PRM_BUDGET_DETAIL" columnName="COST_CONTROL_MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[BUDGET_CODE]]></CNAME>
+<Compare op="0">
+<O>
+<![CDATA[PROJECT_MONEY]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="42" s="15">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="42" s="15">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="42" s="15">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="42" s="21">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="44" s="3">
+<O>
+<![CDATA[分表2]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="44" cs="2" s="4">
+<O>
+<![CDATA[运行费科目]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="44" cs="2" s="25">
+<O>
+<![CDATA[计划额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="44" s="25">
+<O>
+<![CDATA[发生额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="44" s="25">
+<O>
+<![CDATA[未发生额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="44" s="25">
+<O>
+<![CDATA[收票额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="44" s="26">
+<O>
+<![CDATA[财务支出]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="45" s="20">
+<O>
+<![CDATA[运行费]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="45" cs="2" s="30">
+<O t="DSColumn">
+<Attributes dsName="PRM_NON_PUR_INFO" columnName="SUBJECT_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="网络报表1">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters>
+<Parameter>
+<Attributes name="projectId"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=A48]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="subjectName"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=B46]]></Attributes>
+</O>
+</Parameter>
+</Parameters>
+<TargetFrame>
+<![CDATA[_blank]]></TargetFrame>
+<Features width="600" height="400"/>
+<ReportletName showPI="true" byPost="true">
+<![CDATA[/erp/scm/ScmContractQuery.cpt]]></ReportletName>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand dir="0"/>
+</C>
+<C c="3" r="45" cs="2" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_NON_PUR_INFO" columnName="BUDGET_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="45" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_NON_PUR_INFO" columnName="LOCKED_BUDGET"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="45" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D46 - F46]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="45" s="9">
+<O t="DSColumn">
+<Attributes dsName="PRM_NON_PUR_INFO" columnName="INVOICE_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="45" s="19">
+<O t="DSColumn">
+<Attributes dsName="PRM_NON_PUR_INFO" columnName="PAY_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="46" s="11">
+<O>
+<![CDATA[小计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="46" cs="2" s="12">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="46" cs="2" s="15">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(D46)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="46" s="15">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(F46)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="46" s="15">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(G46)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="46" s="15">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(H46)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="46" s="21">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(I46)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="47">
+<O t="DSColumn">
+<Attributes dsName="RPM_MASTER_DATA" columnName="UUID"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="48">
+<O>
+<![CDATA[打印时间：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="48">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=NOW()]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting>
+<PaperSize width="46368000" height="64080000"/>
+<Margin top="986400" left="2743200" bottom="986400" right="2743200"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="2" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="96"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="2"/>
+<Bottom style="1"/>
+<Left style="2"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="2"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="2"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.00%]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="2"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="2"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="2"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.00%]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="2"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="2"/>
+<Left style="2"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="2"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.00%]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="2"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="2" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.00%]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="2"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="2"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.00%]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="2"/>
+<Left style="1"/>
+<Right style="2"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="2"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="2"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="2"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="2"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="2"/>
+<Left style="1"/>
+<Right style="2"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="2"/>
+<Bottom style="2"/>
+<Left style="2"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="2"/>
+<Bottom style="2"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="2"/>
+<Bottom style="2"/>
+<Left style="1"/>
+<Right style="2"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="2"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="2"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="2"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="2"/>
+<Bottom style="2"/>
+<Left style="2"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="2"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72" foreground="-16776961" underline="1"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="2"/>
+<Left style="2"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

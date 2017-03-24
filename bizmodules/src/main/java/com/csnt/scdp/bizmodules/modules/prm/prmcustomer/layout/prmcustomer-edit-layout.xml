@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JTab pos="A1:A1" row="flex" col="1*1" border_n="1">
+        <JPanel pos="A1:A1" row="flex,200" col="1*1" title_s="customerManagement" border_n="1">
+            <JForm pos="A1:A1" cid="prmCustomerDto" row="23*4" col="0.25*4" title_s="" border_n="1">
+                <JHidden cid="uuid"/>
+                <JHidden cid="tblVersion"/>
+                <!--<JText pos="A1:A1" cid="customerCode" fieldLabel_s="customerCode" allowBlank_b="true" maxLength_n="10" />-->
+                <JText pos="A1:A1" cid="customerName" fieldLabel_s="customerName" allowBlank_b="false"
+                       maxLength_n="200"/>
+                <!--<JCombo pos="C1:C1" cid="customerNation" fieldLabel_s="customerNation" allowBlank_b="true" comboType="CDM_COUNTRY_CODE"-->
+                <!--displayDesc_b="false" fullInfo_b="false" multiSelect_b="false" cascadeField="cascade2"/>-->
+                <!--<JCombo pos="D1:D1" cid="customerProvince" fieldLabel_s="customerProvince" allowBlank_b="true" comboType="cascade_2"-->
+                <!--displayDesc_b="false" fullInfo_b="false" multiSelect_b="false" filterFields="cascade1"/>-->
+                <JCombo pos="B1:B1" cid="customerNation" fieldLabel_s="customerNation" allowBlank_b="true"
+                        comboType="fm_gis_country"
+                        displayDesc_b="true" fullInfo_b="true" cascadeField="customerProvince,city"/>
+                <JCombo pos="C1:C1" cid="customerProvince" fieldLabel_s="customerProvince" allowBlank_b="true"
+                        comboType="fm_gis_state"
+                        displayDesc_b="true" fullInfo_b="true" filterFields="customerNation|countryCode"/>
+                <!--<JCombo pos="B4:B4" cid="city" fieldLabel_s="city" allowBlank_b="true" comboType="fm_gis_city"-->
+                <!--displayDesc_b="true" fullInfo_b="true" filterFields="country|countryCode"/>-->
+
+                <JText pos="D1:D1" cid="customerAddress" fieldLabel_s="customerAddress" allowBlank_b="true"
+                       maxLength_n="200"/>
+                <JText pos="A2:A2" cid="customerPostalcode" fieldLabel_s="customerPostalcode" allowBlank_b="true"
+                       maxLength_n="30"/>
+                <JText pos="B2:B2" cid="customerTel" fieldLabel_s="customerTel" allowBlank_b="true" maxLength_n="30"/>
+                <JText pos="C2:C2" cid="customerLink" fieldLabel_s="customerLink" allowBlank_b="true" maxLength_n="30"/>
+                <JText pos="D2:D2" cid="ncCode" fieldLabel_s="ncCode" allowBlank_b="true" maxLength_n="30"/>
+                <JText pos="A3:A3" cid="taxNo" fieldLabel_s="taxNo" allowBlank_b="true" maxLength_n="30"/>
+                <JCheck pos="B3:B3" fieldLabel_s="isSubcompany" cid="isSubcompany"/>
+
+                <!--<JText pos="A3:A3" cid="companyCode" fieldLabel_s="companyCode" allowBlank_b="true"/>-->
+                <!--<JOrg pos="C3:C3" cid="departmentCode" fieldLabel_s="departmentCode" allowBlank_b="true"/>-->
+                <!--<JText pos="D3:D3" cid="createOffice" fieldLabel_s="createOffice" allowBlank_b="true"/>-->
+                <!--<JText pos="A4:A4" cid="updateOffice" fieldLabel_s="updateOffice" allowBlank_b="true"/>-->
+            </JForm>
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="linkManInfo" border_n="1">
+            <!--<JForm pos="A1:A1" cid="prmCustomerLinkmanDto" row="23*1" col="0.25*4" title_s="" border_n="1">-->
+            <!--<JHidden cid="uuid"/>-->
+            <!--<JHidden cid="puuid"/>-->
+            <!--<JText pos="A1:A1" cid="customerCode" fieldLabel_s="customerCode"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="customerName" fieldLabel_s="customerName"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="customerNation" fieldLabel_s="customerNation"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="customerProvince" fieldLabel_s="customerProvince"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="customerAddress" fieldLabel_s="customerAddress"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="customerPostalcode" fieldLabel_s="customerPostalcode"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="customerTel" fieldLabel_s="customerTel"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="customerLink" fieldLabel_s="customerLink"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="companyCode" fieldLabel_s="companyCode"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="projectId" fieldLabel_s="projectId"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="departmentCode" fieldLabel_s="departmentCode"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="createOffice" fieldLabel_s="createOffice"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="updateOffice" fieldLabel_s="updateOffice"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--</JForm>-->
+            <JEGrid pos="A1:A1" cid="prmCustomerLinkmanDto" store="Prmcustomer.store.PrmCustomerLinkmanStore">
+                <!--<JTextCol text_s="unitCode" dataIndex="unitCode" width_n="120">-->
+                <!--<JText allowBlank_b="false" maxLength_n="20"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="contractCode" dataIndex="contractCode" width_n="120">-->
+                <!--<JText allowBlank_b="false" maxLength_n="20"/>-->
+                <!--</JTextCol>-->
+                <JTextCol text_s="contractName" dataIndex="contractName" width_n="120">
+                    <JText allowBlank_b="false" maxLength_n="20"/>
+                </JTextCol>
+                <JTextCol text_s="dept" dataIndex="dept" width_n="120">
+                    <JText allowBlank_b="true" maxLength_n="20"/>
+                </JTextCol>
+                <JComboCol text_s="position" dataIndex="position" width_n="120">
+                    <!--<JText allowBlank_b="true"/>-->
+                    <JCombo cid="type" comboType="scdp_fmcode"
+                            codeType="PRM_CUSTOMER_LINKMAN_POSITION" displayDesc_b="true"/>
+                </JComboCol>
+                <JTextCol text_s="mobileNumber" dataIndex="mobileNumber" width_n="120">
+                    <JText allowBlank_b="false" maxLength_n="20"/>
+                </JTextCol>
+                <JTextCol text_s="teleNumber" dataIndex="teleNumber" width_n="120">
+                    <JText allowBlank_b="true" maxLength_n="20"/>
+                </JTextCol>
+                <JTextCol text_s="faxNumber" dataIndex="faxNumber" width_n="120">
+                    <JText allowBlank_b="true" maxLength_n="20"/>
+                </JTextCol>
+                <JTextCol text_s="email" dataIndex="email" width_n="120">
+                    <JText allowBlank_b="true" maxLength_n="20"/>
+                </JTextCol>
+                <JTextCol text_s="qqNo" dataIndex="qqNo" width_n="120">
+                    <JText allowBlank_b="true" maxLength_n="20"/>
+                </JTextCol>
+                <JTextCol text_s="wxNo" dataIndex="wxNo" width_n="120">
+                    <JText allowBlank_b="true" maxLength_n="20"/>
+                </JTextCol>
+                <JComboCol text_s="businessCode" dataIndex="businessCode" width_n="120">
+                    <!--<JText allowBlank_b="true"/>-->
+                    <JCombo pos="A1:A4" cid="type" comboType="scdp_fmcode"
+                            codeType="PRM_CUSTOMER_BUSINESS_CODE" displayDesc_b="true"/>
+                </JComboCol>
+                <JTextCol text_s="postAddress" dataIndex="postAddress" width_n="120">
+                    <JText allowBlank_b="true" maxLength_n="100"/>
+                </JTextCol>
+                <JTextCol text_s="postCode" dataIndex="postCode" width_n="120">
+                    <JText allowBlank_b="true" maxLength_n="20"/>
+                </JTextCol>
+                <JTextCol text_s="dutyArea" dataIndex="dutyArea" width_n="120">
+                    <JText allowBlank_b="true" maxLength_n="20"/>
+                </JTextCol>
+                <JTextCol text_s="memo" dataIndex="memo" width_n="120">
+                    <JText allowBlank_b="true" maxLength_n="200"/>
+                </JTextCol>
+                <!--<JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="projectId" dataIndex="projectId" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+            </JEGrid>
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="bankInfo" border_n="1">
+            <!--<JForm pos="A1:A1" cid="prmCustomerBankDto" row="23*1" col="0.25*4" title_s="" border_n="1">-->
+            <!--<JHidden cid="uuid"/>-->
+            <!--<JHidden cid="puuid"/>-->
+            <!--<JText pos="A1:A1" cid="customerCode" fieldLabel_s="customerCode"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="customerName" fieldLabel_s="customerName"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="customerNation" fieldLabel_s="customerNation"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="customerProvince" fieldLabel_s="customerProvince"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="customerAddress" fieldLabel_s="customerAddress"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="customerPostalcode" fieldLabel_s="customerPostalcode"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="customerTel" fieldLabel_s="customerTel"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="customerLink" fieldLabel_s="customerLink"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="companyCode" fieldLabel_s="companyCode"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="projectId" fieldLabel_s="projectId"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="departmentCode" fieldLabel_s="departmentCode"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="createOffice" fieldLabel_s="createOffice"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="updateOffice" fieldLabel_s="updateOffice"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--</JForm>-->
+            <JEGrid pos="A1:A1" cid="prmCustomerBankDto" store="Prmcustomer.store.PrmCustomerBankStore">
+                <!--<JTextCol text_s="prmCustomerId" dataIndex="prmCustomerId" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="bankCode" dataIndex="bankCode" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <JTextCol text_s="bankName" dataIndex="bankName" width_n="150">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="bankNumber" dataIndex="bankNumber" width_n="250">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <!--<JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="projectId" dataIndex="projectId" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+            </JEGrid>
+        </JPanel>
+    </JTab>
+</view>

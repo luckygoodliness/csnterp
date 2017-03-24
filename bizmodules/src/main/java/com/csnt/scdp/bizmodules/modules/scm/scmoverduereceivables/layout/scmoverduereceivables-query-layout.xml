@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>scmoverduereceivables-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JSContractGrid pos="A1:A1" fieldLabel_s="scmContract" cid="scmContract_query"
+                        refer_j='[{"refField":"scmContract","valueField":"uuid"}]'/>
+        <JHidden pos="A2:A2" cid="scmContract" field="scm_contract"/>
+        <JSupplierGrid pos="B1:B1" fieldLabel_s="supplier" cid="supplier_query"
+                       refer_j='[{"refField":"supplier","valueField":"uuid"}]'/>
+        <JHidden pos="A2:A2" cid="supplier" field="supplier"/>
+        <!--<JFromTo pos="A3:B3" subXtype="JDatetime" fieldLabel_s="createTime" cid="createTime" field="create_time"/>-->
+        <!--<JFromTo pos="C3:D3" subXtype="JDatetime" fieldLabel_s="updateTime" cid="updateTime" field="update_time"/>-->
+    </conditions>
+    <results>
+            <JTextCol text_s="scmContract" dataIndex="scmContractName" width_n="120"/>
+            <JTextCol text_s="supplier" dataIndex="supplierName" width_n="120"/>
+        <JDecCol text_s="totalValue" dataIndex="totalValue" width_n="150"/>
+        <JDecCol text_s="targetValue" dataIndex="targetValue" width_n="150"/>
+            <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+            <!--<JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120"/>-->
+            <!--<JTextCol text_s="projectId" dataIndex="projectId" width_n="120"/>-->
+            <!--<JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120"/>-->
+            <!--<JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>-->
+            <!--<JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>-->
+            <!--<JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>-->
+            <!--<JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>-->
+    </results>
+</commonquery>

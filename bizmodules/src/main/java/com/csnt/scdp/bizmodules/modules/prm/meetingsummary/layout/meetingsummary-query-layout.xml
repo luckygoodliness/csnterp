@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>meetingsummary-dao</daotype>
+        <daokey>common_query_department</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JProject pos="A1:A1" cid="prmProjectMainId_query" fieldLabel_s="prmProjectMainId"
+                  refer_j='[{"refField":"prmProjectMainId","valueField":"uuid"}]'/>
+        <JHidden pos="A1:A1" cid="prmProjectMainId" field="m.prm_project_main_Id"/>
+        <JHidden cid="departmentCodeDesc"/>
+        <JErpDepartMent pos="B1:B1" fieldLabel_s="departmentCode" cid="departmentCode"
+                      field="department_code" labelWidth_n="100"/>
+        <JFromTo pos="C1:D1" subXtype="JDatetime" fieldLabel_s="beginDate" cid="beginDate" field="begin_date"/>
+        <JFromTo pos="A2:B2" subXtype="JDatetime" fieldLabel_s="endDate" cid="endDate" field="end_date"/>
+        <!--<JText pos="C2:C2" fieldLabel_s="createBy" cid="createBy" field="create_by"/>-->
+        <!--<JText pos="D2:D2" fieldLabel_s="updateBy" cid="updateby" field="update_by"/>-->
+        <!--<JFromTo pos="A3:B3" subXtype="JDatetime" fieldLabel_s="createTime" cid="createTime" field="create_time"/>-->
+        <!--<JFromTo pos="C3:D3" subXtype="JDatetime" fieldLabel_s="updateTime" cid="updateTime" field="update_time"/>-->
+    </conditions>
+    <results>
+
+
+            <JTextCol text_s="prmProjectMainId" dataIndex="projectName" width_n="300"/>
+        <JTextCol text_s="departmentCode" dataIndex="orgName" width_n="120"/>
+        <JDateCol text_s="beginDate" dataIndex="beginDate" width_n="150"/>
+        <JDateCol text_s="endDate" dataIndex="endDate" width_n="150"/>
+            <JTextCol text_s="meetingLocation" dataIndex="meetingLocation" width_n="120"/>
+            <JTextCol text_s="meetingPersons" dataIndex="meetingPersons" width_n="120"/>
+            <JTextCol text_s="customerId" dataIndex="customerId" width_n="120"/>
+            <JTextCol text_s="content" dataIndex="content" width_n="500"/>
+            <JTextCol text_s="workPlan" dataIndex="workPlan" width_n="120"/>
+            <!--<JTextCol text_s="state" dataIndex="state" width_n="120"/>-->
+            <!--<JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120"/>-->
+
+
+            <!--<JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>-->
+            <!--<JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>-->
+            <!--<JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>-->
+            <!--<JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>-->
+    </results>
+</commonquery>

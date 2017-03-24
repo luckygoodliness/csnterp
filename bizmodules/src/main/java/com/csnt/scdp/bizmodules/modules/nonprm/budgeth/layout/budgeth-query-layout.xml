@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+<querysql>
+    <daotype>budgeth-dao</daotype>
+    <daokey>common_query_single2</daokey>
+</querysql>
+<defaultSort>year desc</defaultSort>
+<conditions columns="3">
+    <JCombo pos="A1:A1" cid="yearQ" fieldLabel_s="year" multiSelect_b="false" allowBlank_b="true"
+            comboType="budget_year" fullInfo_b="false" upperCase_b="false"   field="year"/>
+    <JHidden cid="officeIdQDesc"/>
+    <JErpDepartMent pos="B1:B1" fieldLabel_s="officeId" cid="officeIdQ"
+                  field="bh.office_id" labelWidth_n="100"/>
+</conditions>
+<results>
+    <JTextCol text_s="year" dataIndex="year" width_n="120"/>
+    <JTextCol text_s="orgName" dataIndex="orgName" width_n="120"/>
+    <JTextCol text_s="state" dataIndex="codeDesc" width_n="120"/>
+    <JTextCol text_s="createBy" dataIndex="userName" width_n="120"/>
+    <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+</results>
+</commonquery>

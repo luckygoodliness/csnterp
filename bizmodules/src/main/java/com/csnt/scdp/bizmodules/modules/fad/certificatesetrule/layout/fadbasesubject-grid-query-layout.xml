@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>certificatesetrule-dao</daotype>
+        <daokey>fad_base_subject</daokey>
+    </querysql>
+    <defaultSort>subject_no asc</defaultSort>
+    <conditions columns="2">
+        <JText pos="A1:A1" cid="subjectNo" fieldLabel_s="projectSubjectCode" field="subject_no"/>
+        <JText pos="A2:A2" cid="subjectName" fieldLabel_s="projectSubject" field="subject_name"/>
+    </conditions>
+    <quickquery>
+        <QueryCids>subjectNo,subjectName</QueryCids>
+        <ForceQueryCids></ForceQueryCids>
+    </quickquery>
+    <results>
+        <JTextCol text_s="projectSubjectCode" dataIndex="subjectNo" width_n="100"/>
+        <JTextCol text_s="projectSubject" dataIndex="subjectName" width_n="120"/>
+    </results>
+</commonquery>

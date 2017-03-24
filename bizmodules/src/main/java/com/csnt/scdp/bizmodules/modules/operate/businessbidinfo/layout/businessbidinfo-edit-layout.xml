@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="operateBusinessBidInfoDto" row="23*7" col="0.25*4" title_s="" border_n="1"
+           autoExpand_b="true">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JHidden cid="projectType"/>
+        <JHidden cid="canBeDeleted"/>
+        <JHidden cid="projectSourceType"/>
+        <JHidden cid="canBeModified"/>
+        <JHidden cid="canMoneyBeModified"/>
+        <JHidden cid="operateKeyProjectsInfoId"/>
+
+        <JText pos="A1:B1" cid="projectName" fieldLabel_s="projectName" allowBlank_b="false" labelWidth_n="132"/>
+        <JHidden cid="contractorOfficeDesc"/>
+        <JErpDepartMent pos="C1:C1" fieldLabel_s="部门" cid="contractorOffice"
+                        labelWidth_n="132" readOnly_b="true" adaptable_b="false"/>
+        <JCombo pos="D1:D1" cid="state" fieldLabel_s="state" comboType="scdp_fmcode" codeType="FAD_BILL_STATE"
+                displayDesc_b="true" readOnly_b="true" adaptable_b="false"/>
+
+        <JHidden cid="customerIdDesc"/>
+        <JCustomerGrid pos="A2:B2" cid="customerId" fieldLabel_s="customerId"
+                       valueField="uuid" descField="customerName" displayDesc_b="true"
+                       forceValidate_b="false"
+                       allowBlank_b="false" labelWidth_n="132"/>
+        <JCur pos="C2:C2" cid="priceFixing" fieldLabel_s="priceFixing" allowBlank_b="false" labelWidth_n="132"
+              minValue_n="0.00"/>
+
+        <JCombo pos="D2:D2" cid="bidResult" fieldLabel_s="bidResult" comboType="scdp_fmcode"
+                codeType="OPERATE_BID_RESULT" displayDesc_b="true" allowBlank_b="true"/>
+
+        <JText pos="A3:B3" cid="designerId" fieldLabel_s="designerId" allowBlank_b="true" labelWidth_n="132"/>
+        <JText pos="C3:C3" cid="comBidNumber" fieldLabel_s="comBidNumber" allowBlank_b="true" labelWidth_n="132"/>
+
+        <JText pos="A4:B4" cid="managementId" fieldLabel_s="managementId" allowBlank_b="true" labelWidth_n="132"/>
+        <JDate pos="C4:C4" cid="bod" fieldLabel_s="bod" allowBlank_b="false" labelWidth_n="132" minValue_n="0.00"/>
+
+        <JText pos="A5:B5" cid="comBidUnit" fieldLabel_s="comBidUnit" allowBlank_b="false" labelWidth_n="132"/>
+
+        <JCur pos="C5:C5" cid="bidBond" fieldLabel_s="bidBond" allowBlank_b="false" labelWidth_n="132"
+              minValue_n="0.00"/>
+
+        <JDate pos="A6:A6" cid="bidingDocStart" fieldLabel_s="bidingDocStart" allowBlank_b="false"
+               labelWidth_n="132"/>
+        <JDate pos="B6:B6" cid="bidingDocEnd" fieldLabel_s="bidingDocEnd" allowBlank_b="false" labelWidth_n="132"/>
+
+        <JCur pos="C6:C6" cid="bidingDocPrice" fieldLabel_s="bidingDocPrice" allowBlank_b="false" labelWidth_n="132"
+              minValue_n="0.00"/>
+
+        <JTextArea pos="D3:D6" cid="eotm" fieldLabel_s="eotm" allowBlank_b="false"/>
+
+        <JCombo pos="A7:A7" cid="countryCode" fieldLabel_s="countryCode" allowBlank_b="true"
+                comboType="fm_gis_country" labelWidth_n="132"
+                displayDesc_b="true" fullInfo_b="true" cascadeField="buildRegion"/>
+        <JCombo pos="B7:B7" cid="buildRegion" fieldLabel_s="buildRegion" allowBlank_b="true"
+                comboType="fm_gis_state" labelWidth_n="132"
+                displayDesc_b="true" fullInfo_b="true" filterFields="countryCode|countryCode"/>
+
+        <JHidden cid="operateBy"/>
+        <JText pos="C7:C7" cid="operateByName" fieldLabel_s="operateBy" readOnly_b="true" labelWidth_n="132"
+               adaptable_b="false"/>
+        <JDate pos="D7:D7" fieldLabel_s="operateTime" cid="operateTime" readOnly_b="true" adaptable_b="false"/>
+
+    </JForm>
+</view>

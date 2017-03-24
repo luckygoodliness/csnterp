@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select * from prm_progress where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+
+    <common_query_department>
+        <common>
+            <![CDATA[select     p.uuid,
+                                p.prm_project_main_id,
+                                p.prm_weekly_id,
+                                p.project_progress,
+                                p.progress_deviation_reason,
+                                p.receipts_deviation_reason,
+                                p.management,
+                                p.state,
+                                p.company_code,
+                                p.project_id,
+                                p.department_code,
+                                p.create_by,
+                                p.create_time,
+                                p.update_by,
+                                p.update_time,
+                                p.loc_timezone,
+                                p.tbl_version,
+                                p.is_void,
+                               o.org_name,
+                               (select a.project_name  from (select ppm.*,pc.contract_name
+                                                                from prm_project_main ppm
+                                                                 left join PRM_CONTRACT  pc
+                                                               on ppm.prm_contract_id = pc.uuid ) a
+                                where a.uuid=p.prm_project_main_id) as project_name,
+                                (select c.code_desc from scdp_code c where c.code_type='PRM_PROGRESS'  and  c.sys_code= p.project_progress) as PRM_PROGRESS_COMBO
+                        from   prm_progress p
+                        left join scdp_org o
+                        on     p.department_code = o.org_code
+                        where 1=1 and ${conditions}]]>
+        </common>
+    </common_query_department>
+</DAO>

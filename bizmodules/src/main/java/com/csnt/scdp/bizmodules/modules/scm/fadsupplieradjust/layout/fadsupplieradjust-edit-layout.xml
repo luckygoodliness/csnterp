@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="fadSupplierAdjustDto" row="23*1" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JSupplierGrid pos="A1:A1" fieldLabel_s="supplierName" cid="supplierName" allowBlank_b="false"
+                       valueField="completeName" descField="completeName"/>
+        <JText pos="B1:B1" cid="projectCode" fieldLabel_s="projectCode" allowBlank_b="false"/>
+        <JText pos="C1:C1" cid="projectName" fieldLabel_s="projectName" allowBlank_b="true"/>
+        <JCur  pos="D1:D1" cid="ajustMoney" fieldLabel_s="ajustMoney" allowBlank_b="false"/>
+        <JTextArea pos="A2:D2" cid="remark" fieldLabel_s="remark" allowBlank_b="true"/>
+    </JForm>
+</view>

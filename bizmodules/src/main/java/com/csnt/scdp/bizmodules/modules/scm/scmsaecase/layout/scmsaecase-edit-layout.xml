@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="120,flex" col="1*1">
+    <JForm pos="A1:A1" cid="scmSaeCaseDto" row="23*4" col="0.2*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JText pos="A1:B1" cid="caseName" fieldLabel_s="caseName"
+               allowBlank_b="false" upperCase_b="false"/>
+        <JCombo pos="C1:C1" cid="caseType" fieldLabel_s="caseType"
+                comboType="scm_sae_case_type" displayDesc_b="true" multiSelect_b="false" allowBlank_b="false"/>
+        <JCheck pos="D1:D1" fieldLabel_s="isactive" cid="isactive" allowBlank_b="true" />
+        <JTextArea pos="A2:D4" cid="remark" fieldLabel_s="remark"
+               allowBlank_b="true" upperCase_b="false"/>
+    </JForm>
+    <JEGrid pos="A2:A2" cid="scmSaeCaseDDto"  store="Scmsaecase.store.ScmSaeCaseDStore">
+        <JTextCol text_s="evaluationContent" dataIndex="evaluationContent" width_n="200">
+            <JText allowBlank_b="false"/>
+        </JTextCol>
+        <JCurCol text_s="ratio" dataIndex="ratio" width_n="150">
+        <JDec allowBlank_b="false"/>
+        </JCurCol>
+        <JTextCol text_s="remark" dataIndex="remark" width_n="500">
+        <JText allowBlank_b="true"/>
+        </JTextCol>
+    </JEGrid>
+
+</view>

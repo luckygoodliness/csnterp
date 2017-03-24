@@ -1,0 +1,796 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="VW_PRM_PROJECT_XMSZMX" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="projectCode"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="projectName"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="build_region"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="affiliated_institutions"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--1.以我方项目表、我方收款表。。。为主体的报表
+--项目收支明细
+--当月项目收款
+--FineReport_VW_PRM_PROJECT_XMSZMX
+SELECT
+PRM_PROJECT_MAIN.UUID,
+
+--报表字段
+ROW_NUMBER() OVER(ORDER BY PRM_PROJECT_MAIN.ESTABLISH_DATE ASC,PRM_PROJECT_MAIN.PROJECT_CODE ASC) ROW_NUMBER, --序号
+PRM_PROJECT_MAIN.PROJECT_CODE,--项目代号
+(SELECT SCDP_USER.USER_NAME FROM SCDP_USER WHERE SCDP_USER.USER_ID = PRM_PROJECT_MAIN.PROJECT_MANAGER AND (IS_VOID = 0 OR IS_VOID IS NULL)) USER_NAME,--项目负责人
+PRM_PROJECT_MAIN.PROJECT_NAME,--项目名称
+NVL(PRM_CONTRACT.CUSTOMER_NAME, (SELECT PRM_CUSTOMER.CUSTOMER_NAME FROM PRM_CUSTOMER WHERE PRM_CUSTOMER.UUID = PRM_PROJECT_MAIN.CUSTOMER_ID AND (IS_VOID = 0 OR IS_VOID IS NULL))) CUSTOMER_NAME,--业主单位
+
+NVL(PRM_PROJECT_MAIN.PROJECT_MONEY, 0) - (NVL(ESTIMATE_CURRENT_YEAR.SUM_PROJECT_MONEY, 0) + NVL(ESTIMATE_OLD_YEAR.SUM_PROJECT_MONEY, 0)) CURRENT_PROJECT_MONEY,--在册运行额
+(NVL(PRM_RECEIPTS_CURRENT_YEAR.SUM_ACTUAL_MONEY, 0) + NVL(PRM_RECEIPTS_OLD_YEAR.SUM_ACTUAL_MONEY, 0)) - (NVL(ESTIMATE_CURRENT_YEAR.SUM_PROJECT_MONEY, 0) + NVL(ESTIMATE_OLD_YEAR.SUM_PROJECT_MONEY, 0)) INCOME_MONEY,--在册收款
+
+NVL(VW_PRM_BUDGET_DETAIL.SUM_ESTIMATED_COST, 0) - (NVL(ESTIMATE_CURRENT_YEAR.SUM_COST, 0) + NVL(ESTIMATE_OLD_YEAR.SUM_COST, 0)) CURRENT_ESTIMATED_COST,--在册计划成本
+NVL(VW_EXPEND_MONEY_BILL.M, 0) - (NVL(ESTIMATE_CURRENT_YEAR.SUM_COST, 0) + NVL(ESTIMATE_OLD_YEAR.SUM_COST, 0)) EXPEND_MONEY_BILL,--【实际支出(实际总收票成本)】减去【累计结算成本】=在册发生成本(收票)
+NVL(VW_EXPEND_MONEY_ALL.M, 0) - (NVL(ESTIMATE_CURRENT_YEAR.SUM_COST, 0) + NVL(ESTIMATE_OLD_YEAR.SUM_COST, 0)) EXPEND_MONEY_ALL--【实际支出(实际总发生成本)】减去【累计结算成本】=在册发生成本(合同)
+
+FROM
+PRM_PROJECT_MAIN
+
+--过去累计收款
+LEFT JOIN
+(
+  SELECT
+  PRM_RECEIPTS.PRM_PROJECT_MAIN_ID,
+  SUM(NVL(PRM_RECEIPTS.ACTUAL_MONEY, 0)) SUM_ACTUAL_MONEY
+  FROM PRM_RECEIPTS
+  WHERE
+  PRM_RECEIPTS.STATE IN ('2','4','8')
+  AND
+  (
+    --年
+    (
+      TO_NUMBER(TO_CHAR(PRM_RECEIPTS.ACTUAL_DATE, 'yyyy')) < TO_NUMBER(TO_CHAR(SYSDATE,'yyyy'))
+    )
+    OR
+    (
+      --年
+      TO_NUMBER(TO_CHAR(PRM_RECEIPTS.ACTUAL_DATE, 'yyyy')) = TO_NUMBER(TO_CHAR(SYSDATE,'yyyy'))
+      AND
+      --月
+      TO_NUMBER(TO_CHAR(PRM_RECEIPTS.ACTUAL_DATE, 'mm')) < TO_NUMBER(TO_CHAR(SYSDATE,'mm'))
+    )
+  )
+  AND (IS_VOID = 0 OR IS_VOID IS NULL)
+  GROUP BY PRM_RECEIPTS.PRM_PROJECT_MAIN_ID
+) PRM_RECEIPTS_OLD_YEAR
+ON PRM_PROJECT_MAIN.UUID = PRM_RECEIPTS_OLD_YEAR.PRM_PROJECT_MAIN_ID
+
+--当月收款计划
+LEFT JOIN
+(
+  SELECT
+  PRM_RECEIPTS_DETAIL_P.PRM_PROJECT_MAIN_ID,
+  SUM(NVL(PRM_RECEIPTS_DETAIL_P.SCHEMING_RECEIPTS_MONEY, 0)) SUM_SCHEM_MONEY
+  FROM PRM_RECEIPTS_DETAIL_P
+  WHERE
+  (
+    --年
+    TO_NUMBER(TO_CHAR(PRM_RECEIPTS_DETAIL_P.SCHEMING_RECEIPTS_DATE, 'yyyy')) = TO_NUMBER(TO_CHAR(SYSDATE,'yyyy'))
+    AND
+    --月
+    TO_NUMBER(TO_CHAR(PRM_RECEIPTS_DETAIL_P.SCHEMING_RECEIPTS_DATE, 'mm')) = TO_NUMBER(TO_CHAR(SYSDATE,'mm'))
+  )
+  AND (IS_VOID = 0 OR IS_VOID IS NULL)
+  GROUP BY PRM_RECEIPTS_DETAIL_P.PRM_PROJECT_MAIN_ID
+) PRM_RECEIPTS_P_CURRENT_YEAR
+ON PRM_PROJECT_MAIN.UUID =  PRM_RECEIPTS_P_CURRENT_YEAR.PRM_PROJECT_MAIN_ID
+
+--当月收款
+LEFT JOIN
+(
+  SELECT
+  PRM_RECEIPTS.PRM_PROJECT_MAIN_ID,
+  SUM(NVL(PRM_RECEIPTS.ACTUAL_MONEY, 0)) SUM_ACTUAL_MONEY
+  FROM PRM_RECEIPTS
+  WHERE
+  PRM_RECEIPTS.STATE IN ('2','4','8')
+  AND
+  (
+    --年
+    TO_NUMBER(TO_CHAR(PRM_RECEIPTS.ACTUAL_DATE, 'yyyy')) = TO_NUMBER(TO_CHAR(SYSDATE,'yyyy'))
+    AND
+    --月
+    TO_NUMBER(TO_CHAR(PRM_RECEIPTS.ACTUAL_DATE, 'mm')) = TO_NUMBER(TO_CHAR(SYSDATE,'mm'))
+  )
+  AND (IS_VOID = 0 OR IS_VOID IS NULL)
+  GROUP BY PRM_RECEIPTS.PRM_PROJECT_MAIN_ID
+) PRM_RECEIPTS_CURRENT_YEAR
+ON PRM_PROJECT_MAIN.UUID = PRM_RECEIPTS_CURRENT_YEAR.PRM_PROJECT_MAIN_ID
+
+--预算控制成本
+LEFT JOIN
+(
+  SELECT
+  VW_PRM_BUDGET_DETAIL.PRM_PROJECT_MAIN_ID,
+  SUM(NVL(VW_PRM_BUDGET_DETAIL.COST_CONTROL_MONEY, 0)) SUM_ESTIMATED_COST
+  FROM VW_PRM_BUDGET_DETAIL
+  WHERE VW_PRM_BUDGET_DETAIL.BUDGET_CODE = 'ESTIMATED_COST'
+  GROUP BY VW_PRM_BUDGET_DETAIL.PRM_PROJECT_MAIN_ID
+) VW_PRM_BUDGET_DETAIL
+ON PRM_PROJECT_MAIN.UUID = VW_PRM_BUDGET_DETAIL.PRM_PROJECT_MAIN_ID
+
+--成本支出(实际总收票成本)
+LEFT JOIN
+VW_EXPEND_MONEY_BILL
+ON PRM_PROJECT_MAIN.UUID = VW_EXPEND_MONEY_BILL.PID
+
+--成本支出(实际总发生成本)
+LEFT JOIN
+VW_EXPEND_MONEY_ALL
+ON PRM_PROJECT_MAIN.UUID = VW_EXPEND_MONEY_ALL.PID
+
+--过去累计结算合同额
+LEFT JOIN
+(
+     SELECT
+     PRM_FINAL_ESTIMATE.PRM_PROJECT_MAIN_ID,
+     SUM(NVL(PRM_FINAL_ESTIMATE.SQUARE_PROJECT_MONEY, 0)) SUM_PROJECT_MONEY,
+     SUM(NVL(PRM_FINAL_ESTIMATE.SQUARE_GROSS_PROFIT, 0)) SUM_GROSS_PROFIT,
+     SUM(NVL(PRM_FINAL_ESTIMATE.SQUARE_COST, 0)) SUM_COST
+     FROM
+     PRM_FINAL_ESTIMATE
+     WHERE
+     (
+       (
+         PRM_FINAL_ESTIMATE.SQUARE_TYPE = '0' AND PRM_FINAL_ESTIMATE.STATE = '2'
+       )
+       OR
+       (
+         PRM_FINAL_ESTIMATE.SQUARE_TYPE = '1' AND EXISTS(SELECT 1 FROM PRM_PROJECT_MAIN WHERE PRM_PROJECT_MAIN.UUID = PRM_FINAL_ESTIMATE.PRM_PROJECT_MAIN_ID AND NVL(PRM_PROJECT_MAIN.STATE, '2') = '1')
+       )
+       OR
+       (
+         PRM_FINAL_ESTIMATE.SQUARE_TYPE = '3' AND EXISTS(SELECT 1 FROM PRM_PROJECT_MAIN WHERE PRM_PROJECT_MAIN.UUID = PRM_FINAL_ESTIMATE.PRM_PROJECT_MAIN_ID AND NVL(PRM_PROJECT_MAIN.STATE, '2') = '3')
+       )
+     )
+     AND
+     (
+      --年
+      (
+        TO_NUMBER(TO_CHAR(PRM_FINAL_ESTIMATE.SQUARE_DATE, 'yyyy')) < TO_NUMBER(TO_CHAR(SYSDATE,'yyyy'))
+      )
+      OR
+      (
+        --年
+        TO_NUMBER(TO_CHAR(PRM_FINAL_ESTIMATE.SQUARE_DATE, 'yyyy')) = TO_NUMBER(TO_CHAR(SYSDATE,'yyyy'))
+        AND
+        --月
+        TO_NUMBER(TO_CHAR(PRM_FINAL_ESTIMATE.SQUARE_DATE, 'mm')) < TO_NUMBER(TO_CHAR(SYSDATE,'mm'))
+      )
+     )
+     AND (IS_VOID = 0 OR IS_VOID IS NULL)
+     GROUP BY PRM_FINAL_ESTIMATE.PRM_PROJECT_MAIN_ID
+) ESTIMATE_OLD_YEAR
+ON PRM_PROJECT_MAIN.UUID = ESTIMATE_OLD_YEAR.PRM_PROJECT_MAIN_ID
+
+--当月结算合同额
+LEFT JOIN
+(
+     SELECT
+     PRM_FINAL_ESTIMATE.PRM_PROJECT_MAIN_ID,
+     SUM(NVL(PRM_FINAL_ESTIMATE.SQUARE_PROJECT_MONEY, 0)) SUM_PROJECT_MONEY,
+     SUM(NVL(PRM_FINAL_ESTIMATE.SQUARE_GROSS_PROFIT, 0)) SUM_GROSS_PROFIT,
+     SUM(NVL(PRM_FINAL_ESTIMATE.SQUARE_COST, 0)) SUM_COST
+     FROM
+     PRM_FINAL_ESTIMATE
+     WHERE
+     (
+       (
+         PRM_FINAL_ESTIMATE.SQUARE_TYPE = '0' AND PRM_FINAL_ESTIMATE.STATE = '2'
+       )
+       OR
+       (
+         PRM_FINAL_ESTIMATE.SQUARE_TYPE = '1' AND EXISTS(SELECT 1 FROM PRM_PROJECT_MAIN WHERE PRM_PROJECT_MAIN.UUID = PRM_FINAL_ESTIMATE.PRM_PROJECT_MAIN_ID AND NVL(PRM_PROJECT_MAIN.STATE, '2') = '1')
+       )
+       OR
+       (
+         PRM_FINAL_ESTIMATE.SQUARE_TYPE = '3' AND EXISTS(SELECT 1 FROM PRM_PROJECT_MAIN WHERE PRM_PROJECT_MAIN.UUID = PRM_FINAL_ESTIMATE.PRM_PROJECT_MAIN_ID AND NVL(PRM_PROJECT_MAIN.STATE, '2') = '3')
+       )
+     )
+     AND
+     (
+      --年
+      TO_NUMBER(TO_CHAR(PRM_FINAL_ESTIMATE.SQUARE_DATE, 'yyyy')) = TO_NUMBER(TO_CHAR(SYSDATE,'yyyy'))
+      AND
+      --月
+      TO_NUMBER(TO_CHAR(PRM_FINAL_ESTIMATE.SQUARE_DATE, 'mm')) = TO_NUMBER(TO_CHAR(SYSDATE,'mm'))
+     )
+     AND (IS_VOID = 0 OR IS_VOID IS NULL)
+     GROUP BY PRM_FINAL_ESTIMATE.PRM_PROJECT_MAIN_ID
+) ESTIMATE_CURRENT_YEAR
+ON PRM_PROJECT_MAIN.UUID = ESTIMATE_CURRENT_YEAR.PRM_PROJECT_MAIN_ID
+
+LEFT JOIN
+(
+  SELECT NVL(PRM_CONTRACT_DETAIL.PRM_PROJECT_MAIN_ID, PRM_CONTRACT.PRM_PROJECT_MAIN_ID) PRM_PROJECT_MAIN_ID,REPLACE(TO_CHAR(WM_CONCAT(PRM_CUSTOMER.CUSTOMER_NAME)),',','、') CUSTOMER_NAME
+  FROM
+  PRM_CONTRACT
+  LEFT JOIN
+  (SELECT * FROM PRM_CONTRACT_DETAIL WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PRM_CONTRACT_DETAIL
+  ON PRM_CONTRACT.UUID = PRM_CONTRACT_DETAIL.PRM_CONTRACT_ID
+  LEFT JOIN
+  (SELECT * FROM PRM_CUSTOMER WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PRM_CUSTOMER
+  ON NVL(PRM_CONTRACT_DETAIL.CUSTOMER_ID, PRM_CONTRACT.CUSTOMER_ID) = PRM_CUSTOMER.UUID
+  WHERE (PRM_CONTRACT.IS_VOID = 0 OR PRM_CONTRACT.IS_VOID IS NULL)
+  GROUP BY NVL(PRM_CONTRACT_DETAIL.PRM_PROJECT_MAIN_ID, PRM_CONTRACT.PRM_PROJECT_MAIN_ID)
+) PRM_CONTRACT
+ON PRM_PROJECT_MAIN.UUID = PRM_CONTRACT.PRM_PROJECT_MAIN_ID
+
+WHERE
+('${officeId}' IS NULL OR PRM_PROJECT_MAIN.CONTRACTOR_OFFICE = '${officeId}')
+AND PRM_PROJECT_MAIN.PROJECT_CODE LIKE '%${projectCode}%'
+AND PRM_PROJECT_MAIN.PROJECT_NAME LIKE '%${projectName}%'
+AND NVL(PRM_PROJECT_MAIN.STATE, '2') <> '1'
+AND (PRM_PROJECT_MAIN.IS_VOID = 0 OR PRM_PROJECT_MAIN.IS_VOID IS NULL)
+
+AND ('${build_region}' IS NULL OR
+  (EXISTS
+  (SELECT 1
+   FROM PRM_CONTRACT C
+   LEFT JOIN PRM_CONTRACT_DETAIL CD ON C.UUID = CD.PRM_CONTRACT_ID
+   WHERE CD.PRM_PROJECT_MAIN_ID = PRM_PROJECT_MAIN.UUID
+   AND C.BUILD_REGION = '${build_region}')))
+                    
+AND ('${affiliated_institutions}' IS NULL OR
+   (EXISTS
+   (SELECT 1
+    FROM PRM_CONTRACT C
+    LEFT JOIN PRM_CONTRACT_DETAIL CD ON C.UUID = CD.PRM_CONTRACT_ID
+    WHERE CD.PRM_PROJECT_MAIN_ID = PRM_PROJECT_MAIN.UUID
+    AND C.AFFILIATED_INSTITUTIONS = '${affiliated_institutions}')))]]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR F="6" T="8"/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[720000,720000,720000,720000,720000,720000,720000,720000,720000,720000,720000,720000,720000,720000,720000,720000,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[0,1440000,3600000,2880000,10080000,10080000,4320000,4320000,4320000,2743200,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="0" cs="8" s="0">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=$officeIdDesc + " 在册项目收支明细表(单位:元)"]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="2" cs="8" s="1">
+<O>
+<![CDATA[一、*注：本表包含所有在册项目(含预立项、内外部研发、内委、固定资产投资)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="3" cs="8" s="1">
+<O>
+<![CDATA[二、*注：“在册”的概念均为当前实际执行额(在册运行额=项目最终运行额-已结算运行额；同理收款、成本)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="4" cs="8" s="1">
+<O>
+<![CDATA[1、在册发生成本(合同)：所有已签合同的金额(含主材、辅材、外协、内委)；运行费发票；税金、印花税的金额合计减去已结算成本]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="5" cs="8" s="1">
+<O>
+<![CDATA[2、在册发生成本(收票)：所有主材、辅材、外协、运行费发票金额，内委合同金额、税金、印花税金额合计减去已结算成本]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="6" rs="3" s="2">
+<O>
+<![CDATA[项目ID]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="6" rs="3" s="2">
+<O>
+<![CDATA[序号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="6" rs="3" s="2">
+<O>
+<![CDATA[项目代号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="6" rs="3" s="2">
+<O>
+<![CDATA[项目负责人]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="6" rs="3" s="2">
+<O>
+<![CDATA[项目名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="6" rs="3" s="2">
+<O>
+<![CDATA[业主单位]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="6" s="2">
+<O>
+<![CDATA[在册运行额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="6" s="2">
+<O>
+<![CDATA[在册计划成本]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="6" s="2">
+<O>
+<![CDATA[在册计划利润]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="7" rs="2" s="2">
+<O>
+<![CDATA[在册收款]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="7" s="2">
+<O>
+<![CDATA[在册发生成本(合同)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="7" s="2">
+<O>
+<![CDATA[在册盈亏(合同)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="8" s="2">
+<O>
+<![CDATA[在册发生成本(收票)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="8" s="2">
+<O>
+<![CDATA[在册盈亏(收票)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="9" rs="3" s="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="9" cs="5" rs="3" s="2">
+<O>
+<![CDATA[汇总金额:]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="9" s="3">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_PROJECT_XMSZMX" columnName="CURRENT_PROJECT_MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="9" s="3">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_PROJECT_XMSZMX" columnName="CURRENT_ESTIMATED_COST"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="9" s="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=G10 - H10]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="10" rs="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_PROJECT_XMSZMX" columnName="INCOME_MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="10" s="3">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_PROJECT_XMSZMX" columnName="EXPEND_MONEY_ALL"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="10" s="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=G11 - H11]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="11" s="3">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_PROJECT_XMSZMX" columnName="EXPEND_MONEY_BILL"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="11" s="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=G11 - H12]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="12" rs="3" s="2">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_PROJECT_XMSZMX" columnName="UUID"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="12" rs="3" s="2">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_PROJECT_XMSZMX" columnName="ROW_NUMBER"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="12" rs="3" s="4">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_PROJECT_XMSZMX" columnName="PROJECT_CODE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="网络报表1">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters>
+<Parameter>
+<Attributes name="project_id"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=A13]]></Attributes>
+</O>
+</Parameter>
+</Parameters>
+<TargetFrame>
+<![CDATA[_blank]]></TargetFrame>
+<Features width="600" height="400"/>
+<ReportletName showPI="true" byPost="true">
+<![CDATA[/erp/ygb/YG009.cpt]]></ReportletName>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand dir="0"/>
+</C>
+<C c="3" r="12" rs="3" s="2">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_PROJECT_XMSZMX" columnName="USER_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="12" rs="3" s="5">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_PROJECT_XMSZMX" columnName="PROJECT_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="12" rs="3" s="5">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_PROJECT_XMSZMX" columnName="CUSTOMER_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="12" s="3">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_PROJECT_XMSZMX" columnName="CURRENT_PROJECT_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="12" s="3">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_PROJECT_XMSZMX" columnName="CURRENT_ESTIMATED_COST"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="12" s="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=G13 - H13]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="13" rs="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_PROJECT_XMSZMX" columnName="INCOME_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="13" s="3">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_PROJECT_XMSZMX" columnName="EXPEND_MONEY_ALL"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="13" s="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=G14 - H14]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="14" s="3">
+<O t="DSColumn">
+<Attributes dsName="VW_PRM_PROJECT_XMSZMX" columnName="EXPEND_MONEY_BILL"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="14" s="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=G14 - H15]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="15" cs="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[="打印日期：" + NOW()]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting orientation="1">
+<Margin top="986400" left="144000" bottom="986400" right="144000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="96"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="2" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72" foreground="-65536"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72" foreground="-16776961" underline="1"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

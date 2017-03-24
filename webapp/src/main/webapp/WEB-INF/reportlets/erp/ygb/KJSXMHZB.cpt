@@ -1,0 +1,1309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="T1" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="build_region"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="affiliated_institutions"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT *
+FROM 
+(SELECT
+       O.SEQ_NO,
+       M.UUID, --项目UUID
+       M.PROJECT_CODE, --项目代号
+       NVL(M.PROJECT_SHORT_NAME, M.PROJECT_NAME)AS PROJECT_SHORT_NAME, --项目简称
+       O.SHORT_CODE AS ORG_SHORT_NAME, --承担部门
+       M.PROJECT_MONEY AS PROJECT_MONEY, --运行额
+       NVL(R.RECEIPTS_MONEY, 0) AS RECEIPTS_MONEY, --收款额
+       NVL(PI.LOCKED_INVOICE, 0)+ NVL(BDCT.TAX,0) *(NVL(R.RECEIPTS_MONEY, 0) / M.PROJECT_MONEY)+NVL(BDCS.TAX,0), --发生成本（收票）
+       NVL(VFCRP.SUM_PAY_MONEY_ALL, 0) + NVL(BDCT.TAX,0) *(NVL(R.RECEIPTS_MONEY, 0) / M.PROJECT_MONEY)+NVL(BDCS.TAX,0) AS LOCK_COST, --发生成本（合同）
+       
+       CASE
+       --可完工结算
+         WHEN NVL(R.RECEIPTS_MONEY, 0) = M.PROJECT_MONEY THEN
+          '完工结算'
+       --可阶段结算 
+         WHEN NVL(R.RECEIPTS_MONEY, 0) *
+              (1 -
+               (M.PROJECT_MONEY - M.COST_CONTROL_MONEY) / M.PROJECT_MONEY) <
+              NVL(PI.LOCKED_INVOICE, 0)+ NVL(BDCT.TAX,0) *(NVL(R.RECEIPTS_MONEY, 0) / M.PROJECT_MONEY)+NVL(BDCS.TAX,0) THEN
+          '阶段结算1'
+         WHEN NVL(R.RECEIPTS_MONEY, 0) *
+              (1 -
+               (M.PROJECT_MONEY - M.COST_CONTROL_MONEY) / M.PROJECT_MONEY) >=
+              NVL(PI.LOCKED_INVOICE, 0)+ NVL(BDCT.TAX,0) *(NVL(R.RECEIPTS_MONEY, 0) / M.PROJECT_MONEY)+NVL(BDCS.TAX,0) AND
+              NVL(R.RECEIPTS_MONEY, 0) *
+              (1 -
+               (M.PROJECT_MONEY - M.COST_CONTROL_MONEY) / M.PROJECT_MONEY) <=
+              NVL(VFCRP.SUM_PAY_MONEY_ALL, 0) + NVL(BDCT.TAX,0) *(NVL(R.RECEIPTS_MONEY, 0) / M.PROJECT_MONEY)+NVL(BDCS.TAX,0) 
+            THEN    '阶段结算2'
+         WHEN NVL(R.RECEIPTS_MONEY, 0) *
+              (1 -
+               (M.PROJECT_MONEY - M.COST_CONTROL_MONEY) / M.PROJECT_MONEY) >
+              NVL(VFCRP.SUM_PAY_MONEY_ALL, 0) + NVL(BDCT.TAX,0) *(NVL(R.RECEIPTS_MONEY, 0) / M.PROJECT_MONEY)+NVL(BDCS.TAX,0) 
+             THEN  '阶段结算3'
+         ELSE
+          NULL
+       END CAN_SQUARE_TYPE, --可结算类型
+       M.COST_CONTROL_MONEY-NVL(PFE.SQUARE_COST, 0) AS PROJECT_COST_NOW, --在册计划成本
+       M.PROJECT_MONEY - NVL(PFE.SQUARE_PROJECT_MONEY, 0) AS PROJECT_MONEY_NOW, --在册运行额
+       NVL(R.RECEIPTS_MONEY, 0) - NVL(PFE.SQUARE_PROJECT_MONEY, 0) AS RECEIPTS_MONEY_NOW, --在册收款额
+       NVL(PI.LOCKED_INVOICE, 0)+ NVL(BDCT.TAX,0) *(NVL(R.RECEIPTS_MONEY, 0) / M.PROJECT_MONEY)+NVL(BDCS.TAX,0) - NVL(PFE.SQUARE_COST, 0) AS LOCKED_INVOICE_NOW, --在册发生成本（收票）
+       NVL(VFCRP.SUM_PAY_MONEY_ALL, 0) + NVL(BDCT.TAX,0) *(NVL(R.RECEIPTS_MONEY, 0) / M.PROJECT_MONEY)+NVL(BDCS.TAX,0) -
+       NVL(PFE.SQUARE_COST, 0) AS LOCK_COST_NOW, --在册发生成本（合同）
+       CASE
+       --可完工结算
+         WHEN NVL(R.RECEIPTS_MONEY, 0) = M.PROJECT_MONEY THEN
+          M.PROJECT_MONEY - NVL(PFE.SQUARE_PROJECT_MONEY, 0) --在册运行额
+       --可阶段结算 
+         WHEN NVL(R.RECEIPTS_MONEY, 0) *
+              (1 -
+               (M.PROJECT_MONEY - M.COST_CONTROL_MONEY) / M.PROJECT_MONEY) <
+              NVL(PI.LOCKED_INVOICE, 0)+ NVL(BDCT.TAX,0) *(NVL(R.RECEIPTS_MONEY, 0) / M.PROJECT_MONEY)+NVL(BDCS.TAX,0) THEN
+          NVL(R.RECEIPTS_MONEY, 0) - NVL(PFE.SQUARE_PROJECT_MONEY, 0)
+         WHEN NVL(R.RECEIPTS_MONEY, 0) *
+              (1 -
+               (M.PROJECT_MONEY - M.COST_CONTROL_MONEY) / M.PROJECT_MONEY) >=
+              NVL(PI.LOCKED_INVOICE, 0)+ NVL(BDCT.TAX,0) *(NVL(R.RECEIPTS_MONEY, 0) / M.PROJECT_MONEY)+NVL(BDCS.TAX,0) AND
+              NVL(R.RECEIPTS_MONEY, 0) *
+              (1 -
+               (M.PROJECT_MONEY - M.COST_CONTROL_MONEY) / M.PROJECT_MONEY) <=
+              NVL(VFCRP.SUM_PAY_MONEY_ALL, 0) + NVL(BDCT.TAX,0) *(NVL(R.RECEIPTS_MONEY, 0) / M.PROJECT_MONEY)+NVL(BDCS.TAX,0) 
+           THEN     NVL(R.RECEIPTS_MONEY, 0) - NVL(PFE.SQUARE_PROJECT_MONEY, 0)
+         WHEN NVL(R.RECEIPTS_MONEY, 0) *
+              (1 -
+               (M.PROJECT_MONEY - M.COST_CONTROL_MONEY) / M.PROJECT_MONEY) >
+              NVL(VFCRP.SUM_PAY_MONEY_ALL, 0) + NVL(BDCT.TAX,0) *(NVL(R.RECEIPTS_MONEY, 0) / M.PROJECT_MONEY)+NVL(BDCS.TAX,0) 
+             THEN    (NVL(VFCRP.SUM_PAY_MONEY_ALL, 0) + NVL(BDCT.TAX,0) *(NVL(R.RECEIPTS_MONEY, 0) / M.PROJECT_MONEY)+NVL(BDCS.TAX,0)) /
+          (1 - (M.PROJECT_MONEY - M.COST_CONTROL_MONEY) / M.PROJECT_MONEY) -
+          NVL(PFE.SQUARE_PROJECT_MONEY, 0)
+         ELSE
+          0
+       END CAN_SQUARE_MONEY, --可结算运营额 
+       CASE
+       --可完工结算
+        WHEN NVL(R.RECEIPTS_MONEY, 0) = M.PROJECT_MONEY 
+          THEN(M.PROJECT_MONEY - NVL(PFE.SQUARE_PROJECT_MONEY, 0))-（NVL(VFCRP.SUM_PAY_MONEY_ALL, 0) + NVL(BDCT.TAX,0) *(NVL(R.RECEIPTS_MONEY, 0) / M.PROJECT_MONEY)+NVL(BDCS.TAX,0) - NVL(PFE.SQUARE_COST, 0))  --在册运行额-在册合同成本
+--可阶段结算
+        WHEN NVL(R.RECEIPTS_MONEY, 0) * (1 - (M.PROJECT_MONEY - M.COST_CONTROL_MONEY) / M.PROJECT_MONEY) < NVL(PI.LOCKED_INVOICE, 0)+ NVL(BDCT.TAX,0) *(NVL(R.RECEIPTS_MONEY, 0) / M.PROJECT_MONEY)+NVL(BDCS.TAX,0)
+             THEN NVL(R.RECEIPTS_MONEY, 0) - NVL(PI.LOCKED_INVOICE, 0)- NVL(BDCT.TAX,0) *(NVL(R.RECEIPTS_MONEY, 0) / M.PROJECT_MONEY)-NVL(BDCS.TAX,0) - NVL(PFE.SQUARE_GROSS_PROFIT, 0) 
+        WHEN NVL(R.RECEIPTS_MONEY, 0) * (1 - (M.PROJECT_MONEY - M.COST_CONTROL_MONEY) / M.PROJECT_MONEY) >= NVL(PI.LOCKED_INVOICE, 0)+ NVL(BDCT.TAX,0) *(NVL(R.RECEIPTS_MONEY, 0) / M.PROJECT_MONEY)+NVL(BDCS.TAX,0) 
+                  AND NVL(R.RECEIPTS_MONEY, 0) * (1 - (M.PROJECT_MONEY - M.COST_CONTROL_MONEY) / M.PROJECT_MONEY) <= NVL(VFCRP.SUM_PAY_MONEY_ALL, 0) + NVL(BDCT.TAX,0) *(NVL(R.RECEIPTS_MONEY, 0) / M.PROJECT_MONEY)+NVL(BDCS.TAX,0) 
+             THEN NVL(R.RECEIPTS_MONEY, 0) * ((M.PROJECT_MONEY - M.COST_CONTROL_MONEY) / M.PROJECT_MONEY) - NVL(PFE.SQUARE_GROSS_PROFIT, 0) 
+         WHEN NVL(R.RECEIPTS_MONEY, 0) * (1 - (M.PROJECT_MONEY - M.COST_CONTROL_MONEY) / M.PROJECT_MONEY) > NVL(VFCRP.SUM_PAY_MONEY_ALL, 0) + NVL(BDCT.TAX,0) *(NVL(R.RECEIPTS_MONEY, 0) / M.PROJECT_MONEY)+NVL(BDCS.TAX,0) 
+             THEN(NVL(VFCRP.SUM_PAY_MONEY_ALL, 0) + NVL(BDCT.TAX,0) *(NVL(R.RECEIPTS_MONEY, 0) / M.PROJECT_MONEY)+NVL(BDCS.TAX,0)) / (1 - (M.PROJECT_MONEY - M.COST_CONTROL_MONEY) / M.PROJECT_MONEY) - (NVL(VFCRP.SUM_PAY_MONEY_ALL, 0) + NVL(BDCT.TAX,0) *(NVL(R.RECEIPTS_MONEY, 0) / M.PROJECT_MONEY)+NVL(BDCS.TAX,0)) - NVL(PFE.SQUARE_GROSS_PROFIT, 0)
+ELSE 0 END CAN_SQUARE_PROFIT --可结算利润
+  FROM PRM_PROJECT_MAIN M
+--部门
+  LEFT JOIN (SELECT * FROM SCDP_ORG WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) O
+    ON M.CONTRACTOR_OFFICE = O.ORG_CODE
+--已结算数据
+  LEFT JOIN (SELECT E.PRM_PROJECT_MAIN_ID,
+                    SUM(E.SQUARE_COST) AS SQUARE_COST,
+                    SUM(E.SQUARE_PROJECT_MONEY) AS SQUARE_PROJECT_MONEY,
+                    SUM(E.SQUARE_GROSS_PROFIT) AS SQUARE_GROSS_PROFIT
+               FROM PRM_FINAL_ESTIMATE E
+              WHERE E.SQUARE_DATE IS NOT NULL
+                    AND E.STATE IN (1,2)
+                     AND (IS_VOID = 0 OR IS_VOID IS NULL)
+              GROUP BY E.PRM_PROJECT_MAIN_ID) PFE
+    ON M.UUID = PFE.PRM_PROJECT_MAIN_ID
+--收款
+  LEFT JOIN (SELECT PR.PRM_PROJECT_MAIN_ID,
+                    SUM(NVL(PR.ACTUAL_MONEY, 0)) AS RECEIPTS_MONEY
+               FROM PRM_RECEIPTS PR
+              WHERE PR.STATE IN ('2', '4', '8')
+                     AND (IS_VOID = 0 OR IS_VOID IS NULL)
+              GROUP BY PR.PRM_PROJECT_MAIN_ID) R
+    ON M.UUID = R.PRM_PROJECT_MAIN_ID
+--总成本(不含税金、印花税)
+  LEFT JOIN (
+        SELECT SUM(MONEY) SUM_PAY_MONEY_ALL, PRM_PROJECT_MAIN_ID
+          FROM (
+                
+                SELECT NVL(TAX_CORRECTION, 0) MONEY, F.PRM_PROJECT_MAIN_ID
+                  FROM PRM_FINAL_ESTIMATE F
+                 WHERE F.STATE = '2'
+                   AND (IS_VOID = 0 OR IS_VOID IS NULL)
+                      --AND F.PRM_PROJECT_MAIN_ID = '388'
+                UNION ALL
+                
+                SELECT FI.EXPENSES_MONEY AS LOCKED_BUDGET, FI.PRM_PROJECT_MAIN_ID
+                  FROM FAD_INVOICE FI
+                 WHERE FI.EXPENSES_TYPE != '0'
+                   AND FI.STATE IN ('2', '4', '8')
+                   AND FI.PRM_PROJECT_MAIN_ID IS NOT NULL
+                --AND FI.PRM_PROJECT_MAIN_ID = '2430'
+                UNION ALL
+                SELECT SC.AMOUNT LOCKED_BUDGET, SC.PROJECT_ID
+                  FROM SCM_CONTRACT SC
+                 WHERE (SC.IS_VOID IS NULL OR SC.IS_VOID = 0)
+                   AND (SC.STATE IS NULL OR SC.STATE != '3')
+                --AND SC.PROJECT_ID = '2430'
+                UNION ALL
+                SELECT NVL(T2.HANDLE_AMOUNT, T2.AMOUNT) * T2.EXPECTED_PRICE AS LOCKED_BUDGET,
+                        T1.PRM_PROJECT_MAIN_ID
+                  FROM PRM_PURCHASE_REQ T1
+                 INNER JOIN PRM_PURCHASE_REQ_DETAIL T2
+                    ON T2.PRM_PURCHASE_REQ_ID = T1.UUID
+                   AND (T2.ISFALLBACK IS NULL OR T2.ISFALLBACK != 1)
+                  LEFT JOIN PRM_CONTRACT T3
+                    ON T3.INNER_PURCHASE_REQ_ID = T1.UUID
+                   AND (T3.IS_VOID IS NULL OR T3.IS_VOID = 0)
+                 WHERE (T1.IS_VOID IS NULL OR T1.IS_VOID = 0)
+                   AND T1.IS_INNER = 1
+                   AND T2.SCM_CONTRACT_ID IS NULL
+                   AND (T1.STATE IS NULL OR T1.STATE != '3')
+                      --AND T1.PRM_PROJECT_MAIN_ID = '2430'
+                   AND T3.UUID IS NULL
+                UNION ALL
+                SELECT CONTRACT_NOW_MONEY AS LOCKED_BUDGET, T1.PRM_PROJECT_MAIN_ID
+                  FROM PRM_PURCHASE_REQ T1
+                  LEFT JOIN PRM_CONTRACT T3
+                    ON T3.INNER_PURCHASE_REQ_ID = T1.UUID
+                   AND (T3.IS_VOID IS NULL OR T3.IS_VOID = 0)
+                 WHERE (T1.IS_VOID IS NULL OR T1.IS_VOID = 0)
+                   AND T1.IS_INNER = 1
+                   AND (T1.STATE IS NULL OR T1.STATE != '3')
+                      --AND T1.PRM_PROJECT_MAIN_ID = '2430'
+                   AND T3.UUID IS NOT NULL
+                UNION ALL
+                SELECT SUB_NEGATIVE_TO_0(NVL(FCR.MONEY, 0),
+                                          NVL(FCRI.CLEARANCE_MONEY, 0)) LOCKED_BUDGET,
+                        FCR.PROJECT_ID
+                  FROM FAD_CASH_REQ FCR
+                  LEFT JOIN (SELECT FAD_CASH_REQ_ID,
+                                    SUM(T.CLEARANCE_MONEY) AS CLEARANCE_MONEY
+                               FROM FAD_CASH_REQ_INVOICE T
+                              WHERE (EXISTS (SELECT 1
+                                               FROM FAD_INVOICE F
+                                              WHERE F.UUID = T.FAD_INVOICE_ID
+                                                AND F.STATE IN ('1', '2', '4', '8', '9')) OR
+                                     EXISTS (SELECT 1
+                                               FROM FAD_CASH_CLEARANCE F
+                                              WHERE F.UUID = T.FAD_INVOICE_ID
+                                                AND F.STATE = '4'))
+                                AND (T.IS_VOID = '0' OR T.IS_VOID IS NULL)
+                              GROUP BY T.FAD_CASH_REQ_ID) FCRI
+                    ON FCR.UUID = FCRI.FAD_CASH_REQ_ID
+                 WHERE FCR.REQ_TYPE <> '0' --采购请款
+                   AND FCR.REQ_TYPE <> '4' --周转金请款
+                   AND FCR.REQ_TYPE <> '3'--投标保证金
+                   AND FCR.PROJECT_ID IS NOT NULL
+                   AND FCR.STATE IN ('1', '2', '4', '8', '9')
+                --AND FCR.PROJECT_ID = '2430'
+                
+                )
+         GROUP BY PRM_PROJECT_MAIN_ID
+
+          ) VFCRP
+    ON M.UUID = VFCRP.PRM_PROJECT_MAIN_ID
+--税金
+  LEFT JOIN (SELECT PBDC.PRM_PROJECT_MAIN_ID,
+                    SUM(NVL(PBDC.COST_CONTROL_MONEY, 0)) AS TAX
+               FROM PRM_BUDGET_DETAIL PBDC
+              WHERE PBDC.BUDGET_CODE = 'TAX_NO_STAMP'
+              AND (IS_VOID = 0 OR IS_VOID IS NULL)
+              GROUP BY PBDC.PRM_PROJECT_MAIN_ID) BDCT
+    ON M.UUID = BDCT.PRM_PROJECT_MAIN_ID
+    
+ --印花税
+  LEFT JOIN (SELECT PBDC.PRM_PROJECT_MAIN_ID,
+                    SUM(NVL(PBDC.COST_CONTROL_MONEY, 0)) AS TAX
+               FROM PRM_BUDGET_DETAIL PBDC
+              WHERE PBDC.BUDGET_CODE = 'STAMP_TAX'
+              AND (IS_VOID = 0 OR IS_VOID IS NULL)
+              GROUP BY PBDC.PRM_PROJECT_MAIN_ID) BDCS
+    ON M.UUID = BDCS.PRM_PROJECT_MAIN_ID
+--开票成本
+  LEFT JOIN (SELECT PRMI.PRM_PROJECT_MAIN_ID,
+                    SUM(NVL(LOCKED_BUDGET, 0)) AS LOCKED_INVOICE
+               FROM (SELECT FI.PRM_PROJECT_MAIN_ID,
+                            FI.EXPENSES_MONEY AS LOCKED_BUDGET
+                       FROM FAD_INVOICE FI
+                      WHERE FI.EXPENSES_TYPE != '0'
+                             AND (IS_VOID = 0 OR IS_VOID IS NULL)
+                             AND FI.STATE IN ('2', '4', '8')
+                             AND FI.PRM_PROJECT_MAIN_ID IS NOT NULL
+                     UNION ALL
+                     SELECT T2.PROJECT_ID, T2.AMOUNT AS LOCKED_BUDGET
+                       FROM FAD_INVOICE T1
+                      INNER JOIN SCM_CONTRACT_INVOICE T2
+                         ON T1.UUID = T2.FAD_INVOICE_ID
+                      WHERE (T1.STATE IS NULL OR T1.STATE != '3')
+                             AND (T1.IS_VOID = 0 OR T1.IS_VOID IS NULL)
+                             AND (T2.IS_VOID = 0 OR T2.IS_VOID IS NULL)
+                     UNION ALL
+                     SELECT T1.PRM_PROJECT_MAIN_ID,
+                            NVL(T2.HANDLE_AMOUNT, T2.AMOUNT) *
+                            T2.EXPECTED_PRICE AS LOCKED_BUDGET
+                       FROM PRM_PURCHASE_REQ T1
+                      INNER JOIN PRM_PURCHASE_REQ_DETAIL T2
+                         ON T2.PRM_PURCHASE_REQ_ID = T1.UUID
+                        AND (T2.ISFALLBACK IS NULL OR T2.ISFALLBACK != 1)
+                       LEFT JOIN (SELECT * FROM PRM_CONTRACT WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) T3
+                         ON T3.INNER_PURCHASE_REQ_ID = T1.UUID
+                      WHERE (T1.IS_VOID = 0 OR T1.IS_VOID IS NULL)
+                             AND (T2.IS_VOID = 0 OR T2.IS_VOID IS NULL)
+                             AND T1.IS_INNER = 1
+                             AND T2.SCM_CONTRACT_ID IS NULL
+                             AND (T1.STATE IS NULL OR T1.STATE != '3')
+                             AND T3.UUID IS NULL
+                     UNION ALL
+                     SELECT T1.PRM_PROJECT_MAIN_ID,
+                            CONTRACT_NOW_MONEY AS LOCKED_BUDGET
+                       FROM PRM_PURCHASE_REQ T1
+                       LEFT JOIN (SELECT * FROM PRM_CONTRACT WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) T3
+                         ON T3.INNER_PURCHASE_REQ_ID = T1.UUID
+                      WHERE (T1.IS_VOID = 0 OR T1.IS_VOID IS NULL)
+                             AND T1.IS_INNER = 1
+                             AND (T1.STATE IS NULL OR T1.STATE != '3')
+                             AND T3.UUID IS NOT NULL
+                     ) PRMI
+              GROUP BY PRMI.PRM_PROJECT_MAIN_ID) PI
+    ON M.UUID = PI.PRM_PROJECT_MAIN_ID
+  LEFT JOIN (SELECT *
+               FROM SCDP_CODE
+               WHERE SCDP_CODE.CODE_TYPE = 'PRM_SQUARE_RECEIPT_RATE' AND (IS_VOID = 0 OR IS_VOID IS NULL)
+                      AND ROWNUM = 1) SCDPCODE
+    ON 1 = 1
+ WHERE (NVL(R.RECEIPTS_MONEY, 0) - NVL(PFE.SQUARE_PROJECT_MONEY, 0)) >=
+       (NVL(PI.LOCKED_INVOICE, 0)+ NVL(BDCT.TAX,0) *(NVL(R.RECEIPTS_MONEY, 0) / M.PROJECT_MONEY)+NVL(BDCS.TAX,0) - NVL(PFE.SQUARE_COST, 0)) --在册收款额≥在册发生成本（收票）      
+   AND NVL(R.RECEIPTS_MONEY, 0) / M.PROJECT_MONEY >=
+       TO_NUMBER(SCDPCODE.CODE_DESC) / 100 --项目总收款≥35%合同运行额
+   AND NVL(R.RECEIPTS_MONEY, 0) >= NVL(PI.LOCKED_INVOICE, 0)+ NVL(BDCT.TAX,0) *(NVL(R.RECEIPTS_MONEY, 0) / M.PROJECT_MONEY)+NVL(BDCS.TAX,0) --项目总收款≥总发生成本（收票）
+   AND NVL(R.RECEIPTS_MONEY, 0) > NVL(PFE.SQUARE_PROJECT_MONEY, 0) --在册收款额>0
+   AND (M.IS_PRE_PROJECT IS NULL OR M.IS_PRE_PROJECT <> 1)
+   AND (M.STATE IS NULL OR M.STATE <> '1') --未完工结算
+   AND ('${officeId}' IS NULL OR O.ORG_CODE = '${officeId}')
+   AND M.PROJECT_CODE <> '黔3463+K4137' --仁赤项目不显示
+   AND (M.IS_VOID = 0 OR M.IS_VOID IS NULL)
+   
+   AND ('${build_region}' IS NULL OR
+  (EXISTS
+  (SELECT 1
+   FROM PRM_CONTRACT C
+   LEFT JOIN PRM_CONTRACT_DETAIL CD ON C.UUID = CD.PRM_CONTRACT_ID
+   WHERE CD.PRM_PROJECT_MAIN_ID = M.UUID
+   AND C.BUILD_REGION = '${build_region}')))
+                    
+   AND ('${affiliated_institutions}' IS NULL OR
+   (EXISTS
+   (SELECT 1
+    FROM PRM_CONTRACT C
+    LEFT JOIN PRM_CONTRACT_DETAIL CD ON C.UUID = CD.PRM_CONTRACT_ID
+    WHERE CD.PRM_PROJECT_MAIN_ID = M.UUID
+    AND C.AFFILIATED_INSTITUTIONS = '${affiliated_institutions}')))
+    
+ )T
+ WHERE T.CAN_SQUARE_MONEY>0.01 OR T.CAN_SQUARE_PROFIT>0.01
+ ORDER BY T.SEQ_NO, T.PROJECT_CODE]]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR F="0" T="1"/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1008000,1143000,720000,720000,720000,723900,723900,571500,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[0,1440000,3600000,4320000,2880000,4032000,4032000,4229100,4343400,4267200,4032000,4032000,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="0" cs="11" s="0">
+<O>
+<![CDATA[可结算项目汇总表]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" s="1">
+<O>
+<![CDATA[项目ID]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" s="1">
+<O>
+<![CDATA[序号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="1" s="1">
+<O>
+<![CDATA[项目代号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="1" s="1">
+<O>
+<![CDATA[项目简称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="1" s="1">
+<O>
+<![CDATA[承担部门]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="1" s="1">
+<O>
+<![CDATA[在册运行额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="1" s="1">
+<O>
+<![CDATA[在册收款额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="1" s="1">
+<O>
+<![CDATA[在册计划成本]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="1" s="1">
+<O>
+<![CDATA[在册发生成本(合同)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="1" s="1">
+<O>
+<![CDATA[在册发生成本(收票)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="1" s="1">
+<O>
+<![CDATA[可结算运行额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="1" s="1">
+<O>
+<![CDATA[可结算利润]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="1" s="1">
+<O>
+<![CDATA[结算类型]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="2" s="1">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="2" cs="4" s="2">
+<O>
+<![CDATA[合计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="PROJECT_MONEY_NOW"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="RECEIPTS_MONEY_NOW"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="PROJECT_COST_NOW"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="LOCK_COST_NOW"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="LOCKED_INVOICE_NOW"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="CAN_SQUARE_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="CAN_SQUARE_PROFIT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="2" s="4">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="3" s="1">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="3" cs="3" s="2">
+<O>
+<![CDATA[小计]]></O>
+<PrivilegeControl/>
+<Expand leftParentDefault="false" left="E4"/>
+</C>
+<C c="4" r="3" s="2">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="ORG_SHORT_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="PROJECT_MONEY_NOW"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="RECEIPTS_MONEY_NOW"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="PROJECT_COST_NOW"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="LOCK_COST_NOW"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="LOCKED_INVOICE_NOW"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="CAN_SQUARE_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="CAN_SQUARE_PROFIT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="3" s="4">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="4" s="4">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="UUID"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="C5"/>
+</C>
+<C c="1" r="4" s="1">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SEQ(E4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand leftParentDefault="false" left="E5"/>
+</C>
+<C c="2" r="4" s="5">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="PROJECT_CODE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="网络报表1">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters>
+<Parameter>
+<Attributes name="project_id"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=A5]]></Attributes>
+</O>
+</Parameter>
+</Parameters>
+<TargetFrame>
+<![CDATA[_blank]]></TargetFrame>
+<Features width="600" height="400"/>
+<ReportletName showPI="true" byPost="true">
+<![CDATA[/erp/ygb/YG009.cpt]]></ReportletName>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand dir="0" leftParentDefault="false" left="E4"/>
+</C>
+<C c="3" r="4" s="4">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="PROJECT_SHORT_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="4" s="1">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="ORG_SHORT_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="4" s="6">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="PROJECT_MONEY_NOW"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="4" s="6">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="RECEIPTS_MONEY_NOW"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="4" s="6">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="PROJECT_COST_NOW"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="4" s="6">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="LOCK_COST_NOW"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="4" s="6">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="LOCKED_INVOICE_NOW"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="10" r="4" s="6">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="CAN_SQUARE_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="11" r="4" s="6">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="CAN_SQUARE_PROFIT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="12" r="4" s="7">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="CAN_SQUARE_TYPE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="5" cs="2">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[="打印日期：" + NOW()]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="8" cs="3">
+<O>
+<![CDATA[阶段结算定义：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="8">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="8">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="9">
+<O>
+<![CDATA[总收款为A]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="9">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="9" cs="2">
+<O>
+<![CDATA[总开票成本为B1]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="9">
+<O>
+<![CDATA[总发生成本为B2]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="9" cs="2">
+<O>
+<![CDATA[计划利润率为K (计划利润/项目运行额)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="10">
+<O>
+<![CDATA[总结算收入：X]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="10">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="10" cs="2">
+<O>
+<![CDATA[总结算成本：Y]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="10">
+<O>
+<![CDATA[总结算利润：Z]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="11" cs="8">
+<O>
+<![CDATA[阶段结算1：A*(1-K)<B1, 则X=A, Y=B1,Z=A-B1]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="12" cs="8">
+<O>
+<![CDATA[阶段结算2：B2>=A(1-K)>=B1, 则 X=A,Y=A(1-K), Z=A*K]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="13" cs="8">
+<O>
+<![CDATA[阶段结算3：A*(1-k)>B2，则 X=B2/(1-K), Y=B2, Z=B2/(1-K)-B2]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="14" cs="8">
+<O>
+<![CDATA[如果之前该项目进行过阶段结算，定义：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="15" cs="2">
+<O>
+<![CDATA[已结算运行额： O]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="15" cs="2">
+<O>
+<![CDATA[已结算成本：P]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="15" cs="2">
+<O>
+<![CDATA[已结算利润：Q]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="16">
+<O>
+<![CDATA[则当次结算额如下：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="16">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="16">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="16">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="16">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="17" cs="2">
+<O>
+<![CDATA[结算运行额:X-O]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="17" cs="2">
+<O>
+<![CDATA[结算成本：Y-P]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="17">
+<O>
+<![CDATA[结算利润：Z-Q]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="18">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="18">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="18">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="18">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="18">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="19">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="19">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="19">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="19">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="19">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="20">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="20">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="20">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="20">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="20">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="21">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="21">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="21">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="21">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="21">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="22">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="22">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="22">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="22">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="22">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="22">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="23">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="23">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="23">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="23">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="23">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="23">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="24">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="24">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="24">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="24">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="24">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="24">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="25">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="25">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="25">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="25">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="25">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="25">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="26">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="26">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="26">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="26">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="26">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="26">
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings isHorizontalCenterOnPage="true" headerHeight="0" footerHeight="0">
+<PaperSetting orientation="1">
+<PaperSize width="33912000" height="46411200"/>
+<Margin top="986400" left="720000" bottom="986400" right="720000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="128"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="1" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72" foreground="-16776961" underline="1"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commonquery version="1.1">
+    <querysql>
+        <daotype>prmpurchasereq-dao</daotype>
+        <daokey>package_common_query</daokey>
+        <needfilter>false</needfilter>
+    </querysql>
+    <defaultSort>package_no asc,create_time desc</defaultSort>
+    <conditions>
+        <JInt pos="A1:A1" cid="packageNo" fieldLabel_s="packageNo" field="package_no"/>
+        <JText pos="A2:A2" fieldLabel_s="packageName" cid="packageName" field="packageName"/>
+        <JText pos="A2:A2" fieldLabel_s="createBy" cid="createBy" field="create_By"/>
+    </conditions>
+    <!--<quickquery>-->
+        <!--<QueryCids>packageNo</QueryCids>-->
+        <!--<ForceQueryCids></ForceQueryCids>-->
+    <!--</quickquery>-->
+    <results>
+        <JHidden text_s="prmProjectMainId" dataIndex="prmProjectMainId" width_n="120"/>
+        <JHidden text_s="uuid" dataIndex="uuid" width_n="100" />
+        <JIntCol text_s="packageNo" dataIndex="packageNo" width_n="100" />
+        <JTextCol text_s="packageName" dataIndex="packageName" width_n="120"/>
+        <JDecCol text_s="packageBudgetMoney" dataIndex="costControlMoney" width_n="150"/>
+        <JDecCol text_s="lockedBudget" dataIndex="lockedBudget" width_n="150"/>
+        <JDecCol text_s="remainBudget" dataIndex="remainBudget" width_n="150"/>
+        <JHidden text_s="budgetCode" dataIndex="budgetCode" width_n="120"/>
+        <JTextCol text_s="budgetName" dataIndex="budgetName" width_n="120"/>
+        <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+    </results>
+</commonquery>

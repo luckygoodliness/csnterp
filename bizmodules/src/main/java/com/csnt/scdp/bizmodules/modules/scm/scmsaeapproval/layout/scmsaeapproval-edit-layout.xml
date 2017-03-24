@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JPanel col="1*1" pos="A1:A1" title_s="" row="115,23,flex" border_n="0">
+        <JFieldSet pos="A1:A1" col="1*1" row="flex" border_n="1" title_s="">
+            <JForm pos="A1:A1" cid="scmSaeApprovalDto"  row="23*4,flex" col="0.333*3" title_s="" border_n="1">
+                <JHidden cid="uuid"/>
+                <JHidden cid="tblVersion"/>
+                <JCombo pos="A1:A1" cid="curYear" fieldLabel_s="curYear" displayDesc_b="true" comboType="scdp_fmcode"
+                        codeType="CDM_YEAR" allowBlank_b="false" labelWidth_n="100" />
+                <JText pos="B1:C1" cid="title" fieldLabel_s="title" allowBlank_b="true"/>
+                <JCombo pos="A2:A2" cid="state" fieldLabel_s="state"
+                        comboType="scdp_fmcode" codeType="CDM_BILL_STATE" displayDesc_b="true" allowBlank_b="true"
+                        readOnly_b="true" adaptable_b="false"/>
+                <JText pos="B2:B2" cid="createBy" fieldLabel_s="createBy" allowBlank_b="true"/>
+                <JDatetime pos="C2:C2" cid="createTime" fieldLabel_s="createTime" allowBlank_b="true"/>
+                <JTextArea pos="A3:C4" cid="remark" fieldLabel_s="remark" allowBlank_b="true"/>
+            </JForm>
+        </JFieldSet>
+        <JPanel col="0.25*4" pos="A2:A2" title_s="" row="20" border_n="0">
+            <JCheck pos="D1:D1" cid="showAllDetail" fieldLabel_s="显示全部明细" labelWidth_n="100"/>
+        </JPanel>
+        <JFieldSet pos="A3:A3" col="0.495,0.010,0.495" row="flex" border_n="0" title_s="">
+            <JFieldSet pos="A1:A1" title_s="待审批供方" col="flex" row="flex" border_n="1">
+                <JEGrid pos="A1:A1" cid="scmSaeApprovalDDto" store="Scmsaeapproval.store.ScmSaeApprovalDStore">
+                    <JHidden text_s="supplierId" dataIndex="supplierId" width_n="120">
+                    </JHidden>
+                    <JTextCol text_s="supplierId" dataIndex="supplierName" width_n="120">
+                    </JTextCol>
+                    <JDecCol text_s="综合评分(年度+日常)" dataIndex="comprehensive" width_n="150">
+                    </JDecCol>
+                    <JComboCol text_s="supplierGenre" dataIndex="supplierGenre" width_n="120">
+                        <JCombo  cid="supplierGenre" allowBlank_b="true"
+                                comboType="scdp_fmcode"
+                                codeType="SCM_EVALUATION" displayDesc_b="true"/>
+                    </JComboCol>
+                    <JComboCol text_s="addFrom" dataIndex="addFrom" width_n="120">
+                        <JCombo  cid="addFrom" allowBlank_b="true" readOnly_b = "true"
+                                 comboType="scdp_fmcode"
+                                 codeType="SCM_ADD_FROM" displayDesc_b="true"/>
+                    </JComboCol>
+                </JEGrid>
+            </JFieldSet>
+            <JFieldSet pos="C1:C1" title_s="供方物料考评明细" col="flex" row="flex" border_n="1">
+                <JEGrid pos="A1:A1" cid="scmSaeObjectDto" store="Scmsaeapproval.store.ScmSaeObjectStore"
+                        withToolbar_b="false"  bcid="scmSaeApprovalDto.bind"  withSearchBar_b="true"
+                        searchFieldTips="物料科目" searchFilterCids="materialClassName" needFilter_b="true">
+                    <JTextCol text_s="materialType" dataIndex="materialClassName" width_n="200">
+                    </JTextCol>
+                    <JDecCol text_s="综合评分(年度)" dataIndex="comprehensive" width_n="80">
+                    </JDecCol>
+                </JEGrid>
+            </JFieldSet>
+        </JFieldSet>
+    </JPanel>
+
+</view>

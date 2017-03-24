@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JPanel pos="A1:A1" row="flex,25" col="0.1*10" title_s="附件信息" border_n="1">
+        <JEGrid pos="A1:J1" cid="cdmFileRelationDto" store="Cdmfile.store.CdmFileRelationStore"
+                withToolbar_b="false">
+            <JTextCol text_s="fileType" dataIndex="fileType" width_n="100"/>
+            <JTextCol text_s="fileName" dataIndex="fileName" width_n="200"/>
+            <JTextCol text_s="fileSize" dataIndex="convertedFileSize" width_n="120"/>
+            <JTextCol text_s="remark" dataIndex="remark" width_n="200"/>
+            <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+            <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+        </JEGrid>
+        <JButton pos="A2:A2" cid="fileDownload" text_s="附件下载" iconCls="file_download_icon" />
+    </JPanel>
+</view>

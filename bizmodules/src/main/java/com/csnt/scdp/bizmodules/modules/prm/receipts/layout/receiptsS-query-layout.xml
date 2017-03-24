@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>receipts-dao</daotype>
+        <daokey>pick_common_query</daokey>
+    </querysql>
+    <defaultSort>pre.create_time desc</defaultSort>
+    <conditions columns="4">
+        <JHidden pos="A1:A1" cid="prmProjectMainId" field="pre.prm_project_main_id"/>
+        <JProject pos="A1:B1" cid="projectName" fieldLabel_s="projectId"
+                      refer_j='[{"refField":"prmProjectMainId","valueField":"uuid"}]'/>
+        <JHidden cid="departmentCodeDesc"/>
+        <JErpDepartMent pos="C1:C1" fieldLabel_s="departmentCode" cid="departmentCode"
+                      field="pre.department_code"/>
+
+        <JHidden cid="prePayerDesc"/>
+        <JCustomer pos="D1:D1" cid="prePayer" valueField_s="uuid" displayField_s="customerName"
+                   field="pre.payer" displayDesc_b="true" fieldLabel_s="payer"/>
+
+        <JFromTo pos="A2:B2" subXtype="JDatetime" fieldLabel_s="actualDate" cid="actualDate" field="pre.actual_date"/>
+        <JCombo pos="C2:C2" cid="stateQ" fieldLabel_s="state" comboType="scdp_fmcode" codeType="FAD_BILL_STATE"
+                displayDesc_b="true" field="pre.state" multiSelect_b="true"/>
+    </conditions>
+    <results resultGridConfig="{'features':[{'ftype':'summary','dock':'bottom'}]}">
+        <JTextCol text_s="projectId" dataIndex="projectName" width_n="120"/>
+        <JTextCol text_s="projectCode" dataIndex="projectCode" width_n="100"/>
+        <JCurCol text_s="estimateMoney" dataIndex="estimateMoney" width_n="150" summaryType="sum"/>
+        <JCurCol text_s="actualMoney" dataIndex="actualMoney" width_n="150" summaryType="sum"/>
+        <JTextCol text_s="moneyType" dataIndex="moneyTypeDesc" width_n="120"/>
+        <JTextCol text_s="departmentCode" dataIndex="orgName" width_n="180"/>
+        <JTextCol text_s="payer" dataIndex="payerName" width_n="120"/>
+        <JTextCol text_s="customerId" dataIndex="customerName" width_n="120"/>
+        <JDatetimeCol text_s="estimateDate" dataIndex="estimateDate" width_n="150"/>
+        <JDatetimeCol text_s="actualDate" dataIndex="actualDate" width_n="150"/>
+        <!--<JTextCol text_s="prmUnknownReceiptsId" dataIndex="prmUnknownReceiptsId" width_n="120"/>-->
+        <JTextCol text_s="prmUnknownReceiptsId" dataIndex="receiptNo" width_n="120"/>
+        <JTextCol text_s="state" dataIndex="wfStatus" width_n="120"/>
+        <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+        <JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>
+        <JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>
+    </results>
+</commonquery>

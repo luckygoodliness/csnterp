@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>purchaseplan-dao</daotype>
+        <daokey>common_query_department</daokey>
+    </querysql>
+    <defaultSort>t1.establish_date desc</defaultSort>
+    <conditions columns="4">
+        <JHidden cid="uuidDesc"/>
+        <JHidden cid="departmentCode_queryDesc"/>
+        <JProject pos="A1:A1" cid="uuid" fieldLabel_s="projectName" field="t1.uuid"
+                      displayDesc_b="true" descField="projectName" valueField="uuid"/>
+        <JText pos="B1:B1" cid="projectCode" fieldLabel_s="projectCode" field="t1.project_code"/>
+        <JErpDepartMent pos="C1:C1" fieldLabel_s="departmentCode" cid="departmentCode_query"
+                      field="t1.contractor_office"/>
+
+        <JCombo pos="D1:D1" cid="state" fieldLabel_s="state" comboType="scdp_fmcode"
+                codeType="CDM_BILL_STATE" displayDesc_b="true" field="t1.purchase_plan_state"/>
+
+    </conditions>
+    <results>
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JTextCol text_s="projectName" dataIndex="projectName" width_n="400"></JTextCol>
+        <JTextCol text_s="projectCode" dataIndex="projectCode" width_n="120"></JTextCol>
+        <JTextCol text_s="stateNm" dataIndex="stateNm" width_n="120"/>
+        <JTextCol text_s="department" dataIndex="department" width_n="120"></JTextCol>
+
+        <JTextCol text_s="manager" dataIndex="manager" width_n="120"> </JTextCol>
+
+        <JTextCol text_s="customer" dataIndex="customer" width_n="120"> </JTextCol>
+
+        <JCurCol text_s="projectMoney" dataIndex="projectMoney" width_n="100"/>
+        <JBolCol text_s="isPreProject" dataIndex="isPreProject" width_n="100"/>
+    </results>
+</commonquery>

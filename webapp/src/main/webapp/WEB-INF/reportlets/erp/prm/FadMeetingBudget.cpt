@@ -1,0 +1,622 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20141222" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="FadMainDs" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="runningNo"/>
+<O>
+<![CDATA[ ]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT R.RUNNING_NO,
+    	  DECODE(R.IS_PROJECT, '1', M.PROJECT_NAME, R.SUBJECT_NAME) AS PROJECT_NAME,
+       DECODE(R.IS_PROJECT, '1', M.PROJECT_CODE, R.SUBJECT_CODE) AS PROJECT_CODE,
+       TO_CHAR(R.MEETING_START_TIME, 'YYYY-MM-DD') || '——' || TO_CHAR(R.MEETING_END_TIME, 'YYYY-MM-DD') AS MEETING_TIME,
+       '共  '||R.MEETING_DAYS||'  天' AS MEETING_DAYS,
+       R.MEETING_LOCATION,
+       R.MEETING_IN_PERSON_NUM,
+       R.MEETING_OUT_PERSON_NUM,
+       R.MEETING_SUBJECT
+  FROM FAD_CASH_REQ R
+  LEFT JOIN PRM_PROJECT_MAIN M
+    ON R.PROJECT_ID = M.UUID
+ WHERE R.RUNNING_NO = '${runningNo}'
+]]></Query>
+</TableData>
+<TableData name="FadDetail" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="runningNo"/>
+<O>
+<![CDATA[ ]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT ROWNUM AS SEQ, B.BUDGET_SUBJECT_CODE, B.BUDGET_MONEY
+  FROM FAD_CASH_REQ R, FAD_CASH_REQ_BUDGET B
+ WHERE R.UUID = B.FAD_CASH_REQ_UUID
+   AND R.RUNNING_NO = '${runningNo}'
+ ORDER BY B.SEQ_NO]]></Query>
+</TableData>
+<TableData name="ApproveInfo" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="runningNo"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT AHT.NAME_ AS 角色名称,
+       (SELECT U.USER_NAME FROM SCDP_USER U WHERE U.USER_ID = AHT.ASSIGNEE_) AS 审批人,
+       TO_CHAR(AHT.END_TIME_, 'yyyy-mm-dd hh24:mi:ss') AS 审批日期
+  FROM ACT_HI_PROCINST AH, ACT_HI_TASKINST AHT
+ WHERE AH.PROC_INST_ID_ = AHT.PROC_INST_ID_
+   AND AH.BUSINESS_KEY_ = (SELECT F.UUID
+                             FROM FAD_CASH_REQ F
+                            WHERE F.RUNNING_NO = '${runningNo}')
+ ORDER BY AHT.START_TIME_]]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[2133600,990600,1440000,1440000,1440000,720000,723900,1440000,1440000,1440000,1440000,1143000,952500,723900,1113120,1219200,1028700,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[1905000,1371600,1524000,2590800,3962400,3771900,3048000,2514600,3390900,2743200,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="0" cs="9" s="0">
+<O>
+<![CDATA[会务开支预算表]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" cs="9" s="1">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="2" cs="3" s="2">
+<O>
+<![CDATA[项目名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="2" cs="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="FadMainDs" columnName="PROJECT_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="2" cs="2" s="3">
+<O>
+<![CDATA[项目代号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="2" cs="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="FadMainDs" columnName="PROJECT_CODE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="3" cs="3" s="5">
+<O>
+<![CDATA[会务时间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="3" cs="3" s="6">
+<O t="DSColumn">
+<Attributes dsName="FadMainDs" columnName="MEETING_TIME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="3" cs="3" s="7">
+<O t="DSColumn">
+<Attributes dsName="FadMainDs" columnName="MEETING_DAYS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="4" cs="3" s="5">
+<O>
+<![CDATA[会务地点]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="4" cs="6" s="8">
+<O t="DSColumn">
+<Attributes dsName="FadMainDs" columnName="MEETING_LOCATION"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="5" cs="3" s="9">
+<O>
+<![CDATA[ 参加会议]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="5" cs="2" rs="2" s="10">
+<O t="DSColumn">
+<Attributes dsName="FadMainDs" columnName="MEETING_IN_PERSON_NUM"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="5" cs="2" s="1">
+<O>
+<![CDATA[参加会议]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="5" cs="2" rs="2" s="8">
+<O t="DSColumn">
+<Attributes dsName="FadMainDs" columnName="MEETING_OUT_PERSON_NUM"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="6" cs="3" s="9">
+<O>
+<![CDATA[本单位人数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="6" cs="2" s="11">
+<O>
+<![CDATA[外单位人数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="7" cs="2" s="5">
+<O>
+<![CDATA[序号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="7" cs="4" s="10">
+<O>
+<![CDATA[预 算 项 目]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="7" cs="3" s="8">
+<O>
+<![CDATA[预 算 金 额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="8" cs="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="FadDetail" columnName="SEQ"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="8" cs="4" s="10">
+<O t="DSColumn">
+<Attributes dsName="FadDetail" columnName="BUDGET_SUBJECT_CODE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="8" cs="3" s="12">
+<O t="DSColumn">
+<Attributes dsName="FadDetail" columnName="BUDGET_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="9" cs="2" s="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="9" cs="4" s="10">
+<O>
+<![CDATA[合  计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="9" cs="3" s="12">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(H9)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="10" cs="2" s="5">
+<O>
+<![CDATA[会务议题]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="10" cs="7" s="8">
+<O t="DSColumn">
+<Attributes dsName="FadMainDs" columnName="MEETING_SUBJECT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="11" cs="2" rs="2" s="5">
+<O>
+<![CDATA[审批]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="11" cs="2" s="10">
+<O>
+<![CDATA[角色名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="11" cs="2" s="10">
+<O>
+<![CDATA[审批人]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="11" cs="3" s="8">
+<O>
+<![CDATA[审批时间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="12" cs="2" s="10">
+<O t="DSColumn">
+<Attributes dsName="ApproveInfo" columnName="角色名称"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="12" cs="2" s="10">
+<O t="DSColumn">
+<Attributes dsName="ApproveInfo" columnName="审批人"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="12" cs="3" s="8">
+<O t="DSColumn">
+<Attributes dsName="ApproveInfo" columnName="审批日期"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="13" s="13">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="13" s="13">
+<PrivilegeControl/>
+</C>
+<C c="3" r="13" s="13">
+<PrivilegeControl/>
+</C>
+<C c="4" r="13" s="13">
+<PrivilegeControl/>
+</C>
+<C c="5" r="13" s="13">
+<PrivilegeControl/>
+</C>
+<C c="6" r="13" s="13">
+<PrivilegeControl/>
+</C>
+<C c="7" r="13" s="13">
+<PrivilegeControl/>
+</C>
+<C c="8" r="13" s="13">
+<PrivilegeControl/>
+</C>
+<C c="9" r="13" s="13">
+<PrivilegeControl/>
+</C>
+<C c="1" r="14" s="14">
+<O>
+<![CDATA[注：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="14" cs="8" s="15">
+<O>
+<![CDATA[1、本表一式二份，一份请款时送财务部，一份留存。]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="15" s="16">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="15" cs="8" s="16">
+<O>
+<![CDATA[2、报销时将留存的一份连同单据一凭送财务部进行核实报账。]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="16" s="16">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="16" cs="8" s="17">
+<O>
+<![CDATA[3、此预算表只限于一次会议，一个会议地点，一张会务发票的相关费用。]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting>
+<Margin top="2880000" left="864000" bottom="2880000" right="864000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" vertical_alignment="3" imageLayout="1">
+<FRFont name="楷体" style="1" size="136"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="2"/>
+<Bottom style="1"/>
+<Left style="2"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="2"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="2"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="2"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="2"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Right style="2"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="2"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Left style="2"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="2"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="2"/>
+</Border>
+</Style>
+<Style vertical_alignment="3" imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="2" vertical_alignment="3" imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style vertical_alignment="1" imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

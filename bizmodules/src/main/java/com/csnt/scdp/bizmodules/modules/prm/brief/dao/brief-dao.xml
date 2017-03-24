@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select * from prm_brief where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+
+    <common_query_department>
+        <common>
+            <![CDATA[select     b.uuid,
+                                b.prm_project_main_id,
+                                b.prm_weekly_id,
+                                b.type,
+                                b.content,
+                                b.state,
+                                b.company_code,
+                                b.project_id,
+                                b.department_code,
+                                b.create_by,
+                                b.create_time,
+                                b.update_by,
+                                b.update_time,
+                                b.loc_timezone,
+                                b.tbl_version,
+                                b.is_void,
+                                o.org_name,
+                                (select a.project_name  from (select ppm.*,pc.contract_name
+                                                                from prm_project_main ppm
+                                                                 left join PRM_CONTRACT  pc
+                                                               on ppm.prm_contract_id = pc.uuid ) a
+                                where a.uuid=b.prm_project_main_id) as project_name,
+                                (SELECT CODE_DESC
+                                    FROM SCDP_CODE A
+                                     WHERE A.CODE_TYPE = 'PRM_BRIEF_TYPE'
+                                   AND A.SYS_CODE = b.type) AS PRM_BRIEF_TYPE_COMBO
+                        from   prm_brief b left join scdp_org o
+                        on     b.department_code = o.org_code
+                        where 1=1 and ${conditions}]]>
+        </common>
+    </common_query_department>
+</DAO>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select * from prm_meeting_summary where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+
+    <common_query_department>
+        <common>
+            <![CDATA[select     m.uuid,
+                                m.prm_project_main_id,
+                                m.prm_weekly_id,
+                                m.begin_date,
+                                m.end_date,
+                                m.meeting_location,
+                                m.meeting_persons,
+                                m.customer_id,
+                                m.content,
+                                m.work_plan,
+                                m.state,
+                                m.company_code,
+                                m.project_id,
+                                m.department_code,
+                                m.create_by,
+                                m.create_time,
+                                m.update_by,
+                                m.update_time,
+                                m.loc_timezone,
+                                m.tbl_version,
+                                m.is_void,
+                               o.org_name,
+                               (select a.project_name  from (select ppm.*,pc.contract_name
+                                                                from prm_project_main ppm
+                                                                 left join PRM_CONTRACT  pc
+                                                               on ppm.prm_contract_id = pc.uuid ) a
+                                where a.uuid=m.prm_project_main_id) as project_name
+                        from   prm_meeting_summary m
+                        left join scdp_org o
+                        on     m.department_code = o.org_code
+                        where 1=1 and ${conditions}]]>
+        </common>
+    </common_query_department>
+</DAO>

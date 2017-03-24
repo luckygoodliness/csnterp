@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="200" col="1*1">
+    <!--<JTab pos="A1:A1" row="flex" col="1*1" border_n="1">-->
+    <JFieldSet pos="A1:A1" row="25,flex" col="1" title_s="" border_n="0" autoExpand_b="true">
+        <JForm pos="A1:A1" cid="scmContractDetailDto" row="23*1" col="0.25*4" title_s="" border_n="0">
+            <JHidden cid="uuid"/>
+            <JHidden cid="tblVersion"/>
+            <JText pos="A1:A1" fieldLabel_s="materialName" cid="materialName" allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+            <JText pos="B1:B1" fieldLabel_s="model" cid="model" allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+            <!--<JText pos="C1:C1" fieldLabel_s="units" cid="cdmUnitCombo" allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>-->
+            <JDec pos="C1:C1" fieldLabel_s="amount" cid="amount" allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+        </JForm>
+        <JFieldSet pos="A2:A2" title_s="到货确认记录" col="1*1" row="flex" border_n="1" autoExpand_b="true">
+            <JEGrid pos="A1:A1" cid="prmGoodsArrivalDto" store="Goodsarrival.store.PrmGoodsArrivalStore" autoExpand_b="true">
+                <JTextCol text_s="materialName" dataIndex="materialName" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="model" dataIndex="model" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="units" dataIndex="units" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JDecCol text_s="到货数量" dataIndex="amount" width_n="150">
+                    <JDec allowBlank_b="true" minValue_n="0.00"/>
+                </JDecCol>
+                <JTextCol text_s="quality" dataIndex="quality" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JDateCol text_s="arriveDate" dataIndex="arriveDate" width_n="150">
+                    <JDate allowBlank_b="true"/>
+                </JDateCol>
+                <JTextCol text_s="registrant" dataIndex="registrantName" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="remark" dataIndex="remark" width_n="300">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+            </JEGrid>
+        </JFieldSet>
+    </JFieldSet>
+</view>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>scmcontractchange-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JHidden cid="officeId_queryDesc"/>
+        <JHidden cid="supplierCode"  field="SUPPLIER_CODE"/>
+        <JText pos="A1:A1" cid="scmContractCode" fieldLabel_s="scmContractId" allowBlank_b="true" field="contractname"/>
+        <JText pos="B1:B1" cid="fadSubjectCode" fieldLabel_s="fadSubjectCode" allowBlank_b="true" field="fad_Subject_Code"/>
+        <JErpDepartMent pos="C1:C1" fieldLabel_s="officeName" cid="officeId_query"
+                        multiSelect_b="false" field="office_id"/>
+        <JSupplierGrid pos="D1:D1" fieldLabel_s="supplierName" cid="supplierName_query"
+                       refer_j='[{"refField":"supplierCode","valueField":"uuid"}]'/>
+        <JText pos="A2:A2" cid="changeRange" fieldLabel_s="幅度高于（%）" allowBlank_b="true" field="change_Range"/>
+        <JCombo pos="B2:B2" cid="state_query" fieldLabel_s="state" field="state" allowBlank_b="true"
+                                                                              comboType="scdp_fmcode"
+                                                                              codeType="CDM_BILL_STATE" displayDesc_b="true"/>
+        <JCombo pos="C2:C2" cid="closeChange" fieldLabel_s="closeChange" field="close_Change" allowBlank_b="true"
+                comboType="scdp_fmcode"
+                codeType="CDM_YES_OR_NO" displayDesc_b="true"/>
+        <JCombo pos="D2:D2" fieldLabel_s="contractNatureName" allowBlank_b="true" cid="contract_nature_query"
+                comboType="scdp_fmcode"
+                codeType="SCM_CONTRACT_NATURE" displayDesc_b="true" field="contract_nature"/>
+        <JFromTo pos="A3:B3" subXtype="JDatetime" fieldLabel_s="createTime" cid="createTime" field="create_time"/>
+    </conditions>
+    <results resultGridConfig="{'autoResizeColumn':false}">
+        <JTextCol text_s="runningNo" dataIndex="runningNo" width_n="120"/>
+        <JTextCol text_s="scmContractId" dataIndex="contractname" width_n="80"/>
+        <JTextCol text_s="fadSubjectCode" dataIndex="fadSubjectCode" width_n="100"/>
+        <JTextCol text_s="projectName" dataIndex="fadSubjectName" width_n="180"/>
+        <JTextCol text_s="supplierName" dataIndex="supplierName" width_n="180"/>
+        <JTextCol text_s="officeName" dataIndex="officeName" align="center" width_n="60"/>
+        <JTextCol text_s="contractNatureName" dataIndex="contractNatureName" align="center" width_n="80"/>
+        <JCurCol text_s="originalValue" dataIndex="originalValue" width_n="100"/>
+        <JCurCol text_s="newValue" dataIndex="newValue" width_n="100"/>
+        <JTextCol text_s="changeRange" dataIndex="changeRange" align="center" width_n="80"/>
+        <JTextCol text_s="closeChange" dataIndex="closeChangeCombo" align="center" width_n="100"/>
+        <JTextCol text_s="state" dataIndex="stateName" align="center" width_n="80"/>
+        <JTextCol text_s="changeReason" dataIndex="changeReason" width_n="400"/>
+        <JTextCol text_s="createBy" dataIndex="createBy" width_n="130"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="130"/>
+    </results>
+</commonquery>

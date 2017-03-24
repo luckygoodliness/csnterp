@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+         version="3.0">
+
+    <display-name>Smart Cloud Development Platform</display-name>
+
+    <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
+        <welcome-file>index.htm</welcome-file>
+        <welcome-file>index.jsp</welcome-file>
+        <welcome-file>default.html</welcome-file>
+        <welcome-file>default.htm</welcome-file>
+        <welcome-file>default.jsp</welcome-file>
+    </welcome-file-list>
+
+    <!-- 定义Spring监听器，加载Spring  -->
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath*:/applicationContext*.xml</param-value>
+    </context-param>
+
+    <!-- Spring Profile placeholder -->
+    <context-param>
+        <param-name>spring.profiles.default</param-name>
+        <param-value>tomcat</param-value>
+    </context-param>
+    <!-- end of Spring Profile placeholder -->
+
+    <listener>
+        <listener-class>com.csnt.scdp.framework.listener.InitServletContextListener</listener-class>
+    </listener>
+
+    <servlet>
+        <servlet-name>scdp-dispatcher</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath*:scdp-dispatcher.xml</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>scdp-dispatcher</servlet-name>
+        <url-pattern>*.action</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>CXFServlet</servlet-name>
+        <servlet-class>org.apache.cxf.transport.servlet.CXFServlet</servlet-class>
+        <load-on-startup>2</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CXFServlet</servlet-name>
+        <url-pattern>/services/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ViewImg</servlet-name>
+        <servlet-class>com.csnt.scdp.sysmodules.modules.sys.workflow.action.ViewWorkFlow</servlet-class>
+        <load-on-startup>3</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ViewImg</servlet-name>
+        <url-pattern>/ViewImg</url-pattern>
+    </servlet-mapping>
+    <!-- DO NOT CHANGE THE URL-PATTERN OR SERVLET NAME-->
+    <servlet>
+        <servlet-name>ReportServlet</servlet-name>
+        <servlet-class>com.fr.web.ReportServlet</servlet-class>
+        <load-on-startup>3</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ReportServlet</servlet-name>
+        <url-pattern>/ReportServer</url-pattern>
+    </servlet-mapping>
+
+    <filter>
+        <filter-name>encodingFilter</filter-name>
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+        <init-param>
+            <param-name>forceEncoding</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>
+    <!-- encoding filter for jsp page -->
+    <filter-mapping>
+        <filter-name>encodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <!--gziped file filter -->
+    <filter>
+        <filter-name>gzipedFileFilter</filter-name>
+        <filter-class>com.csnt.scdp.framework.filters.GzipedFileFilter</filter-class>
+        <init-param>
+            <param-name>headers</param-name>
+            <param-value>Content-Encoding=gzip</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>gzipedFileFilter</filter-name>
+        <url-pattern>*.jsgz</url-pattern>
+        <url-pattern>*.cssgz</url-pattern>
+    </filter-mapping>
+
+    <!--<filter>-->
+    <!--<filter-name>cachefilter</filter-name>-->
+    <!--<filter-class>com.bc.csdp.framework.filters.CacheFilter</filter-class>-->
+    <!--</filter>-->
+    <!--<filter>-->
+    <!--<filter-name>accesscheck</filter-name>-->
+    <!--<filter-class>AccessCheckFilter</filter-class>-->
+    <!--</filter>-->
+
+    <!-- 添加对struts2的支持 -->
+    <!--<filter>-->
+    <!--<filter-name>struts2</filter-name>-->
+    <!--<filter-class>org.apache.struts2.dispatcher.ng.filter.StrutsPrepareAndExecuteFilter</filter-class>-->
+    <!--</filter>-->
+
+    <!--<filter-mapping>-->
+    <!--<filter-name>struts2</filter-name>-->
+    <!--<url-pattern>/*</url-pattern>-->
+    <!--</filter-mapping>-->
+
+    <mime-mapping>
+        <extension>css</extension>
+        <mime-type>text/css</mime-type>
+    </mime-mapping>
+    <mime-mapping>
+        <extension>cssgz</extension>
+        <mime-type>text/css</mime-type>
+    </mime-mapping>
+    <mime-mapping>
+        <extension>js</extension>
+        <mime-type>text/javascript</mime-type>
+    </mime-mapping>
+    <mime-mapping>
+        <extension>jsgz</extension>
+        <mime-type>text/javascript</mime-type>
+    </mime-mapping>
+    <mime-mapping>
+        <extension>doc</extension>
+        <mime-type>application/msword</mime-type>
+    </mime-mapping>
+    <mime-mapping>
+        <extension>xls</extension>
+        <mime-type>application/msexcel</mime-type>
+    </mime-mapping>
+    <mime-mapping>
+        <extension>pdf</extension>
+        <mime-type>application/pdf</mime-type>
+    </mime-mapping>
+
+    <session-config>
+        <session-timeout>1</session-timeout>
+    </session-config>
+</web-app>

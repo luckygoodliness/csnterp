@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[SELECT * FROM (SELECT SC.SCM_CONTRACT_CODE AS CONTRACTNAME,
+                               DECODE(NVL(SC.IS_PROJECT, 0), 0, SC.SUBJECT_CODE, P.PROJECT_CODE) AS fad_Subject_Code,
+                               NVL(P.PROJECT_NAME,
+                                   (SELECT N.FINANCIAL_SUBJECT
+                                      FROM NON_PROJECT_SUBJECT_SUBJECT N
+                                     WHERE N.FINANCIAL_SUBJECT_CODE = SC.SUBJECT_CODE)) AS fad_Subject_NAME,
+                               SC.SUPPLIER_CODE,
+                               SC.SUPPLIER_NAME,
+                               SC.OFFICE_ID,
+                               NVL(SO.SHORT_CODE, SO.ORG_NAME) OFFICE_NAME,
+                               DECODE(SC.CONTRACT_NATURE, 0, '采购', 1, '外协', '未知') AS CONTRACT_NATURE_NAME,
+                               SC.CONTRACT_NATURE,
+                               T.STATE,
+                               (SELECT B.CODE_DESC
+                                  FROM SCDP_CODE B
+                                 WHERE B.CODE_TYPE = 'CDM_BILL_STATE'
+                                   AND B.SYS_CODE = T.STATE) AS STATE_NAME,
+                               (SELECT C.CODE_DESC
+                                  FROM SCDP_CODE C
+                                 WHERE C.CODE_TYPE = 'CDM_YES_OR_NO'
+                                   AND C.SYS_CODE = T.CLOSE_CHANGE) AS CLOSE_CHANGE_COMBO,
+                               T.UUID,
+                               T.SCM_CONTRACT_ID,
+                               T.ORIGINAL_VALUE,
+                               T.NEW_VALUE,
+                               ROUND(DECODE(NVL(T.ORIGINAL_VALUE, 0),
+                                            0,
+                                            0,
+                                            (T.NEW_VALUE - T.ORIGINAL_VALUE) / T.ORIGINAL_VALUE) * 100,
+                                     2) AS CHANGE_RANGE,
+                               T.CHANGE_REASON,
+                               T.REMARK,
+                               T.COMPANY_CODE,
+                               SU.USER_NAME AS CREATE_BY,
+                               T.CREATE_TIME,
+                               T.UPDATE_BY,
+                               T.UPDATE_TIME,
+                               T.LOC_TIMEZONE,
+                               T.PROJECT_ID,
+                               T.DEPARTMENT_CODE,
+                               T.TBL_VERSION,
+                               T.IS_VOID,
+                               T.CLOSE_CHANGE,
+                               T.RUNNING_NO
+                          FROM SCM_CONTRACT_CHANGE T
+                          LEFT JOIN SCM_CONTRACT SC ON T.SCM_CONTRACT_ID = SC.UUID
+                          LEFT JOIN PRM_PROJECT_MAIN P ON SC.PROJECT_ID = P.UUID
+                          LEFT JOIN SCDP_ORG SO ON SO.ORG_CODE = SC.OFFICE_ID
+                          LEFT JOIN SCDP_USER SU ON SU.USER_ID = T.CREATE_BY)T
+                     WHERE ${conditions} and ${selfconditions}]]>
+        </common>
+    </common_query>
+    <!-- 查询uuids中是否存在已经审核通过的数据-->
+    <if_have_approved_record_query>
+        <common>
+            SELECT 1 FROM SCM_CONTRACT_CHANGE WHERE STATE = '2' AND UUID IN (?)
+        </common>
+    </if_have_approved_record_query>
+</DAO>

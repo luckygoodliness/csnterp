@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>card-dao</daotype>
+        <daokey>common_query_transfer</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JHidden cid="officeIdDesc"/>
+        <JText pos="A1:A1" fieldLabel_s="cardCode" cid="cardCode" field="card_code"/>
+        <JText pos="B1:B1" fieldLabel_s="assetCode" cid="assetCode" field="asset_code"/>
+        <JText pos="C1:C1" fieldLabel_s="assetName" cid="assetName" field="asset_name"/>
+        <JCombo pos="D1:D1" fieldLabel_s="deviceType" cid="deviceType" comboType="scdp_fmcode"
+                codeType="ASSET_CARD_DEVICETYPE" displayDesc_b="true" field="device_type" multiSelect_b="true"/>
+        <JErpDepartMent pos="A2:A2" fieldLabel_s="officeId" cid="officeId"
+                        field="office_id"/>
+
+        <JText pos="B2:B2" fieldLabel_s="endUserName" cid="endUserName" field="end_user_name"/>
+        <!--<JCombo pos="C2:C2" cid="status" fieldLabel_s="status" comboType="scdp_fmcode" codeType="ASSET_CARD_STATE"
+                field="status" displayDesc_b="true"/>-->
+        <JCombo pos="C2:C2" cid="state" fieldLabel_s="state" comboType="scdp_fmcode" codeType="CDM_BILL_STATE"
+                displayDesc_b="true" field="state"/>
+        <!--<JFromTo pos="A3:B3" subXtype="JDatetime" fieldLabel_s="createTime" cid="createTime" field="create_time"/>
+        <JFromTo pos="C3:D3" subXtype="JDatetime" fieldLabel_s="updateTime" cid="updateTime" field="update_time"/>-->
+    </conditions>
+    <results>
+        <JTextCol text_s="cardCode" dataIndex="cardCode" width_n="120"/>
+        <JTextCol text_s="assetCode" dataIndex="assetCode" width_n="120"/>
+        <JTextCol text_s="assetName" dataIndex="assetName" width_n="120"/>
+        <JTextCol text_s="state" dataIndex="stateDesc" width_n="80"/>
+        <JTextCol text_s="deviceType" dataIndex="deviceTypeDesc" width_n="100"/>
+        <JTextCol text_s="specification" dataIndex="specification" width_n="80"/>
+        <JTextCol text_s="model" dataIndex="model" width_n="80"/>
+        <JTextCol text_s="unit" dataIndex="unit" width_n="80"/>
+        <JTextCol text_s="storeplace" dataIndex="storeplace" width_n="80"/>
+        <JTextCol text_s="status" dataIndex="statusDesc" width_n="80"/>
+
+        <JTextCol text_s="officeId" dataIndex="officeIdDesc" width_n="100"/>
+        <JTextCol text_s="endUserName" dataIndex="endUserName" width_n="100"/>
+        <JTextCol text_s="liablePerson" dataIndex="liablePersonDesc" width_n="100"/>
+        <JDateCol text_s="purchaseTime" dataIndex="purchaseTime" width_n="130"/>
+        <JDateCol text_s="discardTime" dataIndex="discardTime" width_n="130"/>
+        <JIntCol text_s="limitMonth" dataIndex="limitMonth" width_n="100"/>
+        <JCurCol text_s="localValue" dataIndex="localValue" width_n="80"/>
+        <JCurCol text_s="monthDepreciation" dataIndex="monthDepreciation" width_n="80"/>
+        <JCurCol text_s="netValue" dataIndex="netValue" width_n="80"/>
+        <JTextCol text_s="factoryName" dataIndex="factoryName" width_n="120"/>
+        <JDateCol text_s="releaseDate" dataIndex="releaseDate" width_n="120"/>
+
+        <JTextCol text_s="identificationNumber" dataIndex="identificationNumber" width_n="120"/>
+        <JTextCol text_s="buildingProperty" dataIndex="buildingProperty" width_n="100"/>
+        <JCurCol text_s="area" dataIndex="area" width_n="100"/>
+        <JTextCol text_s="chassisNumber" dataIndex="chassisNumber" width_n="100"/>
+        <JTextCol text_s="vehicleNumber" dataIndex="vehicleNumber" width_n="100"/>
+        <JTextCol text_s="vehicleType" dataIndex="vehicleType" width_n="100"/>
+        <JTextCol text_s="authorizationCode" dataIndex="authorizationCode" width_n="80"/>
+        <JDateCol text_s="checkedDate" dataIndex="checkedDate" width_n="120"/>
+        <JDateCol text_s="validDate" dataIndex="validDate" width_n="120"/>
+        <JDateCol text_s="annualCheckExpiredDate" dataIndex="annualCheckExpiredDate" width_n="120"/>
+        <JDateCol text_s="insuranceExpiredDate" dataIndex="insuranceExpiredDate" width_n="120"/>
+        <JTextCol text_s="accessory" dataIndex="accessory" width_n="120"/>
+        <JTextCol text_s="source" dataIndex="source" width_n="100"/>
+        <JTextCol text_s="createBy" dataIndex="createBy" width_n="100"/>
+        <JDateCol text_s="createTime" dataIndex="createTime" width_n="120"/>
+        <JTextCol text_s="updateBy" dataIndex="updateBy" width_n="100"/>
+        <JDateCol text_s="updateTime" dataIndex="updateTime" width_n="120"/>
+    </results>
+</commonquery>

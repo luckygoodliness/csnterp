@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>fadsupplieradjust-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="3">
+        <JSupplierGrid pos="A1:A1" fieldLabel_s="supplierName" cid="supplierName" field="SUPPLIER_NAME"
+                       valueField="completeName" descField="completeName"/>
+        <JText pos="B1:B1" cid="projectCode" fieldLabel_s="projectCode" field="PROJECT_CODE" allowBlank_b="true"/>
+        <JText pos="C1:C1" cid="projectName" fieldLabel_s="projectName" field="PROJECT_NAME" allowBlank_b="true"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="supplierName" dataIndex="supplierName" width_n="120"/>
+        <JTextCol text_s="projectCode" dataIndex="projectCode" width_n="120"/>
+        <JTextCol text_s="projectName" dataIndex="projectName" width_n="120"/>
+        <JCurCol text_s="ajustMoney" dataIndex="ajustMoney" width_n="150"/>
+        <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+        <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+        <JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>
+        <JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>
+    </results>
+</commonquery>

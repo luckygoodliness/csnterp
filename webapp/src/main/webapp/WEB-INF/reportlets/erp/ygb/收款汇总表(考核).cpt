@@ -1,0 +1,1327 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="年度计划" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="year"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--年度计划
+SELECT O.*,OP.*, NVL(O.SHORT_CODE, O.ORG_NAME) AS ORG_SHORT
+  FROM SCDP_ORG O
+  LEFT JOIN (SELECT C.*
+               FROM OPERATE_COMPANY_PLAN_H H, OPERATE_COMPANY_PLAN_C C
+              WHERE H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+                AND H.START_YEAR = '${year}') OP
+    ON O.ORG_CODE = OP.OBJECT_ID
+ WHERE (SELECT R.EXPAND_VALUE
+          FROM SCDP_EXPAND_ROW R
+         WHERE R.EXPAND_CODE = 'DEPT_PROP'
+           AND R.DATA_UUID = O.UUID) = '事业部'
+   AND ('${officeId}' IS NULL OR O.ORG_CODE = '${officeId}')
+ ORDER BY O.SEQ_NO ASC]]></Query>
+</TableData>
+<TableData name="当年记录" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="year"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="build_region"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="affiliated_institutions"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--当年记录
+SELECT O.ORG_CODE,R.IS_INTERNAL,
+       R.ACTUAL_MONEY / 10000 AS ACTUAL_MONEY,
+       TO_DATE(TO_CHAR(R.EXAM_DATE,'YYYY/MM/DD'),'YYYY/MM/DD') EXAM_DATE,
+       TO_DATE(TO_CHAR(R.ACTUAL_DATE,'YYYY/MM/DD'),'YYYY/MM/DD') ACTUAL_DATE,
+       
+       TO_NUMBER(TO_CHAR(R.EXAM_DATE,'YYYYMMDD')) EXAM_STR,
+       TO_NUMBER(TO_CHAR(R.ACTUAL_DATE,'YYYYMMDD')) ACTUAL_STR
+   FROM
+   SCDP_ORG O
+   
+   INNER JOIN
+   (
+                SELECT
+                *
+                FROM
+                SCDP_EXPAND_ROW
+                WHERE
+                EXPAND_CODE = 'DEPT_PROP'
+                AND
+                EXPAND_VALUE = '事业部'
+   ) OE
+  ON O.UUID = OE.DATA_UUID
+  
+  LEFT JOIN
+  (
+                SELECT
+                PM.CONTRACTOR_OFFICE,
+                PR.ACTUAL_MONEY,
+                PR.ACTUAL_DATE,
+                PR.EXAM_DATE,
+                NVL(PR.IS_INTERNAL, 0) IS_INTERNAL
+                FROM
+                PRM_RECEIPTS PR
+                
+                LEFT JOIN
+                PRM_PROJECT_MAIN PM
+                ON PR.PRM_PROJECT_MAIN_ID = PM.UUID
+                
+                WHERE PR.STATE IN ('8', '4', '2')
+                
+                AND
+                (
+                  PR.EXAM_DATE BETWEEN
+                  TO_DATE('${DATE(year,1,1)}', 'yyyy-MM-dd')
+                  AND
+                  TO_DATE('${DATE(year,12,31)} 23:59:59','yyyy-MM-dd hh24:mi:ss')
+                )
+                
+                AND('${build_region}' IS NULL OR
+                   (EXISTS (SELECT 1
+                               FROM PRM_CONTRACT C
+                               LEFT JOIN PRM_CONTRACT_DETAIL CD
+                                 ON C.UUID = CD.PRM_CONTRACT_ID
+                                WHERE CD.PRM_PROJECT_MAIN_ID = PR.PRM_PROJECT_MAIN_ID
+                                AND C.BUILD_REGION = '${build_region}')))
+                AND ('${affiliated_institutions}' IS NULL OR
+                   (EXISTS
+                    (SELECT 1
+                        FROM PRM_CONTRACT C
+                        LEFT JOIN PRM_CONTRACT_DETAIL CD
+                          ON C.UUID = CD.PRM_CONTRACT_ID
+                         WHERE CD.PRM_PROJECT_MAIN_ID = PR.PRM_PROJECT_MAIN_ID
+                         AND C.AFFILIATED_INSTITUTIONS = '${affiliated_institutions}')))
+  ) R
+ ON O.ORG_CODE = R.CONTRACTOR_OFFICE
+ 
+ ORDER BY O.SEQ_NO]]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR F="2" T="4"/>
+<FR F="6" T="6"/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1440000,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[1828800,0,4533900,3168000,4038600,0,0,3168000,0,0,3168000,3886200,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" cs="13" s="0">
+<O>
+<![CDATA[项目收款汇总表(考核)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" cs="13" s="1">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[="当前年月：" + year + "年" + month + "月"]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="2" cs="13" s="2">
+<O>
+<![CDATA[单位：万元]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="3" rs="2" s="3">
+<O>
+<![CDATA[序号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="3" rs="2" s="4">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="3" rs="2" s="3">
+<O>
+<![CDATA[部门]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="3" s="3">
+<O>
+<![CDATA[月前]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="3" s="3">
+<O>
+<![CDATA[本月]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="3" s="3">
+<O>
+<![CDATA[结转]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="3" s="3">
+<O>
+<![CDATA[结转]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="3" s="3">
+<O>
+<![CDATA[上年结转]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="3" s="3">
+<O>
+<![CDATA[修正]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="3" s="3">
+<O>
+<![CDATA[修正]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="3" s="3">
+<O>
+<![CDATA[本年]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="3" rs="2" s="3">
+<O>
+<![CDATA[计划收款额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="3" rs="2" s="3">
+<O>
+<![CDATA[完成率]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="4" s="3">
+<O>
+<![CDATA[金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="4" s="3">
+<O>
+<![CDATA[金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="4" s="3">
+<O>
+<![CDATA[金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="4" s="3">
+<O>
+<![CDATA[金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="4" s="3">
+<O>
+<![CDATA[金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="4" s="3">
+<O>
+<![CDATA[金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="4" s="3">
+<O>
+<![CDATA[金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="4" s="3">
+<O>
+<![CDATA[金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="5" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=seq()]]></Attributes>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[隔行变色]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[$$$ % 2 = 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Scope val="1"/>
+<Background name="ColorBackground" color="-1774601"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand leftParentDefault="false" left="B6"/>
+</C>
+<C c="1" r="5" s="5">
+<O t="DSColumn">
+<Attributes dsName="年度计划" columnName="ORG_CODE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="5" s="6">
+<O t="DSColumn">
+<Attributes dsName="年度计划" columnName="ORG_SHORT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="网络报表1">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=B6]]></Attributes>
+</O>
+</Parameter>
+</Parameters>
+<TargetFrame>
+<![CDATA[_blank]]></TargetFrame>
+<Features width="600" height="400"/>
+<ReportletName extendParameters="true" showPI="true" byPost="true">
+<![CDATA[/erp/prm/部门收款明细表.cpt]]></ReportletName>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand dir="0"/>
+</C>
+<C c="3" r="5" s="7">
+<O t="DSColumn">
+<Attributes dsName="当年记录" columnName="ACTUAL_MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[ORG_CODE]]></CNAME>
+<Compare op="0">
+<ColumnRow column="1" row="5"/>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[EXAM_DATE]]></CNAME>
+<Compare op="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=DATE(year, month, 1)]]></Attributes>
+</O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[EXAM_STR]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="当年记录" columnName="ACTUAL_STR"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="5" s="7">
+<O t="DSColumn">
+<Attributes dsName="当年记录" columnName="ACTUAL_MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[ORG_CODE]]></CNAME>
+<Compare op="0">
+<ColumnRow column="1" row="5"/>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[EXAM_DATE]]></CNAME>
+<Compare op="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=DATE(year, month, 1)]]></Attributes>
+</O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[EXAM_DATE]]></CNAME>
+<Compare op="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=DATEINMONTH(DATE(year, month, 1), -1)]]></Attributes>
+</O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[EXAM_STR]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="当年记录" columnName="ACTUAL_STR"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="5" s="7">
+<O t="DSColumn">
+<Attributes dsName="当年记录" columnName="ACTUAL_MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[ORG_CODE]]></CNAME>
+<Compare op="0">
+<ColumnRow column="1" row="5"/>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[EXAM_STR]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="当年记录" columnName="ACTUAL_STR"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="5" s="7">
+<O t="DSColumn">
+<Attributes dsName="年度计划" columnName="JZSR"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="5" s="7">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=(J6 - F6) + G6]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="5" s="7">
+<O t="DSColumn">
+<Attributes dsName="年度计划" columnName="BMSRXZ"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="5" s="7">
+<O t="DSColumn">
+<Attributes dsName="当年记录" columnName="ACTUAL_MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[ORG_CODE]]></CNAME>
+<Compare op="0">
+<ColumnRow column="1" row="5"/>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="5" s="7">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=I6 + J6 + G6]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="5" s="7">
+<O t="DSColumn">
+<Attributes dsName="年度计划" columnName="JHSR"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="12" r="5" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=K6 / L6]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="6" cs="3" s="9">
+<O>
+<![CDATA[合计]]></O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[len(officeId) > 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.RowHeightHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand/>
+</C>
+<C c="3" r="6" s="10">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(D6)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="6" s="10">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(E6)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="6" s="10">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(F6)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="6" s="10">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(G6)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="6" s="10">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(H6)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="6" s="10">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(I6)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="6" s="10">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(J6)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="6" s="10">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(K6)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="6" s="10">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(L6)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="6" s="11">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=K7 / L7]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="7" cs="3" s="9">
+<O>
+<![CDATA[内委合计]]></O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[len(officeId) > 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.RowHeightHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand/>
+</C>
+<C c="3" r="7" s="10">
+<O t="DSColumn">
+<Attributes dsName="当年记录" columnName="ACTUAL_MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[IS_INTERNAL]]></CNAME>
+<Compare op="0">
+<O t="I">
+<![CDATA[1]]></O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[EXAM_DATE]]></CNAME>
+<Compare op="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=DATE(year, month, 1)]]></Attributes>
+</O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[EXAM_STR]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="当年记录" columnName="ACTUAL_STR"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="7" s="10">
+<O t="DSColumn">
+<Attributes dsName="当年记录" columnName="ACTUAL_MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[IS_INTERNAL]]></CNAME>
+<Compare op="0">
+<O t="I">
+<![CDATA[1]]></O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[EXAM_DATE]]></CNAME>
+<Compare op="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=DATE(year, month, 1)]]></Attributes>
+</O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[EXAM_DATE]]></CNAME>
+<Compare op="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=DATEINMONTH(DATE(year, month, 1), -1)]]></Attributes>
+</O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[EXAM_STR]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="当年记录" columnName="ACTUAL_STR"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="7" s="10">
+<O t="DSColumn">
+<Attributes dsName="当年记录" columnName="ACTUAL_MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[IS_INTERNAL]]></CNAME>
+<Compare op="0">
+<O t="I">
+<![CDATA[1]]></O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[EXAM_STR]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="当年记录" columnName="ACTUAL_STR"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="7" s="10">
+<O t="DSColumn">
+<Attributes dsName="年度计划" columnName="JZSR"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="7" s="10">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=(J8 - F8) + G8]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="7" s="10">
+<O t="DSColumn">
+<Attributes dsName="年度计划" columnName="BMSRXZ"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="7" s="10">
+<O t="DSColumn">
+<Attributes dsName="当年记录" columnName="ACTUAL_MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[IS_INTERNAL]]></CNAME>
+<Compare op="0">
+<O t="I">
+<![CDATA[1]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="7" s="10">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=I8 + J8 + G8]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="7" s="10">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="7" s="11">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="8" cs="3" s="9">
+<O>
+<![CDATA[外部合计]]></O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[len(officeId) > 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.RowHeightHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand/>
+</C>
+<C c="3" r="8" s="10">
+<O t="DSColumn">
+<Attributes dsName="当年记录" columnName="ACTUAL_MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[IS_INTERNAL]]></CNAME>
+<Compare op="0">
+<O t="I">
+<![CDATA[0]]></O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[EXAM_DATE]]></CNAME>
+<Compare op="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=DATE(year, month, 1)]]></Attributes>
+</O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[EXAM_STR]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="当年记录" columnName="ACTUAL_STR"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="8" s="10">
+<O t="DSColumn">
+<Attributes dsName="当年记录" columnName="ACTUAL_MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[IS_INTERNAL]]></CNAME>
+<Compare op="0">
+<O t="I">
+<![CDATA[0]]></O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[EXAM_DATE]]></CNAME>
+<Compare op="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=DATE(year, month, 1)]]></Attributes>
+</O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[EXAM_DATE]]></CNAME>
+<Compare op="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=DATEINMONTH(DATE(year, month, 1), -1)]]></Attributes>
+</O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[EXAM_STR]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="当年记录" columnName="ACTUAL_STR"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="8" s="10">
+<O t="DSColumn">
+<Attributes dsName="当年记录" columnName="ACTUAL_MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition">
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[IS_INTERNAL]]></CNAME>
+<Compare op="0">
+<O t="I">
+<![CDATA[0]]></O>
+</Compare>
+</Condition>
+</JoinCondition>
+<JoinCondition join="0">
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[EXAM_STR]]></CNAME>
+<Compare op="0">
+<SimpleDSColumn dsName="当年记录" columnName="ACTUAL_STR"/>
+</Compare>
+</Condition>
+</JoinCondition>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="8" s="10">
+<O t="DSColumn">
+<Attributes dsName="年度计划" columnName="JZSR"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="8" s="10">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=(J9 - F9) + G9]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="8" s="10">
+<O t="DSColumn">
+<Attributes dsName="年度计划" columnName="BMSRXZ"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="8" s="10">
+<O t="DSColumn">
+<Attributes dsName="当年记录" columnName="ACTUAL_MONEY"/>
+<Condition class="com.fr.data.condition.CommonCondition">
+<CNUMBER>
+<![CDATA[0]]></CNUMBER>
+<CNAME>
+<![CDATA[IS_INTERNAL]]></CNAME>
+<Compare op="0">
+<O t="I">
+<![CDATA[0]]></O>
+</Compare>
+</Condition>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="8" s="10">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=I9 + J9 + G9]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="8" s="10">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="8" s="11">
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting>
+<Margin top="986400" left="720000" bottom="986400" right="720000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="128"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72" foreground="-16776961" underline="1"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.00%]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="ColorBackground" color="-3342388"/>
+<Border>
+<Top style="1" color="-16777216"/>
+<Bottom style="1" color="-16777216"/>
+<Left style="1" color="-16777216"/>
+<Right style="1" color="-16777216"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="ColorBackground" color="-3342388"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.00%]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="ColorBackground" color="-3342388"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select am.uuid,
+                           am.maintain_applycode,
+                           am.content,
+                           am.operater,
+                           am.operate_time,
+                           am.company_code,
+                           am.company_name,
+                           am.department_code,
+                           am.create_by,
+                           am.create_time,
+                           am.update_by,
+                           am.update_time,
+                           am.is_void,
+                           am.loc_timezone,
+                           am.tbl_version,
+                           am.seq_no,
+                           am.scheduled_time,
+                           am.projected_expenditure,
+                           am.remark,
+                           am.malfunction,
+                           am.card_uuid,
+                           (select code_desc
+                              from scdp_code a
+                             where a.code_type = 'CDM_BILL_STATE'
+                               and a.sys_code = am.state) as state,
+                           ac.card_code,
+                           ac.asset_code,
+                           ac.asset_name
+                      from asset_maintain am
+                      left join asset_card ac
+                        on ac.uuid = am.card_uuid
+                     where ${conditions}
+ ]]>
+        </common>
+    </common_query>
+</DAO>

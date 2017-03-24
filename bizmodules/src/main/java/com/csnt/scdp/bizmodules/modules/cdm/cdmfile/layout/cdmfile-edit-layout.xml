@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="cdmFileRelationDto" row="23*3,flex" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JText pos="A1:A1" cid="dataId" fieldLabel_s="dataId" allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+        <JText pos="B1:B1" cid="fileId" fieldLabel_s="fileId" allowBlank_b="true"/>
+        <JText pos="C1:C1" cid="module" fieldLabel_s="module" allowBlank_b="true"/>
+        <JText pos="A2:B2" cid="fileName" fieldLabel_s="fileName" allowBlank_b="true"/>
+        <JText pos="C2:C2" cid="convertedFileSize" fieldLabel_s="fileSize" allowBlank_b="true"/>
+        <JText pos="D2:D2" cid="fileType" fieldLabel_s="fileType" allowBlank_b="true"/>
+        <JCombo pos="A3:A3" cid="cdmFileType" fieldLabel_s="cdmFileType" field="cdm_File_Type" allowBlank_b="true"
+                comboType="scdp_fmcode"
+                codeType="CDM_FILE_TYPE" displayDesc_b="true"/>
+        <JCombo pos="B3:B3" cid="fileClassify" fieldLabel_s="fileClassify" field="file_classify" allowBlank_b="true"
+                comboType="scdp_fmcode"
+                codeType="CDM_FILE_TYPE_DETAIL" displayDesc_b="true"/>
+        <JDatetime pos="C3:C3" cid="begindate" fieldLabel_s="begindate" allowBlank_b="true"/>
+        <JDatetime pos="D3:D3" cid="enddate" fieldLabel_s="enddate" allowBlank_b="true"/>
+        <JTextArea pos="A4:D4" cid="remark" fieldLabel_s="remark" allowBlank_b="true"/>
+    </JForm>
+</view>

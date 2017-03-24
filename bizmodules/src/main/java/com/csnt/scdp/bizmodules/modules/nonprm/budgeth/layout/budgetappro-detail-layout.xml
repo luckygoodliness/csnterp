@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JPanel col="1*1" pos="A1:A1" title_s="" row="flex" border_n="1" cid="generalTab">
+        <JFieldSet row="flex" col="1*1" pos="A1:A1" title_s="拨款历史记录" border_n="1" cid="">
+            <JEGrid pos="A1:A1" cid="nonProjectBudgetApproDto" store="Budgeth.store.NonProjectBudgetApproStore"
+                    title_s="" withToolbar_b="false">
+                <JHidden cid="uuid"/>
+                <JTextCol text_s="budgetSubjectCode" dataIndex="budgetSubjectCode" width_n="100">
+                    <JText allowBlank_b="true" allowEdit_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="budgetSubjectName" dataIndex="budgetSubjectName" width_n="120">
+                    <JText allowBlank_b="true" allowEdit_b="false"/>
+                </JTextCol>
+                <JCurCol text_s="appropriationBefore" dataIndex="appropriationBefore" width_n="100">
+                    <JCur allowBlank_b="true" minValue_n="0" allowEdit_b="false"/>
+                </JCurCol>
+                <JCurCol text_s="appropriationAfter" dataIndex="appropriationAfter" width_n="100">
+                    <JCur allowBlank_b="true" minValue_n="0" allowEdit_b="false"/>
+                </JCurCol>
+                <JTextCol text_s="descp" dataIndex="descp" width_n="260"/>
+                <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150">
+                </JDatetimeCol>
+            </JEGrid>
+        </JFieldSet>
+    </JPanel>
+</view>

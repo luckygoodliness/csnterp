@@ -1,0 +1,904 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="MaterialMainInfo" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="invoiceReqNo"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="scmContractId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT F.INVOICE_NO,
+       F.INVOICE_REQ_NO,
+       (CASE
+         WHEN F.PAY_STYLE IN ('0', '2') THEN
+          NULL
+         ELSE
+          F.SUPPLIER_NAME
+       END) AS SUPPLIER_NAME,
+       O.ORG_NAME,
+       DECODE(SC.IS_PROJECT, 1, M.PROJECT_CODE, SC.SUBJECT_CODE) AS PROJECT_CODE,
+       NVL(M.PROJECT_NAME,
+           (SELECT N.FINANCIAL_SUBJECT
+              FROM NON_PROJECT_SUBJECT_SUBJECT N
+             WHERE N.FINANCIAL_SUBJECT_CODE = SC.SUBJECT_CODE)) AS PROJECT_NAME,
+       SCI.AMOUNT,
+       SC.SCM_CONTRACT_CODE,
+       F.PAY_STYLE,
+       (CASE
+         WHEN F.PAY_STYLE IN ('0', '2') THEN
+          (SELECT S.USER_NAME
+             FROM SCDP_USER S
+            WHERE S.USER_ID =  F.RENDER_PERSON)
+         ELSE
+          NULL
+       END) AS RENDER_PERSON,
+       (SELECT COUNT(1)
+          FROM FAD_CASH_REQ FCR, FAD_CASH_REQ_INVOICE FR
+         WHERE FCR.UUID = FR.FAD_CASH_REQ_ID
+           AND FR.FAD_INVOICE_ID = F.UUID
+           AND FCR.PURCHASE_CONTRACT_ID = '${scmContractId}'
+           AND FCR.REQ_TYPE = 0
+           AND FCR.IS_VOID = 0) AS IS_CASH_REQ
+  FROM FAD_INVOICE F
+  LEFT JOIN SCM_CONTRACT_INVOICE SCI
+    ON F.UUID = SCI.FAD_INVOICE_ID
+  LEFT JOIN SCM_CONTRACT SC
+    ON SC.UUID = SCI.SCM_CONTRACT_ID
+  LEFT JOIN PRM_PROJECT_MAIN M
+    ON SCI.PROJECT_ID = M.UUID
+  LEFT JOIN SCDP_ORG O
+    ON O.ORG_CODE = F.OFFICE_ID
+ WHERE F.INVOICE_REQ_NO = '${invoiceReqNo}'
+   AND SCI.SCM_CONTRACT_ID = '${scmContractId}'
+]]></Query>
+</TableData>
+<TableData name="MaterialDetailDs" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="invoiceReqNo"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="scmContractId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT R.MATERIAL_NAME,
+       R.MODEL,
+       R.UNITS,
+       R.AMOUNT,
+       R.ACTUAL_NUM,
+       R.UNIT_PRICE_TRUE,
+       DECODE(ROW_NUM,
+              1,
+              R.TOTAL_VALUE + R.SCI_AMOUNT - R.SUM_TOTAL,
+              R.TOTAL_VALUE) AS TOTAL_VALUE
+  FROM (SELECT R.*, ROWNUM AS ROW_NUM
+          FROM (SELECT R.*
+                  FROM (SELECT SD.MATERIAL_NAME,
+                               SD.MODEL,
+                               SD.UNITS,
+                               SD.AMOUNT,
+                               ROUND(SD.AMOUNT * SCM.PROPORTION, 2) AS ACTUAL_NUM,
+                               SD.UNIT_PRICE_TRUE,
+                               ROUND(SD.AMOUNT * SCM.PROPORTION *
+                                     UNIT_PRICE_TRUE,
+                                     2) AS TOTAL_VALUE,
+                               SCM.SCI_AMOUNT,
+                               SUM(ROUND(SD.AMOUNT * SCM.PROPORTION *
+                                         UNIT_PRICE_TRUE,
+                                         2)) OVER() AS SUM_TOTAL
+                          FROM (SELECT SC.UUID,
+                                       SC.SCM_CONTRACT_CODE,
+                                       SCI.AMOUNT AS SCI_AMOUNT,
+                                       DECODE(NVL(SC.AMOUNT, 0),
+                                              0,
+                                              0,
+                                              NVL(SCI.AMOUNT, 0) /
+                                              NVL(SC.AMOUNT, 0)) AS PROPORTION
+                                  FROM SCM_CONTRACT SC
+                                  LEFT JOIN SCM_CONTRACT_INVOICE SCI ON SC.UUID =
+                                                                        SCI.SCM_CONTRACT_ID
+                                 WHERE SCI.FAD_INVOICE_ID =
+                                       (SELECT UUID
+                                          FROM FAD_INVOICE F
+                                         WHERE F.INVOICE_REQ_NO =
+                                               '${invoiceReqNo}')
+                                   AND SC.UUID = '${scmContractId}') SCM
+                          LEFT JOIN SCM_CONTRACT_DETAIL SD ON SCM.UUID =
+                                                              SD.SCM_CONTRACT_ID) R
+                 ORDER BY R.TOTAL_VALUE DESC) R) R
+]]></Query>
+</TableData>
+<TableData name="UserInfoDs" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="invoiceReqNo"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="scmContractId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT (SELECT U.USER_NAME
+          FROM SCDP_USER U
+         WHERE U.UUID = (SELECT T.ORG_UUID
+                           FROM (SELECT SRO.ORG_UUID
+                                   FROM SCDP_ROLE SR
+                                   LEFT JOIN SCDP_ROLE_ORG SRO ON SR.UUID =
+                                                                  SRO.ROLE_UUID
+                                  WHERE SR.ROLE_NAME = '供应链部主任'
+                                    AND SRO.ORG_TYPE = 'U'
+                                  ORDER BY SRO.CREATE_TIME DESC) T
+                          WHERE ROWNUM = 1)) AS 供应链部主任,
+       DECODE(SO.ORG_CODE, 'CSNT_GYLB', U.USER_NAME, U1.USER_NAME) AS 采购经理,
+       (SELECT U.USER_NAME
+          FROM SCDP_USER U
+         WHERE U.UUID = (SELECT T.ORG_UUID
+                           FROM (SELECT SRO.ORG_UUID
+                                   FROM SCDP_ROLE SR
+                                   LEFT JOIN SCDP_ROLE_ORG SRO ON SR.UUID =
+                                                                  SRO.ROLE_UUID
+                                  WHERE SR.ROLE_NAME = '供应链记账人'
+                                    AND SRO.ORG_TYPE = 'U'
+                                  ORDER BY SRO.CREATE_TIME DESC) T
+                          WHERE ROWNUM = 1)) AS 供应链记账人,
+       (SELECT DECODE(SO1.ORG_CODE, 'CSNT_GYLB', SU.USER_NAME, '吕志萍')
+          FROM FAD_INVOICE F, SCDP_USER SU, SCDP_ORG SO1
+         WHERE F.CREATE_BY = SU.USER_ID
+           AND U.ORG_UUID = SO1.UUID(+)
+           AND F.INVOICE_REQ_NO = '${invoiceReqNo}') AS 制单人,
+       (SELECT U.USER_NAME
+          FROM SCDP_USER U
+         WHERE U.USER_ID =
+               DECODE(NVL(SC.IS_PROJECT, 0),
+                      0,
+                      (SELECT PPR.CREATE_BY
+                         FROM PRM_PURCHASE_REQ PPR
+                        WHERE PPR.UUID =
+                              (SELECT MAX(PPRD.PRM_PURCHASE_REQ_ID)
+                                 FROM PRM_PURCHASE_REQ_DETAIL PPRD)),
+                      (SELECT MAX(MP.STAFF_ID) AS STAFF_ID
+                         FROM PRM_MEMBER_DETAIL_P MP
+                        WHERE SC.PROJECT_ID = MP.PRM_PROJECT_MAIN_ID
+                          AND MP.POST =
+                              (SELECT R.UUID
+                                 FROM SCDP_ROLE R
+                                WHERE EXISTS
+                                (SELECT 1
+                                         FROM SCDP_EXPAND_COLUMN ER
+                                         LEFT JOIN SCDP_EXPAND_ROW EC ON ER.UUID =
+                                                                         EC.EXPAND_ID
+                                        WHERE EC.DATA_UUID = R.UUID
+                                          AND EC.EXPAND_VALUE = 'Y'
+                                          AND ER.EXPAND_CODE = 'IS_PROJECT_ROLE'
+                                          AND ER.EXPAND_TYPE = 'ROLE')
+                                  AND R.ROLE_NAME = '项目经理')))) AS 项目经理
+
+  FROM SCM_CONTRACT               SC,
+       SCDP_USER                  U,
+       SCDP_ORG                   SO,
+       SCM_RESPONSIBLE_DEPARTMENT SRD,
+       SCDP_USER                  U1
+ WHERE SC.CREATE_BY = U.USER_ID(+)
+   AND U.ORG_UUID = SO.UUID(+)
+   AND SO.ORG_CODE = SRD.RESPONSIBLE_DEPARTMENT(+)
+   AND SRD.PRINCIPAL = U1.USER_ID(+)
+   AND SC.UUID = '${scmContractId}'
+]]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="收料单">
+<ReportPageAttr>
+<HR F="0" T="6"/>
+<FR F="9" T="11"/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1333500,723900,800100,723900,723900,723900,723900,722880,722880,723900,2362200,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[1181100,2971800,3162300,1943100,2857500,2057400,2400300,2476500,2171700,2019300,3619500,1938240,1562100,1409700,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="0" cs="10" s="0">
+<O>
+<![CDATA[收 料 单]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" cs="10" s="1">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=CONCATENATE(YEAR(NOW()), "年", MONTH(NOW()), "月", DAY(NOW()), "日")]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="2" s="2">
+<O>
+<![CDATA[发票编号：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="2" cs="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="MaterialMainInfo" columnName="INVOICE_NO"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="2" s="2">
+<O>
+<![CDATA[流水号：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="2" cs="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="MaterialMainInfo" columnName="INVOICE_REQ_NO"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="2" s="2">
+<O>
+<![CDATA[部门：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="2" cs="3" s="2">
+<O t="DSColumn">
+<Attributes dsName="MaterialMainInfo" columnName="ORG_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="3" s="2">
+<O>
+<![CDATA[供应商：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="3" cs="9" s="2">
+<O t="DSColumn">
+<Attributes dsName="MaterialMainInfo" columnName="SUPPLIER_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="4" cs="2" s="3">
+<O>
+<![CDATA[项目代号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="4" cs="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="MaterialMainInfo" columnName="PROJECT_CODE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="4" cs="2" s="3">
+<O>
+<![CDATA[项目名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="4" cs="3" s="4">
+<O t="DSColumn">
+<Attributes dsName="MaterialMainInfo" columnName="PROJECT_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="5" cs="2" rs="2" s="5">
+<O>
+<![CDATA[材料名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="5" cs="2" rs="2" s="5">
+<O>
+<![CDATA[型号规格]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="5" rs="2" s="5">
+<O>
+<![CDATA[单位]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="5" cs="2" s="5">
+<O>
+<![CDATA[数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="5" cs="2" rs="2" s="5">
+<O>
+<![CDATA[单价]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="5" rs="2" s="5">
+<O>
+<![CDATA[金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="6" s="5">
+<O>
+<![CDATA[应收]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="6" s="5">
+<O>
+<![CDATA[实收]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="6" rs="3" s="6">
+<PrivilegeControl/>
+<Expand leftParentDefault="false" upParentDefault="false"/>
+</C>
+<C c="0" r="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="7" cs="2" s="7">
+<O t="DSColumn">
+<Attributes dsName="MaterialDetailDs" columnName="MATERIAL_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="1"/>
+<CellPageAttr/>
+<CellInsertPolicy>
+<InsertPolicy>
+<![CDATA[copy]]></InsertPolicy>
+</CellInsertPolicy>
+<Expand dir="0"/>
+</C>
+<C c="3" r="7" cs="2" s="8">
+<O t="DSColumn">
+<Attributes dsName="MaterialDetailDs" columnName="MODEL"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="7" s="8">
+<O t="DSColumn">
+<Attributes dsName="MaterialDetailDs" columnName="UNITS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="7" s="9">
+<O t="DSColumn">
+<Attributes dsName="MaterialDetailDs" columnName="AMOUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="7" s="10">
+<O t="DSColumn">
+<Attributes dsName="MaterialDetailDs" columnName="ACTUAL_NUM"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="7" cs="2" s="11">
+<O t="DSColumn">
+<Attributes dsName="MaterialDetailDs" columnName="UNIT_PRICE_TRUE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="10" r="7" s="12">
+<O t="DSColumn">
+<Attributes dsName="MaterialDetailDs" columnName="TOTAL_VALUE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="8" s="13">
+<O>
+<![CDATA[合计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="8" cs="8" s="14">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="8" s="15">
+<O t="DSColumn">
+<Attributes dsName="MaterialMainInfo" columnName="AMOUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="9" rs="2" s="5">
+<O>
+<![CDATA[合同编号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="9" rs="2" s="16">
+<O t="DSColumn">
+<Attributes dsName="MaterialMainInfo" columnName="SCM_CONTRACT_CODE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="9" cs="2" rs="2" s="5">
+<O>
+<![CDATA[付款方式]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="9" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=IF(AND(MaterialMainInfo.select(PAY_STYLE) <> 0, MaterialMainInfo.select(PAY_STYLE) <> 2), "■付汇", "□付汇")]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="9" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=IF(MaterialMainInfo.select(PAY_STYLE) = 0, "■现金", "□现金")]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="9" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=IF(MaterialMainInfo.select(PAY_STYLE) = 2, "■打卡", "□打卡")]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="9" cs="2" s="5">
+<O>
+<![CDATA[请款]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="9" s="5">
+<O>
+<![CDATA[收料仓库]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="9" s="17">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="10">
+<O>
+<![CDATA[]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="10" s="5">
+<O>
+<![CDATA[报销人]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="10" cs="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="MaterialMainInfo" columnName="RENDER_PERSON"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="10" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=IF(MaterialMainInfo.select(IS_CASH_REQ) = 0, "□是", "■是")]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="10" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=IF(MaterialMainInfo.select(IS_CASH_REQ) = 0, "■否", "□否")]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="10" s="5">
+<O>
+<![CDATA[配套库]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="10">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="11" s="18">
+<O>
+<![CDATA[审批：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="11" s="2">
+<O t="DSColumn">
+<Attributes dsName="UserInfoDs" columnName="供应链部主任"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="11" s="18">
+<O>
+<![CDATA[审核：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="11" s="19">
+<O t="DSColumn">
+<Attributes dsName="UserInfoDs" columnName="采购经理"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="11" s="20">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="11" s="19">
+<O>
+<![CDATA[制单：]]></O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="11" cs="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="UserInfoDs" columnName="制单人"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="11" s="21">
+<O>
+<![CDATA[验收：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="11" s="2">
+<O t="DSColumn">
+<Attributes dsName="UserInfoDs" columnName="项目经理"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="11" r="11">
+<O>
+<![CDATA[]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="12">
+<PrivilegeControl/>
+<CellPageAttr pageAfterRow="true"/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting>
+<Margin top="0" left="0" bottom="0" right="0"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="128"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="2" imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="2" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" isVerticalText="1" textDirection="1" imageLayout="1">
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1" spacingAfter="2">
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Left style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0]]></Format>
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.00]]></Format>
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Bottom style="1"/>
+<Left style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Bottom style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Bottom style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style isVerticalText="1" textDirection="1" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>scmdepartmentbuyer-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JUserGrid pos="A1:A1" fieldLabel_s="buyer" cid="buyer_query"
+                   refer_j='[{"refField":"buyer","valueField":"userId"}]'/>
+        <JHidden pos="A2:A2" cid="buyer" field="buyer"/>
+        <JHidden cid="officeCodeDesc"/>
+        <JErpDepartMent pos="B1:B1" fieldLabel_s="officeCode" cid="officeCode"
+                      field="office_code"
+                      labelWidth_n="110"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="buyer" dataIndex="buyerName" width_n="120"/>
+        <JTextCol text_s="officeCode" dataIndex="officeCodeName" width_n="120"/>
+        <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+    </results>
+</commonquery>

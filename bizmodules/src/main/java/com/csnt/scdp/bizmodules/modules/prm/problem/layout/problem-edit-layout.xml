@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JTab pos="A1:A1" row="flex" col="1*1" border_n="1">
+    <JPanel pos="A1:A1" row="flex,200" col="1*1" title_s="问题申报" border_n="1">
+    <JForm pos="A1:A1" cid="prmProblemDto" row="23*7" col="0.33*3" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JHidden cid="prmWeeklyId"/>
+        <JHidden cid="createBy"/>
+        <JNoneFinishedProject pos="A1:A1" cid="projectName" fieldLabel_s="prmProjectMainId" allowBlank_b="false"
+                      refer_j='[{"refField":"prmProjectMainId","valueField":"uuid"},
+                                {"refField":"departmentCode","valueField":"contractorOffice"}]'/>
+        <JHidden pos="A1:A1" cid="prmProjectMainId"/>
+        <JHidden cid="departmentCodeDesc"/>
+        <JErpDepartMent pos="B1:B1" fieldLabel_s="departmentCode" cid="departmentCode"
+                      field="org_uuid" labelWidth_n="100" allowBlank_b="false" readOnly_b="true"
+                      adaptable_b="false"/>
+        <JDate pos="C1:C1" cid="postDate" fieldLabel_s="postDate" allowBlank_b="false"/>
+        <!--<JText pos="B2:B2" cid="problemType" fieldLabel_s="problemType" allowBlank_b="false"/>-->
+        <JCombo pos="B2:B2" cid="problemType" fieldLabel_s="problemType" allowBlank_b="true"
+                comboType="scdp_fmcode"
+                codeType="PRM_PROBLEM_TYPE" displayDesc_b="true" fullInfo_b="false" multiSelect_b="false"/>
+        <JTextArea pos="A2:A5" cid="description" fieldLabel_s="description" allowBlank_b="false"/>
+        <JUserGrid pos="B3:B3" fieldLabel_s="postPerson" cid="postPersonName" allowBlank_b="false" refer_j='[{"refField":"postPerson","valueField":"userId"}]'/>
+        <JHidden pos="B3:B3" cid="postPerson"/>
+        <JTextArea pos="C2:C4" cid="proposalSolution" fieldLabel_s="proposalSolution" allowBlank_b="false"/>
+        <JDate pos="B4:B4" cid="proposalDate" fieldLabel_s="proposalDate" allowBlank_b="false"/>
+        <JUserGrid pos="B5:B5" fieldLabel_s="provider" cid="providerName" allowBlank_b="false" refer_j='[{"refField":"provider","valueField":"userId"}]'/>
+        <JHidden pos="B5:B5" cid="provider"/>
+        <JCombo pos="C5:C5" cid="state" fieldLabel_s="state" allowBlank_b="true"
+                comboType="scdp_fmcode"  readOnly_b="true" adaptable_b="false"
+                codeType="CDM_BILL_STATE" displayDesc_b="true" fullInfo_b="false" multiSelect_b="false"/>
+        <JTextArea pos="A6:C7" cid="remark" fieldLabel_s="remark" allowBlank_b="true"/>
+        <!--<JText pos="F2:F2" cid="companyCode" fieldLabel_s="companyCode" allowBlank_b="true"/>-->
+
+
+        <!--<JOrg pos="B3:B3" cid="departmentCode" fieldLabel_s="departmentCode" allowBlank_b="true"/>-->
+        <!--<JText pos="C3:C3" cid="createBy" fieldLabel_s="createBy" allowBlank_b="true"/>-->
+        <!--<JText pos="D3:D3" cid="updateBy" fieldLabel_s="updateBy" allowBlank_b="true"/>-->
+    </JForm>
+    </JPanel>
+    <JPanel pos="A1:A1" row="flex" col="1*1" title_s="反馈信息" border_n="1">
+        <!--<JForm pos="A1:A1" cid="prmProblemFeedbackDto" row="23*1" col="0.25*4" title_s="" border_n="1">-->
+            <!--<JHidden cid="uuid"/>-->
+            <!--<JHidden cid="puuid"/>-->
+            <!--<JText pos="A1:A1" cid="prmWeeklyId" fieldLabel_s="prmWeeklyId"-->
+                   <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="prmProjectMainId" fieldLabel_s="prmProjectMainId"-->
+                   <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JDatetime pos="A1:A1" cid="postDate" fieldLabel_s="postDate" allowBlank_b="true"/>-->
+            <!--<JText pos="A1:A1" cid="problemType" fieldLabel_s="problemType"-->
+                   <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="description" fieldLabel_s="description"-->
+                   <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="postPerson" fieldLabel_s="postPerson"-->
+                   <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="proposalSolution" fieldLabel_s="proposalSolution"-->
+                   <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JDatetime pos="A1:A1" cid="proposalDate" fieldLabel_s="proposalDate" allowBlank_b="true"/>-->
+            <!--<JText pos="A1:A1" cid="provider" fieldLabel_s="provider"-->
+                   <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="remark" fieldLabel_s="remark"-->
+                   <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="state" fieldLabel_s="state"-->
+                   <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="companyCode" fieldLabel_s="companyCode"-->
+                   <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="projectId" fieldLabel_s="projectId"-->
+                   <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="departmentCode" fieldLabel_s="departmentCode"-->
+                   <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JInt pos="A1:A1" cid="seqNo" fieldLabel_s="seqNo" allowBlank_b="true"/>-->
+        <!--</JForm>-->
+        <JEGrid pos="A1:A1" cid="prmProblemFeedbackDto" store="Problem.store.PrmProblemFeedbackStore">
+            <!--<JTextCol text_s="prmProblemId" dataIndex="prmProblemId" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+            <!--</JTextCol>-->
+            <JTextCol text_s="feedback" dataIndex="feedback" width_n="500">
+                <JText allowBlank_b="true"/>
+            </JTextCol>
+            <JTextCol text_s="dealPerson" dataIndex="dealPersonName" width_n="120">
+                <JText allowBlank_b="true"/>
+            </JTextCol>
+            <JTextCol text_s="createBy" dataIndex="createByName" width_n="150">
+                <JText allowBlank_b="true"/>
+            </JTextCol>
+            <!--<JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+            <!--</JTextCol>-->
+            <!--<JTextCol text_s="projectId" dataIndex="projectId" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+            <!--</JTextCol>-->
+            <!--<JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+            <!--</JTextCol>-->
+        </JEGrid>
+            </JPanel>
+    </JTab>
+</view>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select bbi.*,o.org_name,fc.country_desc country_name, fs.state_desc province_name,
+                            (SELECT CODE_DESC FROM SCDP_CODE A  WHERE A.CODE_TYPE = 'OPERATE_BID_RESULT' AND A.SYS_CODE = bbi.bid_result) AS OPERATE_BID_RESULT_COMBO,
+                            (select pc.customer_name from prm_customer pc where  pc.uuid=bbi.customer_id) as customer_id_desc,
+                            (select c.code_desc from scdp_code c where c.code_type='CDM_BILL_STATE'  and  c.sys_code= bbi.state) as CDM_BILL_STATE_COMBO
+                    from operate_business_bid_info bbi
+                    left join scdp_org o on bbi.contractor_office = o.org_code
+                    left join fm_country fc on fc.country_code = bbi.country_code
+                    left join fm_state fs on fs.state_code = bbi.build_region
+                    where bbi.project_Type='1' and  (bbi.is_void is null or bbi.is_void=0) and ${conditions} and ${selfconditions}
+            ]]>
+        </common>
+    </common_query>
+    <common_query_office>
+        <common>
+            <![CDATA[select     bbi.uuid,
+                                bbi.office_id,
+                                bbi.state,
+                                bbi.region_id,
+                                bbi.project_name,
+                                bbi.proprietor_unit,
+                                bbi.com_bid_unit,
+                                bbi.com_bid_number,
+                                bbi.biding_doc_start,
+                                bbi.biding_doc_end,
+                                bbi.biding_doc_price,
+                                bbi.bid_bond,
+                                bbi.eotm,
+                                bbi.bod,
+                                bbi.create_by,
+                                bbi.create_time,
+                                bbi.update_by,
+                                bbi.update_time,
+                                bbi.loc_timezone,
+                                bbi.tbl_version,
+                                bbi.is_void,
+                                o.org_name,
+                                (SELECT STATE_DESC FROM FM_STATE A WHERE A.STATE_CODE=bbi.region_id) AS region_name
+                        from    operate_business_bid_info bbi
+                        left join scdp_org o on     bbi.office_id = o.org_code
+                        where 1=1 and ${conditions}]]>
+        </common>
+    </common_query_office>
+    <bid_notify>
+        <common>
+            <![CDATA[
+            select * from operate_business_bid_info t1 where (t1.is_void is null or t1.is_void =1)
+            and t1.bod>=? and t1.bod < ? and t1.company_code=?
+            ]]>
+        </common>
+    </bid_notify>
+</DAO>

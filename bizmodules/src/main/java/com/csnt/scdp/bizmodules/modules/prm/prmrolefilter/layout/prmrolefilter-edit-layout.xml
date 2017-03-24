@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="1,flex" col="1*1">
+    <JForm pos="A1:A1" cid="prmScdpRoleDto" row="1" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <!--<JText pos="A1:A1" cid="roleId" fieldLabel_s="roleId" allowBlank_b="true"/>-->
+        <!--<JText pos="B1:B1" cid="tableName" fieldLabel_s="tableName" allowBlank_b="true"/>-->
+    </JForm>
+    <JFieldSet pos="A2:D2" row="flex" col="1" title_s="角色过滤表设定" border_n="1" autoExpand_b="true">
+        <JEGrid pos="A1:A1" cid="prmRoleFilterDto" store="Prmrolefilter.store.PrmRoleFilterStore"
+                withSearchBar_b="true" searchFieldTips="表名"
+                searchFilterCids="tableName" needFilter_b="true" autoExpand_b="true">
+
+            <!--<JTextCol text_s="roleId" dataIndex="roleId" width_n="120">-->
+            <!--<JText allowBlank_b="false"/>-->
+            <!--</JTextCol>-->
+            <JTextCol text_s="tableName" dataIndex="tableName" width_n="200"/>
+
+        </JEGrid>
+    </JFieldSet>
+</view>

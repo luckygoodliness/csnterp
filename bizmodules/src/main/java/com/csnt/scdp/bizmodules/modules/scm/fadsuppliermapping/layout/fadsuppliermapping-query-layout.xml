@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>fadsuppliermapping-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>SUPPLIER_TO_UUID</defaultSort>
+    <conditions columns="3">
+        <JText pos="A1:A1" cid="supplierFromName" fieldLabel_s="supplierFromName" field="SUPPLIER_FROM_NAME"
+               allowBlank_b="true"/>
+        <JText pos="B1:B1" cid="completeName" fieldLabel_s="completeName" field="s.complete_name"
+               allowBlank_b="true"/>
+        <JText pos="C1:C1" cid="supplierCompleteName" fieldLabel_s="supplierCompleteName" field="c.complete_name"
+               allowBlank_b="true"/>
+    </conditions>
+    <results >
+        <JTextCol text_s="supplierFromName" dataIndex="supplierFromName" width_n="120"/>
+        <JTextCol text_s="completeName" dataIndex="completeName" width_n="120"/>
+        <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+        <JTextCol text_s="supplierCompleteName" dataIndex="supplierCompleteName" width_n="120"/>
+        <JTextCol text_s="dataFrom" dataIndex="dataFrom" width_n="120" hidden_b="true" />
+        <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+        <JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>
+        <JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>
+    </results>
+</commonquery>

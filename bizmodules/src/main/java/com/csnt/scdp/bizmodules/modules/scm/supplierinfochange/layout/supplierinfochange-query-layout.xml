@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>supplierinfochange-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <!--<JSupplierGrid pos="A1:A1" fieldLabel_s="completeName" cid="completeName_query"-->
+        <!--refer_j='[{"refField":"supplierCode","valueField":"uuid"}]'/>-->
+        <JHidden cid="createByDesc"/>
+        <JCombo pos="A1:A1" fieldLabel_s="state" allowBlank_b="true" cid="state"
+                comboType="scdp_fmcode" field="STATE"
+                codeType="CDM_BILL_STATE" displayDesc_b="true"  adaptable_b="false"/>
+        <JText  pos="B1:B1" fieldLabel_s="completeName" cid="completeName" field="complete_Name"/>
+        <JCombo pos="C1:C1" fieldLabel_s="taxTypes" allowBlank_b="true" cid="taxTypes"
+                comboType="scdp_fmcode" field="TAX_TYPES"
+                codeType="SCM_SUPPLIER_TAX_TYPES" displayDesc_b="true"/>
+        <JCombo pos="D1:D1" fieldLabel_s="supplierGenre" allowBlank_b="true" cid="supplierGenre"
+                comboType="scdp_fmcode" field="SUPPLIER_GENRE"
+                codeType="SCM_SUPPLIER_GENRE" displayDesc_b="true"/>
+        <JCombo pos="A2:A2" cid="levelCode" fieldLabel_s="levelCode" allowBlank_b="true"
+                comboType="scdp_fmcode" field="LEVEL_CODE"
+                codeType="SCM_SUPPLIER_LEVEL" displayDesc_b="true"/>
+        <JText pos="B2:B2" cid="oldName" fieldLabel_s="oldName" allowBlank_b="true" field="OLD_NAME" />
+        <JText pos="C2:C2" fieldLabel_s="simpleName" cid="simpleName" field="simple_Name"/>
+        <JText pos="D2:D2" cid="apName" fieldLabel_s="apName" allowBlank_b="true" field="AP_NAME" />
+        <JHidden pos="A3:A3"  cid="changeType" fieldLabel_s="changeType" allowBlank_b="true" field="CHANGE_TYPE" />
+    </conditions>
+    <results resultGridConfig="{'autoResizeColumn':false,'withSearchBar':true,
+    'searchFieldTips':'客商状态,企业规模,客商属性,机构类别,企业性质',
+    'searchFilterCids':'supplierStatusCombo,enterpriseScaleCombo,supplierPropertyCombo,organizationTypeCombo,enterpriseTypeCombo','needFilter':true}">
+        <JTextCol text_s="supplierCode" dataIndex="supplierCode" width_n="120"/>
+        <JTextCol text_s="state" dataIndex="stateName" width_n="120"/>
+        <JTextCol text_s="completeName" dataIndex="completeName" width_n="120"/>
+        <JTextCol text_s="taxTypes" dataIndex="taxTypesName" width_n="120"/>
+        <JTextCol text_s="supplierGenre" dataIndex="supplierGenreName" width_n="120"/>
+        <JTextCol text_s="levelCode" dataIndex="levelCode" width_n="120"/>
+        <JTextCol text_s="ncCode" dataIndex="ncCode" width_n="120"/>
+        <JTextCol text_s="taxRegistrationNo" dataIndex="taxRegistrationNo" width_n="120"/>
+        <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+        <JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>
+        <JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>
+        <JTextCol text_s="supplierCodeForGroup" dataIndex="supplierCodeForGroup" width_n="120"/>
+        <JTextCol text_s="inoutType" dataIndex="inoutTypeCombo" width_n="120"/>
+        <JTextCol text_s="oldName" dataIndex="oldName" width_n="120"/>
+        <JTextCol text_s="englishName" dataIndex="englishName" width_n="120"/>
+        <JTextCol text_s="simpleName" dataIndex="simpleName" width_n="120"/>
+        <JTextCol text_s="supplierOthername" dataIndex="supplierOthername" width_n="120"/>
+        <JTextCol text_s="industryType" dataIndex="industryType" width_n="120"/>
+        <JTextCol text_s="apName" dataIndex="apName" width_n="120"/>
+        <JTextCol text_s="apId" dataIndex="apId" width_n="120"/>
+        <!--<JDecCol text_s="registeredCapital" dataIndex="registeredCapital" width_n="150"/>-->
+        <JTextCol text_s="registeredCapitalCurrency" dataIndex="registeredCurrencyName" width_n="120"/>
+        <!--<JDecCol text_s="fixedAsset" dataIndex="fixedAsset" width_n="150"/>-->
+        <JTextCol text_s="fixedAssetCurrency" dataIndex="fixedAssetCurrencyName" width_n="120"/>
+        <!--<JDatetimeCol text_s="registeredDate" dataIndex="registeredDate" width_n="150"/>-->
+        <JIntCol text_s="employeeNumber" dataIndex="employeeNumber" width_n="100"/>
+        <JTextCol text_s="contactInfo" dataIndex="contactInfo" width_n="120"/>
+        <JTextCol text_s="url" dataIndex="url" width_n="120"/>
+        <JTextCol text_s="supplierStatus" dataIndex="supplierStatusCombo" width_n="120"/>
+        <!--<JTextCol text_s="supplierType" dataIndex="supplierTypeCombo" width_n="120"/>-->
+        <JTextCol text_s="enterpriseScale" dataIndex="enterpriseScaleCombo" width_n="120"/>
+        <JTextCol text_s="supplierProperty" dataIndex="supplierPropertyCombo" width_n="120"/>
+        <JTextCol text_s="organizationType" dataIndex="organizationTypeCombo" width_n="120"/>
+        <JTextCol text_s="enterpriseType" dataIndex="enterpriseTypeCombo" width_n="120"/>
+    </results>
+</commonquery>

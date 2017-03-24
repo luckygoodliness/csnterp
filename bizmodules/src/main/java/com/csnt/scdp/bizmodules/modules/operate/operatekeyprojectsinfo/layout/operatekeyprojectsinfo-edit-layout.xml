@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="operateKeyProjectsInfoDto" row="186,flex" col="1*1" title_s="" border_n="0">
+        <JFieldSet pos="A1:A1" row="23*1,6*1,23*1,6*1,23*1,6*1,23*1,6*1,23*1,6*1,23*1,6*1" col="0.25*4" border_n="1"
+                   title_s="">
+            <JHidden cid="uuid"/>
+            <JHidden cid="tblVersion"/>
+            <JText pos="A1:A1" cid="projectName" fieldLabel_s="projectName" allowBlank_b="false"/>
+            <JHidden cid="proprietorUnitDesc"/>
+            <JCustomerGrid pos="B1:B1" cid="proprietorUnit" valueField="uuid" descField="customerName"
+                           forceValidate_b="false"
+                           fieldLabel_s="proprietorUnit" allowBlank_b="false" displayDesc_b="true"/>
+            <JHidden cid="officeIdDesc"/>
+            <JErpDepartMent pos="C1:C1" fieldLabel_s="officeId" cid="officeId"
+                            field="org_uuid" labelWidth_n="100"/>
+            <JDate pos="D1:D1" cid="recordDate" fieldLabel_s="recordDate" allowBlank_b="true" readOnly_b="true"
+                   adaptable_b="false"/>
+            <JText pos="A3:A3" cid="comBidUnit" fieldLabel_s="comBidUnit" allowBlank_b="true"/>
+            <JText pos="B3:B3" cid="comBidNumber" fieldLabel_s="comBidNumber" allowBlank_b="true"/>
+            <JDate pos="C3:C3" cid="bidingDocStart" fieldLabel_s="bidingDocStart" allowBlank_b="true"/>
+            <JDate pos="D3:D3" cid="bidingDocEnd" fieldLabel_s="bidingDocEnd" allowBlank_b="true"/>
+            <JDec pos="A5:A5" cid="bidingDocPrice" fieldLabel_s="bidingDocPrice" allowBlank_b="true"/>
+            <JDec pos="B5:B5" cid="bidBond" fieldLabel_s="bidBond" allowBlank_b="true"/>
+            <JText pos="C5:C5" cid="eotm" fieldLabel_s="eotm" allowBlank_b="true"/>
+            <JDate pos="D5:D5" cid="bidTime" fieldLabel_s="bidTime" allowBlank_b="true"/>
+            <JDate pos="A7:A7" cid="bod" fieldLabel_s="bod" allowBlank_b="true"/>
+            <JText pos="B7:B7" cid="isWin" fieldLabel_s="isWin" allowBlank_b="true"/>
+            <JText pos="C7:C7" cid="contractStatus" fieldLabel_s="contractStatus" allowBlank_b="true"/>
+            <JDate pos="D7:D7" cid="signedTime" fieldLabel_s="signedTime" allowBlank_b="true"/>
+            <JCombo pos="A9:A9" cid="operationState" fieldLabel_s="operationState" allowBlank_b="false"
+                    comboType="scdp_fmcode" upperCase_b="true"
+                    codeType="OPERATE_STATE" displayDesc_b="true" fullInfo_b="false" multiSelect_b="false"/>
+            <JText pos="B9:B9" cid="decisionMaker" fieldLabel_s="decisionMaker" allowBlank_b="true"/>
+            <JCombo pos="C9:C9" cid="area" fieldLabel_s="area" allowBlank_b="true"
+                    comboType="fm_state" labelWidth_n="132"
+                    displayDesc_b="true" fullInfo_b="true"/>
+            <JDec pos="A11:A11" cid="plannedCa" fieldLabel_s="plannedCa" allowBlank_b="true"/>
+            <JDec pos="B11:B11" cid="projectMoney" fieldLabel_s="projectMoney" allowBlank_b="true"/>
+        </JFieldSet>
+        <JFieldSet pos="A2:A2" row="23*23" col="0.25*4" border_n="1" title_s="">
+            <JTextArea pos="A1:A8" cid="competitor" fieldLabel_s="competitor" allowBlank_b="true"
+                       labelAlign="top" wrap_b="true"/>
+            <JTextArea pos="B1:B8" cid="projectProfile" fieldLabel_s="projectProfile" allowBlank_b="true"
+                       labelAlign="top" wrap_b="true"/>
+            <JTextArea pos="C1:C8" cid="projectOc" fieldLabel_s="projectOc" allowBlank_b="true"
+                       labelAlign="top" wrap_b="true"/>
+            <JTextArea pos="D1:D8" cid="questions" fieldLabel_s="questions" allowBlank_b="true"
+                       labelAlign="top" wrap_b="true"/>
+            <JTextArea pos="A9:B16" cid="operationSummary" fieldLabel_s="operationSummary" allowBlank_b="true"
+                       labelAlign="top" wrap_b="true"/>
+            <JTextArea pos="C9:D16" cid="remark" fieldLabel_s="remark" allowBlank_b="true" labelAlign="top"
+                       wrap_b="true"/>
+            <JHidden cid="fid"/>
+            <JHidden cid="period"/>
+            <JHidden cid="createTime"/>
+            <JHidden cid="updateTime"/>
+            <JHidden cid="projectId"/>
+            <JHidden cid="companyCode"/>
+            <JHidden cid="departmentCode"/>
+            <JHidden cid="createBy"/>
+            <JHidden cid="updateBy"/>
+        </JFieldSet>
+    </JForm>
+</view>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>prmcustomer-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JHidden cid="uuid" field="pc.uuid"/>
+        <JText pos="A1:A1" fieldLabel_s="customerCode" cid="customerCode" field="pc.customer_code"/>
+        <JText pos="B1:B1" fieldLabel_s="customerName" cid="customerName" field="pc.customer_name"/>
+        <JText pos="C1:C1" fieldLabel_s="customerAddress" cid="customerAddress" field="pc.customer_address"/>
+        <JText pos="D1:D1" fieldLabel_s="customerPostalcode" cid="customerPostalcode" field="pc.customer_postalcode"/>
+        <JText pos="A2:A2" fieldLabel_s="companyCode" cid="companyCode" field="pc.company_code"/>
+        <JText pos="B2:B2" fieldLabel_s="customerTel" cid="customerTel" field="pc.customer_tel"/>
+        <JText pos="C2:C2" fieldLabel_s="createBy" cid="createBy" field="create_by"/>
+        <JText pos="D2:D2" fieldLabel_s="updateBy" cid="updateby" field="update_by"/>
+        <JFromTo pos="A3:B3" subXtype="JDatetime" fieldLabel_s="createTime" cid="createTime" field="create_time"/>
+        <JFromTo pos="C3:D3" subXtype="JDatetime" fieldLabel_s="updateTime" cid="updateTime" field="update_time"/>
+    </conditions>
+    <results>
+        <JTextCol dataIndex="uuid" hidden_b="true"/>
+        <JTextCol text_s="customerCode" dataIndex="customerCode" width_n="120"/>
+        <JTextCol text_s="customerName" dataIndex="customerName" width_n="120"/>
+        <JTextCol text_s="customerNation" dataIndex="customerNation" width_n="120"/>
+        <JTextCol text_s="customerProvince" dataIndex="customerProvince" width_n="120"/>
+        <JTextCol text_s="customerAddress" dataIndex="customerAddress" width_n="120"/>
+        <JTextCol text_s="customerPostalcode" dataIndex="customerPostalcode" width_n="120"/>
+        <JTextCol text_s="customerTel" dataIndex="customerTel" width_n="120"/>
+        <JTextCol text_s="customerLink" dataIndex="customerLink" width_n="120"/>
+        <!--<JTextCol text_s="bankName" dataIndex="bankName" width_n="120"/>-->
+        <!--<JTextCol text_s="bankNumber" dataIndex="bankNumber" width_n="120"/>-->
+        <JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120"/>
+        <JTextCol text_s="projectId" dataIndex="projectId" width_n="120"/>
+        <JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120"/>
+        <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+        <JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+        <JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>
+        <JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120"/>
+        <JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>
+    </results>
+</commonquery>

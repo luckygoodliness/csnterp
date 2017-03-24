@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>responsibleclass-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>responsible_class</defaultSort>
+    <conditions columns="4">
+        <JUserGrid pos="A1:A1" fieldLabel_s="principal" cid="principal_query"
+                   refer_j='[{"refField":"principal","valueField":"userId"}]'/>
+        <JHidden pos="A2:A2" cid="principal" field="principal"/>
+        <JMaterialGrid pos="B1:B1" fieldLabel_s="responsibleClass" cid="responsibleClass_query"
+                       refer_j='[{"refField":"responsibleClass","valueField":"code"}]'/>
+        <JHidden pos="A2:A2" cid="responsibleClass" field="responsible_class"/>
+        <!--<JFromTo pos="A3:B3" subXtype="JDatetime" fieldLabel_s="createTime" cid="createTime" field="create_time"/>-->
+        <!--<JFromTo pos="C3:D3" subXtype="JDatetime" fieldLabel_s="updateTime" cid="updateTime" field="update_time"/>-->
+    </conditions>
+    <results>
+        <JTextCol text_s="principal" dataIndex="principalName" width_n="120"/>
+        <JTextCol text_s="科目编码" dataIndex="responsibleClass" width_n="120"/>
+        <JTextCol text_s="科目名称" dataIndex="responsibleClassName" width_n="120"/>
+        <JTextCol text_s="operativeSegments" dataIndex="operativeSegmentsCombo" width_n="120"/>
+        <JTextCol text_s="classLevel" dataIndex="classLevelCombo" width_n="120"/>
+        <JTextCol text_s="isRigid" dataIndex="isRigidCombo" width_n="120"/>
+        <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+        <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+        <JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+        <JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>
+        <!--<JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120"/>-->
+        <!--<JTextCol text_s="projectId" dataIndex="projectId" width_n="120"/>-->
+        <!--<JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120"/>-->
+        <!--<JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120"/>-->
+        <!--<JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120"/>-->
+    </results>
+
+</commonquery>

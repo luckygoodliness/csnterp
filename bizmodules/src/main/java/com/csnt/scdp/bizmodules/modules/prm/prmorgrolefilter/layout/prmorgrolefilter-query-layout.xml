@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>prmorgrolefilter-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4"  row="23">
+        <!--<JText pos="C2:C2" fieldLabel_s="createBy" cid="createBy" field="create_by"/>-->
+        <!--<JText pos="D2:D2" fieldLabel_s="updateBy" cid="updateby" field="update_by"/>-->
+        <!--<JFromTo pos="A3:B3" subXtype="JDatetime" fieldLabel_s="createTime" cid="createTime" field="create_time"/>-->
+        <!--<JFromTo pos="C3:D3" subXtype="JDatetime" fieldLabel_s="updateTime" cid="updateTime" field="update_time"/>-->
+        <JHidden cid="departmentCodeDesc"/>
+        <JErpDepartMent pos="A1:A1" fieldLabel_s="orgName" cid="departmentCode"
+                      field="org_code"/>
+
+    </conditions>
+    <results>
+            <JHidden cid="uuid"/>
+            <!--<JTextCol text_s="puuid" dataIndex="puuid" width_n="120"/>-->
+        <!--<JIntCol text_s="seqNo" dataIndex="seqNo" width_n="100" />-->
+            <JTextCol text_s="orgCode" dataIndex="orgCode" width_n="120"/>
+            <!--<JTextCol text_s="orgType" dataIndex="orgType" width_n="120"/>-->
+            <JTextCol text_s="orgName" dataIndex="orgName" width_n="120"/>
+        <!--<JRCheckCol text_s="isActive" dataIndex="isActive" width_n="80" />-->
+            <!--<JTextCol text_s="currency" dataIndex="currency" width_n="120"/>-->
+            <!--<JTextCol text_s="thousandSeparator" dataIndex="thousandSeparator" width_n="120"/>-->
+            <!--<JTextCol text_s="decimalSeparator" dataIndex="decimalSeparator" width_n="120"/>-->
+            <!--<JTextCol text_s="dateFormat" dataIndex="dateFormat" width_n="120"/>-->
+            <!--<JTextCol text_s="address1" dataIndex="address1" width_n="120"/>-->
+            <!--<JTextCol text_s="address2" dataIndex="address2" width_n="120"/>-->
+            <!--<JTextCol text_s="address3" dataIndex="address3" width_n="120"/>-->
+            <!--<JTextCol text_s="address4" dataIndex="address4" width_n="120"/>-->
+            <!--<JTextCol text_s="orgTel" dataIndex="orgTel" width_n="120"/>-->
+            <!--<JTextCol text_s="orgFax" dataIndex="orgFax" width_n="120"/>-->
+            <!--<JTextCol text_s="orgMail" dataIndex="orgMail" width_n="120"/>-->
+            <!--<JTextCol text_s="orgQq" dataIndex="orgQq" width_n="120"/>-->
+            <!--<JTextCol text_s="orgWeixin" dataIndex="orgWeixin" width_n="120"/>-->
+            <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+            <JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>
+        <JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>
+            <!--<JTextCol text_s="cityCode" dataIndex="cityCode" width_n="120"/>-->
+            <!--<JTextCol text_s="contacts" dataIndex="contacts" width_n="120"/>-->
+            <!--<JTextCol text_s="countryCode" dataIndex="countryCode" width_n="120"/>-->
+            <!--<JTextCol text_s="shortCode" dataIndex="shortCode" width_n="120"/>-->
+            <!--<JTextCol text_s="stateCode" dataIndex="stateCode" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="validFrom" dataIndex="validFrom" width_n="150"/>-->
+        <!--<JDatetimeCol text_s="validTo" dataIndex="validTo" width_n="150"/>-->
+            <!--<JTextCol text_s="weekStart" dataIndex="weekStart" width_n="120"/>-->
+    </results>
+</commonquery>

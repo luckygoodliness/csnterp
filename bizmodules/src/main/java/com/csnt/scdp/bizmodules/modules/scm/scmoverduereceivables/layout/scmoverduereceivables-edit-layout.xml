@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="scmOverdueReceivablesDto" row="23*2" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JContract pos="A1:A1" fieldLabel_s="scmContract" cid="scmContractName" allowBlank_b="true" refer_j='[{"refField":"scmContract","valueField":"uuid"}]'/>
+        <JHidden pos="A5:A5" cid="scmContract"/>
+        <JSupplierGrid pos="B1:B1" fieldLabel_s="supplier" cid="supplierName" allowBlank_b="true"
+                       refer_j='[{"refField":"supplier","valueField":"uuid"}]'/>
+        <JHidden pos="A5:A5" cid="supplier"/>
+        <JDec pos="C1:C1" cid="totalValue" fieldLabel_s="totalValue" allowBlank_b="true"/>
+        <JDec pos="D1:D1" cid="targetValue" fieldLabel_s="targetValue" allowBlank_b="true"/>
+        <JTextArea pos="A2:C4" cid="remark" fieldLabel_s="remark" allowBlank_b="true" wrap_b="true"/>
+        <!--<JText pos="B2:B2" cid="companyCode" fieldLabel_s="companyCode" allowBlank_b="true"/>-->
+        <!--<JText pos="C2:C2" cid="projectId" fieldLabel_s="projectId" allowBlank_b="true"/>-->
+        <!--<JText pos="D2:D2" cid="departmentCode" fieldLabel_s="departmentCode" allowBlank_b="true"/>-->
+        <!--<JText pos="A3:A3" cid="createOffice" fieldLabel_s="createOffice" allowBlank_b="true"/>-->
+        <!--<JText pos="B3:B3" cid="updateOffice" fieldLabel_s="updateOffice" allowBlank_b="true"/>-->
+    </JForm>
+</view>

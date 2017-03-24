@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="80,flex" col="1*1">
+    <JForm pos="A1:A1" cid="scmNotesPlanDto" row="23*4" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+    </JForm>
+    <JForm pos="A1:A1" row="23*4" col="0.0625*16" title_s="" border_n="1" withToolbar_b="true" cid="queryForm">
+        <JFieldSet col="0.0625*16" pos="A1:P4" row="23*2" border_n="1" title_s="queryConditions">
+            <JHidden cid="officeIdDesc"/>
+            <JErpDepartMent pos="A1:D1" fieldLabel_s="officeName" cid="officeId" />
+
+            <JNoneFinishedProject pos="E1:H1" fieldLabel_s="projectName" cid="projectIdName"
+                          refer_j='[{"refField":"projectId","valueField":"uuid"}]'/>
+            <JHidden cid="projectId"/>
+            <JSupplierGrid pos="I1:L1" fieldLabel_s="supplierName" cid="supplierCodeName"
+                           refer_j='[{"refField":"supplierCodeQuery","valueField":"uuid"}]'/>
+            <JHidden cid="supplierCodeQuery"/>
+            <JUserGrid pos="M1:P1" fieldLabel_s="createBy" cid="createByName"
+                       refer_j='[{"refField":"createBy","valueField":"userId"}]'/>
+            <JHidden cid="createBy"/>
+            <JCombo pos="A2:D2" cid="conclusion" fieldLabel_s="基线" field="conclusion" allowBlank_b="true"
+                    comboType="scdp_fmcode"
+                    codeType="SCM_NOTES_CONCLUSION" displayDesc_b="true"/>
+            <JButton text_s="searchBtn" cid="filterQueryBtn" pos="O2:O2" iconCls="query_btn"/>
+            <JButton text_s="resetBtn" cid="detailResetBtn" pos="P2:P2" iconCls="reset_btn"/>
+        </JFieldSet>
+    </JForm>
+    <JEGrid pos="A2:A2" cid="scmNotesPlanDetailDto" store="Notesplan.store.ScmNotesPlanDetailStore"
+            withToolbar_b="false">
+        <JDatetimeCol text_s="markTime" dataIndex="markTime" width_n="150"/>
+        <JTextCol text_s="scmContractCode" dataIndex="scmContractCode" width_n="150"/>
+        <JDecCol text_s="conclusionLineFinancial" dataIndex="conclusionLineFinancial" width_n="150">
+            <JDec allowBlank_b="true"/>
+        </JDecCol>
+        <JDecCol text_s="conclusionRateOut" dataIndex="conclusionRateOut" width_n="150">
+            <JDec allowBlank_b="true"/>
+        </JDecCol>
+        <JHidden text_s="supplierCode" dataIndex="supplierCode" width_n="200"/>
+        <JTextCol text_s="supplierName" dataIndex="supplierName" width_n="200"/>
+        <JTextCol text_s="projectName" dataIndex="prmProjectMainIdName" width_n="200"/>
+        <JHidden dataIndex="projectId" width_n="120"/>
+        <JDecCol text_s="conclusionLineIn" dataIndex="conclusionLineIn" width_n="150"/>
+        <JDecCol text_s="conclusionLineOut" dataIndex="conclusionLineOut" width_n="150"/>
+        <JDecCol text_s="conclusionLineContract" dataIndex="conclusionLineContract" width_n="150"/>
+        <JDecCol text_s="conclusionRateIn" dataIndex="conclusionRateIn" width_n="150"/>
+        <JDecCol text_s="conclusionRateContract" dataIndex="conclusionRateContract" width_n="150"/>
+        <JDecCol text_s="conclusionRateReceipt" dataIndex="conclusionRateReceipt" width_n="150"/>
+        <JDecCol text_s="scmContractAmount" dataIndex="scmContractAmount" width_n="150"/>
+        <JDecCol text_s="scmContractInvoice" dataIndex="scmContractInvoice" width_n="150"/>
+        <JDecCol text_s="paid" dataIndex="paid" width_n="150"/>
+        <JTextCol text_s="officeName" dataIndex="officeName" width_n="120"/>
+        <JTextCol text_s="createBy" dataIndex="createByContractName" width_n="120"/>
+        <JHidden dataIndex="createBy"/>
+        <!--<JTextCol text_s="remark" dataIndex="remark" width_n="120"/>-->
+    </JEGrid>
+</view>

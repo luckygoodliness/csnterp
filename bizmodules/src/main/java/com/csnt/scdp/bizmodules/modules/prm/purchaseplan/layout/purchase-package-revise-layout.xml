@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JEGrid pos="A1:A1" cid="prmPurchasePackageRecordDto"
+            store="Purchaseplan.store.PrmPurchasePackageRecordStore"
+            withToolbar_b="true" withSelMode_b="true" selMode="SINGLE">
+        <JTextCol text_s="revisedBy" dataIndex="revisedByDesc" width_n="60"/>
+        <JTextCol text_s="revisedTime" dataIndex="revisedTime" width_n="100"/>
+        <JGridFieldCol text_s="materialClassCode" dataIndex="materialClassCode" width_n="120">
+            <JPackageGrid allowBlank_b="true"/>
+        </JGridFieldCol>
+        <JTextCol text_s="packageName" dataIndex="packageName" width_n="60"/>
+        <JCurCol text_s="packageBudgetMoney" dataIndex="packageBudgetMoney" width_n="100"/>
+    </JEGrid>
+
+</view>

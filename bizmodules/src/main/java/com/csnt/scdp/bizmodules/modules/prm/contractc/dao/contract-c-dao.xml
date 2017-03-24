@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select t1.*,t2.user_name as project_manager_name,t3.org_name as contractor_office_name
+            ,t4.country_desc,t5.city_desc,t6.code_desc as state_desc,
+            (select country_desc
+               from fm_country a
+            where a.country_code = t1.country_code) as country_name,
+           (select state_desc
+             from fm_state a
+              where a.state_code = t1.build_region) as province_name
+            from prm_contract_c t1
+            left join scdp_user t2 on t1.project_manager=t2.user_id
+            left join scdp_org t3 on t1.contractor_office=t3.org_code
+            left join fm_country t4 on t4.country_code=t1.country_code
+            left join fm_city t5 on t5.country_code=t4.country_code and t5.city_code=t1.build_region
+            left join scdp_code t6 on t6.code_type='CDM_BILL_STATE' and t6.sys_code=t1.state
+            where (t1.is_void is null or t1.is_void=0) and  ${conditions} ]]>
+        </common>
+    </common_query>
+    <validate_unique>
+        <common>
+            <![CDATA[
+            select t1.uuid from prm_contract_c t1 where (t1.is_void is null or t1.is_void=0) and t1.contract_status=? and (t1.contract_no=? or t1.contract_name=?)
+            ]]>
+        </common>
+    </validate_unique>
+    <query_contract_all>
+        <common>
+            <![CDATA[
+            select t.is_major_project  from prm_contract_c t where  (t.is_void is null or t.is_void=0)  and  t.prm_contract_id=? order by create_time desc
+            ]]>
+        </common>
+    </query_contract_all>
+</DAO>

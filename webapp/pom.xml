@@ -1,0 +1,223 @@
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>webapp</artifactId>
+    <packaging>war</packaging>
+    <version>1.0-SNAPSHOT</version>
+
+
+    <name>Webapp</name>
+    <url>http://maven.apache.org</url>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <wro4j.version>1.7.7</wro4j.version>
+        <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
+        <scdp.version>2.0-SNAPSHOT</scdp.version>
+    </properties>
+
+    <profiles>
+        <profile>
+            <id>tomcat</id>
+            <properties>
+                <container>tomcat</container>
+                <userTransaction>java:comp/UserTransaction</userTransaction>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+        <profile>
+            <id>jboss</id>
+            <properties>
+                <container>jboss</container>
+                <userTransaction>java:jboss/UserTransaction</userTransaction>
+            </properties>
+        </profile>
+    </profiles>
+
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>bizmodules</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.csnt.scdp</groupId>
+            <artifactId>scdp-frontend</artifactId>
+            <version>${scdp.version}</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+
+    <parent>
+        <groupId>com.csnt.erp</groupId>
+        <artifactId>csnt-erp</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <build>
+        <finalName>scdp</finalName>
+        <plugins>
+            <!-- Wro4j resource process -->
+            <plugin>
+                <groupId>ro.isdc.wro4j</groupId>
+                <artifactId>wro4j-maven-plugin</artifactId>
+                <version>${wro4j.version}</version>
+                <executions>
+                    <execution>
+                        <id>optimize-web-resources</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <minimize>true</minimize>
+                    <ignoreMissingResources>false</ignoreMissingResources>
+                    <contextFolder>${basedir}/src/main/webapp/</contextFolder>
+                    <jsDestinationFolder>
+                        ${project.build.directory}/${project.build.finalName}/framework/js/
+                    </jsDestinationFolder>
+                    <cssDestinationFolder>
+                        ${project.build.directory}/${project.build.finalName}/framework/css/
+                    </cssDestinationFolder>
+                    <wroManagerFactory>
+                        ro.isdc.wro.maven.plugin.manager.factory.ConfigurableWroManagerFactory
+                        <!--ro.isdc.wro.extensions.manager.standalone.GoogleStandaloneManagerFactory-->
+                    </wroManagerFactory>
+                </configuration>
+            </plugin>
+
+            <!-- remove original css and js file from war -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.1.1</version>
+                <configuration>
+                    <packagingExcludes>framework/css/scdp_*.css, framework/js_source/**</packagingExcludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>prepare-war</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>exploded</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-war</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>war</goal>
+                        </goals>
+                        <configuration>
+                            <warSourceDirectory>${project.build.directory}/${project.build.finalName}
+                            </warSourceDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+
+            <!-- replace sdcp css and js reference -->
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <version>1.5.3</version>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <includes>
+                        <include>
+                            ${project.build.directory}/${project.build.finalName}/framework/jsp/meta.jsp
+                        </include>
+                        <include>
+                            ${project.build.directory}/${project.build.finalName}/framework/I18N/*.js
+                        </include>
+                        <include>
+                            ${project.build.directory}/${project.build.finalName}/bizmodules/I18N/*.js
+                        </include>
+                        <include>
+                            ${project.build.directory}/${project.build.finalName}/WEB-INF/web.xml
+                        </include>
+                        <include>
+                            ${project.build.directory}/classes/sysconfig.properties
+                        </include>
+                        <include>
+                            ${project.build.directory}/${project.build.finalName}/bizmodules/jsp/bizmodules.jsp
+                        </include>
+                    </includes>
+                    <replacements>
+                        <replacement>
+                            <token>
+                                <![CDATA[
+                                <!-- Jsmerge:([^\s]*) -->(.*?)<!-- Jsmerge -->
+                                ]]>
+                            </token>
+                            <value>
+                                <![CDATA[
+                                <script type="text/javascript" src="framework/js/$1?${maven.build.timestamp}" ></script>
+                                ]]>
+                            </value>
+                        </replacement>
+                        <replacement>
+                            <token>
+                                <![CDATA[
+                                <!-- Cssmerge:([^\s]*) -->(.*?)<!-- Cssmerge -->
+                                ]]>
+                            </token>
+                            <value>
+                                <![CDATA[
+                                <link rel="stylesheet" type="text/css" href="framework/css/$1?${maven.build.timestamp}"/>
+                                ]]>
+                            </value>
+                        </replacement>
+                        <replacement>
+                            <token>
+                                %build_no%
+                            </token>
+                            <value>
+                                ${maven.build.timestamp}
+                            </value>
+                        </replacement>
+                        <replacement>
+                            <token>
+                                <![CDATA[
+                                <!-- Spring Profile placeholder -->(.*?)<!-- end of Spring Profile placeholder -->
+                                ]]>
+                            </token>
+                            <value>
+                                <![CDATA[
+    <context-param>
+        <param-name>spring.profiles.default</param-name>
+        <param-value>${container}</param-value>
+    </context-param>
+                                ]]>
+                            </value>
+                        </replacement>
+                    </replacements>
+                    <regexFlags>
+                        <regexFlag>CASE_INSENSITIVE</regexFlag>
+                        <regexFlag>DOTALL</regexFlag>
+                    </regexFlags>
+                </configuration>
+            </plugin>
+        </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+</project>

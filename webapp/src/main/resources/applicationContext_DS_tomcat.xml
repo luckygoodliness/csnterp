@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       profile="tomcat"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+
+    <!--<bean id="dataSourceDruid" class="com.alibaba.druid.pool.xa.DruidXADataSource" init-method="init"-->
+    <!--destroy-method="close">-->
+    <!--<property name="name" value="dataSourceSCDP"/>-->
+    <!--<property name="url" value="${jdbc.url}"/>-->
+    <!--<property name="username" value="${jdbc.username}"/>-->
+    <!--<property name="password" value="${jdbc.password}"/>-->
+
+    <!--<property name="filters" value="stat,mergeStat"/>-->
+
+    <!--&lt;!&ndash; 获取连接时最大等待时间(ms) &ndash;&gt;-->
+    <!--<property name="maxWait" value="60000"/>-->
+
+    <!--&lt;!&ndash; 1)空闲时间大于等于此时间(ms)连接关闭 2)用于testWhileIdle &ndash;&gt;-->
+    <!--<property name="timeBetweenEvictionRunsMillis" value="60000"/>-->
+
+    <!--&lt;!&ndash; 连接保持空闲而不被驱逐的最长时间(ms), 最小30000 &ndash;&gt;-->
+    <!--<property name="minEvictableIdleTimeMillis" value="300000"/>-->
+
+    <!--<property name="validationQuery" value="SELECT 1 FROM DUAL"/>-->
+    <!--<property name="testWhileIdle" value="true"/>&lt;!&ndash; 如果空闲时间大于timeBetweenEvictionRunsMillis，执行连接校验 &ndash;&gt;-->
+    <!--<property name="testOnBorrow" value="false"/>&lt;!&ndash; 申请连接时执行validationQuery检测连接是否有效 &ndash;&gt;-->
+    <!--<property name="testOnReturn" value="false"/>&lt;!&ndash; 归还连接时执行validationQuery检测连接是否有效 &ndash;&gt;-->
+
+    <!--&lt;!&ndash; PSCache，Oracle启用，MySQL关闭 &ndash;&gt;-->
+    <!--<property name="poolPreparedStatements" value="true"/>-->
+
+    <!--&lt;!&ndash; PSCache缓存个数 &ndash;&gt;-->
+    <!--<property name="maxOpenPreparedStatements" value="20"/>-->
+    <!--</bean>-->
+
+    <bean id="dataSource" class="bitronix.tm.resource.jdbc.PoolingDataSource" init-method="init" destroy-method="close">
+        <property name="className" value="${jdbc.driver}"/>
+        <property name="uniqueName" value="dataSourceErp"/>
+        <!--the minimal amount of connections that can be in the pool.-->
+        <property name="minPoolSize" value="${jdbc.minPoolSize}"/>
+        <!--the maximum amount of connections that can be in the pool.-->
+        <property name="maxPoolSize" value="${jdbc.maxPoolSize}"/>
+        <!--the amount of seconds and idle connection can stay in the pool before getting closed.-->
+        <property name="maxIdleTime" value="300"/>
+        <!--the amount of connections to be created at once when the pool needs to grow.-->
+        <property name="acquireIncrement" value="2"/>
+        <!--the amount of time between failed connection acquirements.-->
+        <property name="acquisitionInterval" value="1"/>
+        <!--the amount of time in seconds a call to get a connection from the pool will wait when the pool is empty.-->
+        <property name="acquisitionTimeout" value="2"/>
+        <!--false only if the database can run many transactions on the same connection.-->
+        <property name="deferConnectionRelease" value="true"/>
+        <!--true if the transaction manager should allow mixing XA and non-XA transactions.-->
+        <property name="allowLocalTransactions" value="true"/>
+        <property name="applyTransactionTimeout" value="true"/>
+        <!--Set whether connections in the ACCESSIBLE state can be shared within the context of a transaction.-->
+        <property name="shareTransactionConnections" value="true"/>
+        <property name="driverProperties">
+            <props>
+                <prop key="URL">${jdbc.url}</prop>
+                <prop key="user">${jdbc.username}</prop>
+                <prop key="password">${jdbc.password}</prop>
+            </props>
+        </property>
+        <property name="testQuery" value="SELECT 1 FROM DUAL"/>
+    </bean>
+
+    <bean id="btmConfig" factory-method="getConfiguration" class="bitronix.tm.TransactionManagerServices">
+        <!--ASCII ID that must uniquely identify this TM instance. It must not exceed 51 characters or it will be truncated.-->
+        <!--defaults to server's IP address but that's unsafe for production use)-->
+        <property name="serverId" value="${server_id}"/>
+        <!--Should transactions executed without a single enlisted resource result in a warning or not?-->
+        <property name="warnAboutZeroResourceTransaction" value="false"/>
+        <!--Default transaction timeout in seconds.-->
+        <property name="defaultTransactionTimeout" value="${jdbc.transactionTimeout}"/>
+    </bean>
+
+    <bean id="transactionManager" class="org.springframework.transaction.jta.JtaTransactionManager">
+        <property name="transactionManager" ref="bitronixTransactionManager"/>
+        <property name="userTransaction" ref="bitronixTransactionManager"/>
+    </bean>
+
+    <bean id="bitronixTransactionManager" factory-method="getTransactionManager"
+          class="bitronix.tm.TransactionManagerServices" depends-on="dataSource,btmConfig"
+          destroy-method="shutdown">
+    </bean>
+
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="packagesToScan">
+            <list>
+                <value>com.csnt</value>
+            </list>
+        </property>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">com.csnt.scdp.framework.core.persistence.dialet.OracleDialect</prop>
+                <prop key="hibernate.jdbc.fetch_size">500</prop>
+                <prop key="hibernate.jdbc.batch_size">500</prop>
+                <prop key="hibernate.connection.autoReconnect">true</prop>
+                <prop key="hibernate.connection.autoReconnectForPools">true</prop>
+                <prop key="hibernate.connection.is-connection-validation-required">true</prop>
+                <prop key="hibernate.connection.isolation">2</prop>
+                <prop key="hibernate.connection.autocommit">false</prop>
+                <prop key="hibernate.connection.release_mode">auto</prop>
+                <prop key="hibernate.order_inserts">true</prop>
+                <prop key="hibernate.order_updates">true</prop>
+                <prop key="hibernate.show_sql">false</prop>
+                <prop key="hibernate.format_sql">false</prop>
+                <prop key="hibernate.cache.use_second_level_cache">false</prop>
+                <prop key="hibernate.cache.use_query_cache">false</prop>
+                <prop key="hibernate.generate_statistics">false</prop>
+
+                <!--JTA-->
+                <prop key="hibernate.transaction.factory_class">
+                    org.hibernate.engine.transaction.internal.jta.JtaTransactionFactory
+                </prop>
+                <prop key="hibernate.flushMode">AUTO</prop>
+                <prop key="hibernate.transaction.jta.platform">
+                    org.hibernate.engine.transaction.jta.platform.internal.BitronixJtaPlatform
+                </prop>
+                <prop key="hibernate.current_session_context_class">org.hibernate.context.internal.JTASessionContext
+                </prop>
+            </props>
+        </property>
+        <property name="jtaTransactionManager" ref="transactionManager"/>
+    </bean>
+</beans>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>certificate-dao</daotype>
+        <daokey>common_query_receiverOrPayer</daokey>
+    </querysql>
+    <defaultSort>receiver_or_payer_type asc, receiver_or_payer_code asc</defaultSort>
+    <conditions columns="4">
+        <JCombo pos="A1:A1" cid="receiverOrPayerType" fieldLabel_s="receiverOrPayerType" field="receiver_or_payer_type"
+                comboType="fm_fad_receiverorpayer_type" displayDesc_b="true" multiSelect_b="true"/>
+        <JText pos="B1:B1" cid="receiverOrPayerCode" fieldLabel_s="receiverOrPayerCode" field="receiver_or_payer_code"/>
+        <JText pos="B2:B2" cid="receiverOrPayerName" fieldLabel_s="receiverOrPayerName" field="receiver_or_payer_name"/>
+        <JText pos="B3:B3" cid="ncCode" fieldLabel_s="ncCode" field="NC_CODE"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="receiverOrPayerCode" dataIndex="receiverOrPayerCode" width_n="120"/>
+        <JTextCol text_s="receiverOrPayerName" dataIndex="receiverOrPayerName" width_n="120"/>
+        <JTextCol text_s="ncCode" dataIndex="ncCode" width_n="120"/>
+    </results>
+</commonquery>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>cdmfile-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="A1:A2" fieldLabel_s="fileName" cid="fileName" field="file_name"/>
+        <JText pos="B1:B1" fieldLabel_s="fileType" cid="fileType" field="fil_type"/>
+        <JCombo pos="C1:C1" cid="cdmFileType" fieldLabel_s="cdmFileType" field="cdm_file_type" allowBlank_b="true"
+                comboType="scdp_fmcode"
+                codeType="CDM_FILE_TYPE" displayDesc_b="true"/>
+        <JCombo pos="D1:D1" cid="fileClassify_query" fieldLabel_s="fileClassify" field="file_classify" allowBlank_b="true"
+                comboType="scdp_fmcode"
+                codeType="CDM_FILE_TYPE_DETAIL" displayDesc_b="true"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="dataId" dataIndex="dataId" width_n="120"/>
+        <JTextCol text_s="fileId" dataIndex="fileId" width_n="120"/>
+        <JTextCol text_s="fileType" dataIndex="fileType" width_n="120"/>
+        <JTextCol text_s="module" dataIndex="module" width_n="120"/>
+        <JTextCol text_s="fileName" dataIndex="fileName" width_n="120"/>
+        <JIntCol text_s="fileSize" dataIndex="fileSize" width_n="100"/>
+        <JTextCol text_s="cdmFileType" dataIndex="cdmFileTypeCombo" width_n="120"/>
+        <JTextCol text_s="fileClassify" dataIndex="fileClassify" width_n="120"/>
+        <JDatetimeCol text_s="begindate" dataIndex="begindate" width_n="150"/>
+        <JDatetimeCol text_s="enddate" dataIndex="enddate" width_n="150"/>
+        <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+        <!--<JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120"/>-->
+        <!--<JTextCol text_s="projectId" dataIndex="projectId" width_n="120"/>-->
+        <!--<JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120"/>-->
+        <!--<JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>-->
+        <!--<JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>-->
+        <!--<JIntCol text_s="seqNo" dataIndex="seqNo" width_n="100" />-->
+
+    </results>
+</commonquery>

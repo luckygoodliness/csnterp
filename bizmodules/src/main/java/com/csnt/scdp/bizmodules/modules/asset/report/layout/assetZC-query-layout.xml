@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonreport version="1.0">
+    <report>
+        <reporttype>L</reporttype>
+        <reporttemplate>erp/asset/AssetZC.cpt</reporttemplate>
+        <reportcache>false</reportcache>
+    </report>
+    <conditions columns="4">
+        <JHidden cid="officeIdDesc" field="officeIdDesc"/>
+        <JErpDepartMent pos="A1:A1" cid="officeId" fieldLabel_s="officeId" field="officeId" labelWidth_n="100"
+                        allowBlank_b="true"/>
+        <JCombo pos="B1:B1" fieldLabel_s="assetReportType" cid="assetReportType" comboType="scdp_fmcode"
+                codeType="ASSET_REPORT_TYPE" displayDesc_b="true" field="assetReportType"/>
+
+        <JCur pos="C1:C1" fieldLabel_s="localValueMin" cid="localValueMin" field="localValueMin"/>
+        <JCur pos="D1:D1" fieldLabel_s="localValueMax" cid="localValueMax" field="localValueMax"/>
+
+        <JHidden cid="isNew" field="isNew"/>
+        <JHidden cid="isMaintain" field="isMaintain"/>
+        <JHidden cid="isDiscard" field="isDiscard"/>
+    </conditions>
+</commonreport>

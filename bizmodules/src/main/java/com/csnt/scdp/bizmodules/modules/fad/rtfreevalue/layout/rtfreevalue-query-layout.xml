@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>rtfreevalue-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>seq_no desc</defaultSort>
+    <conditions columns="4">
+        <!--<JText pos="A1:A1" cid="accountNo" fieldLabel_s="accountNo" field="account_no"/>
+        <JText pos="B1:B1" cid="accountType" fieldLabel_s="accountType" field="account_type"/>-->
+        <JCombo pos="A1:A1" cid="accountNo" fieldLabel_s="accountType" field="account_no"
+                comboType="fm_fad_rtfreevalue_account_no_out_person_org" displayDesc_b="true" multiSelect_b="true"/>
+        <JText pos="B1:B1" cid="accountInfoCode" fieldLabel_s="accountInfoCode" field="account_info_code"/>
+        <JText pos="C1:C1" cid="accountInfoName" fieldLabel_s="accountInfoName" field="account_info_name"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="accountNo" dataIndex="accountNo" width_n="120"/>
+        <JTextCol text_s="accountType" dataIndex="accountType" width_n="120"/>
+        <JTextCol text_s="accountInfoCode" dataIndex="accountInfoCode" width_n="120"/>
+        <JTextCol text_s="accountInfoName" dataIndex="accountInfoName" width_n="120"/>
+    </results>
+</commonquery>

@@ -1,0 +1,512 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20141222" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="BUDGET_EXECUTE" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="year"/>
+<O>
+<![CDATA[2016]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="subjectName"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT ORG.ORG_NAME,
+       NB.*,
+       NVL(R.VALID_REQ, 0) AS VALID_REQ
+  FROM SCDP_ORG ORG
+  LEFT JOIN VW_NON_BUDGET_EXECUTE NB
+    ON NB.OFFICE_ID = ORG.ORG_CODE
+  LEFT JOIN (SELECT BUDGET_C_UUID as BUDGET_UUID,
+                    SUM(DECODE(SIGN(NVL(VR.MONEY, 0) -
+                               NVL(VR.CLEARANCE_MONEY, 0)),
+                               1,
+                               NVL(VR.MONEY, 0) -
+                               NVL(VR.CLEARANCE_MONEY, 0),
+                               0)) AS VALID_REQ
+               FROM V_REPORT_FAD_CASH_REQ VR
+              GROUP BY VR.BUDGET_C_UUID) R
+    ON NB.UUID = R.BUDGET_UUID
+ WHERE ORG.ORG_TYPE = 'D' 
+	AND  NB.year= '${year}'   
+	AND  NB.office_id like  '${officeId}' ||'%'
+	AND  NB.FINANCIAL_SUBJECT like '${subjectName}' ||'%'
+ ORDER BY ORG.SEQ_NO ASC, NB.SEQ_NO ASC
+]]></Query>
+</TableData>
+<TableData name="ORG" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select *　from scdp_org
+where org_code='${officeId}' ]]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR F="0" T="3"/>
+<FR F="6" T="6"/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[723900,723900,723900,1219200,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[457200,0,4114800,3200400,5676900,3771900,3276600,4267200,3619500,3429000,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="0" cs="8" rs="2" s="0">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=$year + "公司非项目预算执行情况表"]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="2" cs="3">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="2" cs="5" s="1">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[="部门：" + if(OR($officeId = "", ISNULL($officeId)), "全部", ORG.select(org_name)) + "；费用内容：" + if(OR($subjectName = "", ISNULL($subjectName)), "全部", $subjectName)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="3" s="2">
+<O>
+<![CDATA[部门]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="3" s="2">
+<O>
+<![CDATA[代号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="3" s="2">
+<O>
+<![CDATA[费用内容]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="3" s="2">
+<O>
+<![CDATA[本年拨款(元)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="3" s="2">
+<O>
+<![CDATA[本年占用(元)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="3" s="2">
+<O>
+<![CDATA[实际支出(元)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="3" s="2">
+<O>
+<![CDATA[有效请款(元)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="3" s="2">
+<O>
+<![CDATA[余额(元)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="4" rs="2">
+<O t="DSColumn">
+<Attributes dsName="BUDGET_EXECUTE" columnName="OFFICE_ID"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="4" rs="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="BUDGET_EXECUTE" columnName="ORG_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="4" s="3">
+<O t="DSColumn">
+<Attributes dsName="BUDGET_EXECUTE" columnName="SUBJECT_CODE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="4" s="3">
+<O t="DSColumn">
+<Attributes dsName="BUDGET_EXECUTE" columnName="FINANCIAL_SUBJECT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="4" s="4">
+<O t="DSColumn">
+<Attributes dsName="BUDGET_EXECUTE" columnName="REAL_THIS_YEAR_APPROPRIATION"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="4" s="4">
+<O t="DSColumn">
+<Attributes dsName="BUDGET_EXECUTE" columnName="LOCKED_BUDGET"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="4" s="4">
+<O t="DSColumn">
+<Attributes dsName="BUDGET_EXECUTE" columnName="HAPPENED_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="4" s="5">
+<O t="DSColumn">
+<Attributes dsName="BUDGET_EXECUTE" columnName="VALID_REQ"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="JavaScript2">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters>
+<Parameter>
+<Attributes name="year"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=$year]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="officeId"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=B5]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="FadSubjectCode"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=D5]]></Attributes>
+</O>
+</Parameter>
+</Parameters>
+<Content>
+<![CDATA[parent.postMessage('NonFadReqDetail,'+year+','+officeId+','+FadSubjectCode,'*');]]></Content>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<CellPageAttr/>
+<Widget class="com.fr.form.ui.TextEditor">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<TextAttr/>
+<Reg class="com.fr.form.ui.reg.NoneReg"/>
+<widgetValue/>
+</Widget>
+<CellInsertPolicy>
+<InsertPolicy>
+<![CDATA[copy]]></InsertPolicy>
+</CellInsertPolicy>
+<Expand dir="0"/>
+</C>
+<C c="9" r="4" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=F5 -G5]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="5" cs="2" s="6">
+<O>
+<![CDATA[合计(元)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="5" s="7">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(F5)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="5" s="7">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(G5)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="5" s="7">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(H5)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="5" s="7">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(I5)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="5" s="7">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(J5)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="6" cs="3" s="8">
+<O>
+<![CDATA[合计(元)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="6" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(F5)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="6" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(G5)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="6" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(H5)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="6" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(I5)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="6" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(J5)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting>
+<PaperSize width="34560000" height="86400000"/>
+<Margin top="986400" left="432000" bottom="986400" right="432000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="120"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72" foreground="-16776961" underline="1"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="ColorBackground" color="-2171170"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="ColorBackground" color="-2171170"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="72"/>
+<Background name="ColorBackground" color="-3342388"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="1" size="72"/>
+<Background name="ColorBackground" color="-3342388"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

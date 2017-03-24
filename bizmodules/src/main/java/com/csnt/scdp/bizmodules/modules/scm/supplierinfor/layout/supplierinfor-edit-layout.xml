@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JTab pos="A1:A1" row="flex" col="1*1" border_n="1">
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="基本信息" border_n="1">
+            <JForm pos="A1:A1" cid="scmSupplierDto" row="23*17" col="0.25*4" title_s="" border_n="1">
+                <JHidden cid="uuid"/>
+                <JHidden cid="tblVersion"/>
+                <JText pos="A1:A1" cid="supplierCode" fieldLabel_s="supplierCode" allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+                <JText pos="B1:B1" cid="supplierCodeForGroup" fieldLabel_s="supplierCodeForGroup" allowBlank_b="true"/>
+                <!--<JText pos="C1:C1" cid="inoutType" fieldLabel_s="是否内部单位" allowBlank_b="true"/>-->
+                <JCombo pos="C1:C1" cid="inoutType" fieldLabel_s="是否内部单位" allowBlank_b="true"
+                        comboType="scdp_fmcode"
+                        codeType="SCM_SUPPLIER_IN_OUT_ORG" displayDesc_b="true"/>
+                <JText pos="D1:D1" cid="taxRegistrationNo" fieldLabel_s="taxRegistrationNo" allowBlank_b="false"/>
+                <JText pos="A2:B2" cid="completeName" fieldLabel_s="completeName" allowBlank_b="false"/>
+                <JText pos="C2:D2" cid="simpleName" fieldLabel_s="simpleName" allowBlank_b="false"/>
+                <JText pos="A3:B3" cid="englishName" fieldLabel_s="englishName" allowBlank_b="true"/>
+                <JText pos="C3:D3" cid="oldName" fieldLabel_s="oldName" allowBlank_b="true"/>
+                <JText pos="A4:A4" cid="industryType" fieldLabel_s="industryType" allowBlank_b="true"/>
+                <JText pos="B4:B4" cid="apName" fieldLabel_s="apName" allowBlank_b="false"/>
+                <JText pos="C4:C4" cid="apId" fieldLabel_s="apId" allowBlank_b="true"/>
+                <JDec pos="D4:D4" cid="registeredCapital" fieldLabel_s="registeredCapital" allowBlank_b="true"/>
+                <JCurrencyGrid pos="A5:A5" cid="registeredCapitalCurrencyName" fieldLabel_s="registeredCapitalCurrency"
+                               allowBlank_b="true"
+                               refer_j='[{"refField":"registeredCapitalCurrency","valueField":"currencyCode"}]'/>
+                <JHidden cid="registeredCapitalCurrency"/>
+                <JDec pos="B5:B5" cid="fixedAsset" fieldLabel_s="fixedAsset" allowBlank_b="true"/>
+                <JCurrencyGrid pos="C5:C5" cid="fixedAssetCurrencyName" fieldLabel_s="fixedAssetCurrency"
+                               allowBlank_b="true"
+                               refer_j='[{"refField":"fixedAssetCurrency","valueField":"currencyCode"}]'/>
+                <JHidden cid="fixedAssetCurrency"/>
+                <JDatetime pos="D5:D5" cid="registeredDate" fieldLabel_s="registeredDate" allowBlank_b="true"/>
+                <JInt pos="A6:A6" cid="employeeNumber" fieldLabel_s="employeeNumber" allowBlank_b="true"/>
+                <JCombo pos="B6:B6" cid="country" fieldLabel_s="country" allowBlank_b="true"
+                        comboType="fm_gis_country"
+                        displayDesc_b="true" fullInfo_b="true" cascadeField="province,city"/>
+                <JCombo pos="C6:C6" cid="province" fieldLabel_s="province" allowBlank_b="true" comboType="fm_gis_state"
+                        displayDesc_b="true" fullInfo_b="true" filterFields="country|countryCode"/>
+                <JCombo pos="D6:D6" cid="city" fieldLabel_s="city" allowBlank_b="true" comboType="fm_gis_city"
+                        displayDesc_b="true" fullInfo_b="true" filterFields="country|countryCode"/>
+                <JText pos="A7:A7" cid="contactInfo" fieldLabel_s="contactInfo" allowBlank_b="true"/>
+                <JText pos="B7:B7" cid="url" fieldLabel_s="url" allowBlank_b="true"/>
+                <JText pos="C7:C7" cid="registeredAddress" fieldLabel_s="registeredAddress" allowBlank_b="true"/>
+                <JText pos="D7:D7" cid="postcode" fieldLabel_s="postcode" allowBlank_b="true"/>
+                <JText pos="A8:A8" cid="swiftCode" fieldLabel_s="swiftCode" allowBlank_b="true"/>
+                <JDatetime pos="B8:B8" cid="startDate" fieldLabel_s="startDate" allowBlank_b="true"/>
+                <JDatetime pos="C8:C8" cid="endDate" fieldLabel_s="endDate" allowBlank_b="true"/>
+                <JCombo pos="D8:D8" cid="supplierStatus" fieldLabel_s="supplierStatus" allowBlank_b="true"
+                        comboType="scdp_fmcode"
+                        codeType="SCM_SUPPLIER_STATUS" displayDesc_b="true"/>
+                <JCombo pos="A9:A9" cid="supplierType" fieldLabel_s="supplierType" allowBlank_b="true"
+                        comboType="scdp_fmcode"
+                        codeType="SCM_SUPPLIER_TYPE" displayDesc_b="true"/>
+                <JCombo pos="B9:B9" cid="enterpriseScale" fieldLabel_s="enterpriseScale" allowBlank_b="false"
+                        comboType="scdp_fmcode"
+                        codeType="SCM_SUPPLIER_ENTERPRISE_SCALE" displayDesc_b="true"/>
+                <JCombo pos="C9:C9" cid="supplierProperty" fieldLabel_s="supplierProperty" allowBlank_b="true"
+                        comboType="scdp_fmcode"
+                        codeType="SCM_SUPPLIER_PROPERTY" displayDesc_b="true"/>
+                <JCombo pos="D9:D9" cid="organizationType" fieldLabel_s="organizationType" allowBlank_b="false"
+                        comboType="scdp_fmcode"
+                        codeType="SCM_SUPPLIER_ORGANIZATION_TYPE" displayDesc_b="true"/>
+                <JCombo pos="A10:A10" cid="enterpriseType" fieldLabel_s="enterpriseType" allowBlank_b="false"
+                        comboType="scdp_fmcode"
+                        codeType="SCM_SUPPLIER_ENTERPRISE_TYPE" displayDesc_b="true"/>
+                <JCombo pos="B10:B10" cid="levelCode" fieldLabel_s="levelCode" allowBlank_b="true"
+                        comboType="scdp_fmcode" readOnly_b="true" adaptable_b="false"
+                        codeType="SCM_SUPPLIER_LEVEL" displayDesc_b="true"/>
+                <JText pos="C10:C10" cid="ncCode" fieldLabel_s="ncCode" allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+                <JCombo pos="D10:D10" fieldLabel_s="state" allowBlank_b="true" cid="state"
+                        comboType="scdp_fmcode"
+                        codeType="CDM_BILL_STATE" displayDesc_b="true" readOnly_b="true" adaptable_b="false"/>
+                <JCombo pos="A11:A11" fieldLabel_s="taxTypes" allowBlank_b="false" cid="taxTypes"
+                        comboType="scdp_fmcode"
+                        codeType="SCM_SUPPLIER_TAX_TYPES" displayDesc_b="true"/>
+                <JCombo pos="B11:B11" fieldLabel_s="supplierGenre" allowBlank_b="false" cid="supplierGenre"
+                        comboType="scdp_fmcode"
+                        codeType="SCM_SUPPLIER_GENRE" displayDesc_b="true"/>
+                <JCheck pos="C11:C11" cid="isEBusiness" fieldLabel_s="isEBusiness" allowBlank_b="true"/>
+                <JTextArea pos="A12:B14" cid="businessScope" fieldLabel_s="businessScope" allowBlank_b="true"
+                           wrap_b="true"/>
+                <JTextArea pos="C12:D14" cid="companyIntroduce" fieldLabel_s="companyIntroduce" allowBlank_b="true"
+                           wrap_b="true"/>
+                <JTextArea pos="A15:B17" cid="mainClient" fieldLabel_s="mainClient" allowBlank_b="true" wrap_b="true"/>
+            </JForm>
+        </JPanel>
+
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="供应商联系人" border_n="1">
+            <JEGrid pos="A1:A1" cid="scmSupplierContactsDto" store="Supplierinfor.store.ScmSupplierContactsStore">
+                <JTextCol text_s="contacts" dataIndex="contacts" width_n="120">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="post" dataIndex="post" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="phone" dataIndex="phone" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="mobilePhone" dataIndex="mobilePhone" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="qq" dataIndex="qq" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="weixin" dataIndex="weixin" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="email" dataIndex="email" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="remark" dataIndex="remark" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <!--<JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="projectId" dataIndex="projectId" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+            </JEGrid>
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex,25" col="0.1*10" title_s="供应商资质" border_n="1">
+            <JEGrid pos="A1:J1" cid="cdmFileRelationDto" store="Cdmfile.store.CdmFileRelationStore"
+                    withToolbar_b="false" cdmFileType="SCM_SUPPLIER">
+                <JTextCol text_s="fileName" dataIndex="fileName" width_n="120"/>
+                <!--<JTextCol text_s="fileClassify" dataIndex="fileClassify" width_n="120"/>-->
+                <JComboCol text_s="文件类型" dataIndex="fileClassify" width_n="100">
+                    <JCombo  cid="fileClassify" allowBlank_b="false"
+                             comboType="scdp_fmcode"  readOnly_b="true" menuCode="SUPPLIERINFOR"
+                             codeType="CDM_FILE_TYPE_DETAIL" displayDesc_b="true" fullInfo_b="false"
+                             multiSelect_b="false"/>
+                </JComboCol>
+                <JDateCol text_s="avtivedStartDate" dataIndex="begindate" width_n="150"/>
+                <JDateCol text_s="avtivedEndDate" dataIndex="enddate" width_n="150"/>
+                <JTextCol text_s="fileSize" dataIndex="fileSize" width_n="120"/>
+                <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+            </JEGrid>
+            <JButton pos="A2:A2" cid="fileUpload" text_s="attachmentUpload" iconCls="file_upload_icon"/>
+            <JButton pos="B2:B2" cid="fileDownload" text_s="attachmentDownload" iconCls="file_download_icon"/>
+            <JButton pos="C2:C2" cid="filePreview" text_s="attachmentPreview" iconCls="file_preview_icon"/>
+            <JButton pos="D2:D2" cid="fileDelete" text_s="attachmentDelete" iconCls="delete_btn"/>
+
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="供应商关键字" border_n="1">
+            <JEGrid pos="A1:A1" cid="scmSukpplierKeyDto" store="Supplierinfor.store.ScmSukpplierKeyStore">
+                <JTextCol text_s="keyNaem" dataIndex="keyNaem" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="remark" dataIndex="remark" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <!--<JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="projectId" dataIndex="projectId" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+            </JEGrid>
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="月度黑名单" border_n="1">
+            <JEGrid pos="A1:A1" cid="prmBlacklistMonthDto" store="Supplierinfor.store.PrmBlacklistMonthStore"
+                    withToolbar_b="false">
+                <JDateCol text_s="monthFrom" dataIndex="monthFrom" width_n="150">
+                    <JDate allowBlank_b="true"/>
+                </JDateCol>
+                <JDateCol text_s="monthTo" dataIndex="monthTo" width_n="150">
+                    <JDate allowBlank_b="true"/>
+                </JDateCol>
+                <JTextCol text_s="complainDepartment" dataIndex="complainDepartmentName" width_n="300"
+                          displayDesc_b="true">
+                </JTextCol>
+                <JHidden dataIndex="complainDepartment"/>
+                <JTextCol text_s="complainant" dataIndex="complainantName" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="reason" dataIndex="reason" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+            </JEGrid>
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="银行账号" border_n="1">
+            <JEGrid pos="A1:A1" cid="scmSupplierBankDto" store="Supplierinfor.store.ScmSupplierBankStore">
+                <!--<JTextCol text_s="scmSupplierId" dataIndex="scmSupplierId" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <JTextCol text_s="bankName" dataIndex="bankName" width_n="120">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="bankAddress" dataIndex="bankAddress" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="accountNo" dataIndex="accountNo" width_n="120">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JComboCol text_s="isEffect" dataIndex="isEffect" width_n="120" displayDesc_b="true">
+                    <JCombo pos="B1:B1" allowBlank_b="false" comboType="scdp_fmcode"
+                            codeType="SCM_IS_EFFECT" displayDesc_b="true"/>
+                </JComboCol>
+                <JTextCol text_s="remark" dataIndex="remark" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <!--<JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="projectId" dataIndex="projectId" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+                <!--<JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120">-->
+                <!--<JText allowBlank_b="true"/>-->
+                <!--</JTextCol>-->
+            </JEGrid>
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="供方评价" border_n="1">
+            <JEGrid pos="A1:A1" cid="scmSupplierEvaluationDto" store="Supplierinfor.store.ScmSupplierEvaluationStore"
+                    withToolbar_b="false">
+                <JTextCol text_s="evaluateFrom" dataIndex="evaluateFrom" width_n="120"/>
+                <JHidden text_s="scmContractId" dataIndex="scmContractId" width_n="120"/>
+                <JTextCol text_s="scmContractCode" dataIndex="scmContractCode" width_n="120"/>
+                <JIntCol text_s="price" dataIndex="price" width_n="100" />
+                <JIntCol text_s="business" dataIndex="business" width_n="100" />
+                <JIntCol text_s="personQuality" dataIndex="personQuality" width_n="100" />
+                <JIntCol text_s="organizingCapability" dataIndex="organizingCapability" width_n="100" />
+                <JIntCol text_s="compliance" dataIndex="compliance" width_n="100" />
+                <JIntCol text_s="securityManagement" dataIndex="securityManagement" width_n="100" />
+                <JIntCol text_s="finalEstimate" dataIndex="finalEstimate" width_n="100" />
+                <JIntCol text_s="arrivalTime" dataIndex="arrivalTime" width_n="100" />
+                <JIntCol text_s="equipmentQuality" dataIndex="equipmentQuality" width_n="100" />
+                <JIntCol text_s="service" dataIndex="service" width_n="100" />
+                <JIntCol text_s="comprehensive" dataIndex="comprehensive" width_n="100" />
+                <JTextCol text_s="evaluate" dataIndex="remark" width_n="120"/>
+                <JTextCol text_s="evaluationName" dataIndex="createBy" width_n="120"/>
+                <JDatetimeCol text_s="evaluationTime" dataIndex="createTime" width_n="150"/>
+            </JEGrid>
+        </JPanel>
+    </JTab>
+</view>

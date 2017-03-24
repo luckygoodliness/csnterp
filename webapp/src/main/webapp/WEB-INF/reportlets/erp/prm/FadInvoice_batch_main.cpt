@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="T1" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="invoiceReqNo"/>
+<O>
+<![CDATA[|CGPZ201509070025|CGPZ201412240033|BX16100190|]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--T1
+SELECT
+F.INVOICE_REQ_NO,
+S.SCM_CONTRACT_ID
+FROM
+FAD_INVOICE F
+LEFT JOIN SCM_CONTRACT_INVOICE S
+ON F.UUID = S.FAD_INVOICE_ID
+WHERE
+F.INVOICE_REQ_NO
+IN
+(
+  SELECT
+  REGEXP_SUBSTR('${invoiceReqNo}','[^|]A+',1,LEVEL) AS STR
+  FROM
+  DUAL
+  CONNECT BY LEVEL <= LENGTH('${invoiceReqNo}') - LENGTH(REPLACE('${invoiceReqNo}', '|', '')) - 1
+)
+ORDER BY F.INVOICE_REQ_NO DESC]]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[0,42480000,0,42480000,42480000,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[30096000,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="INVOICE_REQ_NO"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="1">
+<O t="SubReport">
+<SubReportAttr/>
+<packee class="com.fr.main.impl.LinkWorkBookTemplate">
+<Path>
+<![CDATA[erp/prm/FadInvoice_batch_粘存单.cpt]]></Path>
+</packee>
+<KVS>
+<KV key="invoiceReqNo">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=A1]]></Attributes>
+</O>
+</KV>
+</KVS>
+</O>
+<PrivilegeControl/>
+<Expand upParentDefault="false" up="A1"/>
+</C>
+<C c="0" r="2">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="SCM_CONTRACT_ID"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" upParentDefault="false" up="A1"/>
+</C>
+<C c="0" r="3">
+<O t="SubReport">
+<SubReportAttr/>
+<packee class="com.fr.main.impl.LinkWorkBookTemplate">
+<Path>
+<![CDATA[erp/prm/FadInvoice_batch_收料单.cpt]]></Path>
+</packee>
+<KVS>
+<KV key="invoiceReqNo">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=A1]]></Attributes>
+</O>
+</KV>
+<KV key="scmContractId">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=A3]]></Attributes>
+</O>
+</KV>
+</KVS>
+</O>
+<PrivilegeControl/>
+<Expand upParentDefault="false" up="A3"/>
+</C>
+<C c="0" r="4">
+<O t="SubReport">
+<SubReportAttr/>
+<packee class="com.fr.main.impl.LinkWorkBookTemplate">
+<Path>
+<![CDATA[erp/prm/FadInvoice_batch_领料单.cpt]]></Path>
+</packee>
+<KVS>
+<KV key="invoiceReqNo">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=A1]]></Attributes>
+</O>
+</KV>
+<KV key="scmContractId">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=A3]]></Attributes>
+</O>
+</KV>
+</KVS>
+</O>
+<PrivilegeControl/>
+<Expand upParentDefault="false" up="A3"/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings pageOrder="1" headerHeight="0" footerHeight="0">
+<PaperSetting>
+<Margin top="0" left="0" bottom="0" right="0"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList/>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

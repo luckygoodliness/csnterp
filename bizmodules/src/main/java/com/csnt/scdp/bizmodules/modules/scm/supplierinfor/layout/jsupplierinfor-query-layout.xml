@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>supplierinfor-dao</daotype>
+        <daokey>efficient_supplier_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="A1:A1" fieldLabel_s="supplierCode" cid="supplierCode" field="supplier_code"/>
+        <JText pos="B1:B1" fieldLabel_s="supplierCodeForGroup" cid="supplierCodeForGroup" field="supplierCode_for_group"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="supplierCode" dataIndex="supplierCode" width_n="120"/>
+        <JTextCol text_s="supplierCodeForGroup" dataIndex="supplierCodeForGroup" width_n="120"/>
+        <JTextCol text_s="inoutType" dataIndex="inoutType" width_n="120"/>
+        <JTextCol text_s="completeName" dataIndex="completeName" width_n="120"/>
+        <JTextCol text_s="oldName" dataIndex="oldName" width_n="120"/>
+        <JTextCol text_s="englishName" dataIndex="englishName" width_n="120"/>
+        <JTextCol text_s="simpleName" dataIndex="simpleName" width_n="120"/>
+        <JTextCol text_s="supplierOthername" dataIndex="supplierOthername" width_n="120"/>
+        <JTextCol text_s="industryType" dataIndex="industryType" width_n="120"/>
+        <JTextCol text_s="apName" dataIndex="apName" width_n="120"/>
+        <JTextCol text_s="apId" dataIndex="apId" width_n="120"/>
+        <JDecCol text_s="registeredCapital" dataIndex="registeredCapital" width_n="150"/>
+        <JTextCol text_s="registeredCapitalCurrency" dataIndex="registeredCapitalCurrency" width_n="120"/>
+        <JDecCol text_s="fixedAsset" dataIndex="fixedAsset" width_n="150"/>
+        <JTextCol text_s="fixedAssetCurrency" dataIndex="fixedAssetCurrency" width_n="120"/>
+        <JDatetimeCol text_s="registeredDate" dataIndex="registeredDate" width_n="150"/>
+        <JIntCol text_s="employeeNumber" dataIndex="employeeNumber" width_n="100" />
+        <JTextCol text_s="contactInfo" dataIndex="contactInfo" width_n="120"/>
+        <JTextCol text_s="url" dataIndex="url" width_n="120"/>
+        <JTextCol text_s="country" dataIndex="country" width_n="120"/>
+        <JTextCol text_s="province" dataIndex="province" width_n="120"/>
+        <JTextCol text_s="city" dataIndex="city" width_n="120"/>
+        <JTextCol text_s="registeredAddress" dataIndex="registeredAddress" width_n="120"/>
+        <JTextCol text_s="postcode" dataIndex="postcode" width_n="120"/>
+        <JTextCol text_s="businessScope" dataIndex="businessScope" width_n="120"/>
+        <JTextCol text_s="companyIntroduce" dataIndex="companyIntroduce" width_n="120"/>
+        <JTextCol text_s="mainClient" dataIndex="mainClient" width_n="120"/>
+        <JTextCol text_s="swiftCode" dataIndex="swiftCode" width_n="120"/>
+        <JDatetimeCol text_s="startDate" dataIndex="startDate" width_n="150"/>
+        <JDatetimeCol text_s="endDate" dataIndex="endDate" width_n="150"/>
+        <JTextCol text_s="supplierStatus" dataIndex="supplierStatus" width_n="120"/>
+        <JTextCol text_s="supplierType" dataIndex="supplierType" width_n="120"/>
+        <JTextCol text_s="enterpriseScale" dataIndex="enterpriseScale" width_n="120"/>
+        <JTextCol text_s="supplierProperty" dataIndex="supplierProperty" width_n="120"/>
+        <JTextCol text_s="organizationType" dataIndex="organizationType" width_n="120"/>
+        <JTextCol text_s="enterpriseType" dataIndex="enterpriseType" width_n="120"/>
+        <JTextCol text_s="levelCode" dataIndex="levelCode" width_n="120"/>
+        <JTextCol text_s="taxRegistrationNo" dataIndex="taxRegistrationNo" width_n="120"/>
+        <JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120"/>
+        <JTextCol text_s="projectId" dataIndex="projectId" width_n="120"/>
+        <JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120"/>
+        <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+        <JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+        <JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>
+        <JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120"/>
+        <JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>
+    </results>
+</commonquery>

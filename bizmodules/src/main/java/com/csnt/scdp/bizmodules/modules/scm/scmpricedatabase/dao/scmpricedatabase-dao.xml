@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <price_database_query>
+        <common>
+            <![CDATA[select *
+  from (select scd.material_name,
+               scd.model,
+               ss.complete_name,
+               sc.supplier_code as supplier_id,
+               scd.unit_price_talk,
+               scd.unit_price_true,
+               scd.amount,
+               scd.units,
+               sc.scm_contract_code,
+               sc.uuid,
+               sc.effective_date,
+               so.org_name,
+               sc.office_id,
+               ppm.project_code,
+               ppm.uuid as project_id,
+               ppm.project_name,
+               pc.BUILD_REGION,
+               BUILD_REGION_name,
+               smc.name
+          from scm_contract_detail scd
+          left join scm_contract sc on sc.uuid = scd.scm_contract_id
+          left join PRM_PURCHASE_PACKAGE ppp on ppp.uuid=sc.purchase_package_id
+          left join scm_material_class smc on smc.code=ppp.material_class_code
+          left join prm_project_main ppm on ppm.uuid = sc.project_id
+          left join scm_supplier ss on sc.supplier_code = ss.uuid
+          left join scdp_org so on sc.office_id = so.org_code
+          left join (select prm_project_main_id，LISTAGG(pcd.state_desc, ';') WITHIN
+ GROUP(
+ ORDER BY pcd.prm_project_main_id) as BUILD_REGION_name，LISTAGG(pcd.BUILD_REGION, ';') WITHIN
+ GROUP(
+ ORDER BY pcd.prm_project_main_id) as BUILD_REGION
+  from (select distinct pcd.prm_project_main_id,
+                        fs.state_desc,
+                        pc.BUILD_REGION
+          from prm_contract pc
+          left join prm_contract_detail pcd on pc.uuid = pcd.prm_contract_id
+          left join Fm_State fs on fs.state_code = pc.BUILD_REGION) pcd
+ group by pcd.prm_project_main_id
+) pc on pc.prm_project_main_id = ppm.uuid) R  where ${conditions}]]>
+        </common>
+    </price_database_query>
+
+</DAO>

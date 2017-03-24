@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>prmpurchasereq-dao</daotype>
+        <daokey>arrdive-location-query</daokey>
+    </querysql>
+    <!--<defaultSort>CONSIGNEE</defaultSort>-->
+    <conditions columns="4">
+        <JText pos="A1:A1" fieldLabel_s="arriveLocation" cid="arriveLocation" field="arrive_location"/>
+    </conditions>
+    <quickquery>
+        <QueryCids>arriveLocation</QueryCids>
+        <ForceQueryCids></ForceQueryCids>
+    </quickquery>
+    <results>
+        <JTextCol text_s="到货地点" dataIndex="arriveLocation" width_n="120" />
+        <JTextCol text_s="联系人" dataIndex="consignee" width_n="120"/>
+        <JTextCol text_s="联系方式" dataIndex="contactWay" width_n="120"/>
+    </results>
+</commonquery>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JPanel pos="A1:A1" row="150,flex" col="1*1" title_s="" border_n="0">
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="" border_n="0">
+            <JForm pos="A1:A1" cid="scmSaeDto" row="23*5,flex" col="0.25*4" title_s="" border_n="1">
+                <JHidden cid="uuid"/>
+                <JHidden cid="tblVersion"/>
+                <JHidden cid="saiCaseDesc"/>
+                <JHidden cid="waiCaseDesc"/>
+                <JHidden cid="appraiserCaseDesc"/>
+                <JCombo pos="A1:A1" cid="curYear" fieldLabel_s="curYear" displayDesc_b="true" comboType="scdp_fmcode"
+                        codeType="CDM_YEAR" allowBlank_b="false" labelWidth_n="100" />
+                <JText pos="B1:D1" cid="title" fieldLabel_s="title" allowBlank_b="false"/>
+                <JCaseTypeGrid pos="A2:A2" cid="saiCase" fieldLabel_s="saiCase" allowBlank_b="false"/>
+                <JCaseTypeGrid pos="B2:B2" cid="waiCase" fieldLabel_s="waiCase" allowBlank_b="false"/>
+                <JAppraiserCaseGrid pos="C2:C2" cid="appraiserCase" fieldLabel_s="appraiserCase" allowBlank_b="false"/>
+                <JTextArea pos="A3:D5" cid="remark" fieldLabel_s="remark" allowBlank_b="true"/>
+            </JForm>
+        </JPanel>
+
+        <JPanel pos="A2:A2" row="flex" col="0.25*2" title_s="" border_n="0">
+            <JFieldSet pos="A1:B1" title_s="待评价供方" col="1*1" row="flex" border_n="1">
+                <JEGrid pos="A1:A1" cid="scmSaeObjectDto" store="Scmsae.store.ScmSaeObjectStore">
+                    <JHidden text_s="scmSaeId" dataIndex="scmSaeId"/>
+                    <JHidden text_s="materialCode" dataIndex="materialCode"/>
+                    <JHidden text_s="materialType" dataIndex="materialType"/>
+                    <JHidden text_s="supplierId" dataIndex="supplierId"/>
+
+                    <JTextCol text_s="supplierName" dataIndex="supplierName" width_n="150"/>
+                    <JTextCol text_s="materialClassName" dataIndex="materialClassName" width_n="150"/>
+                    <JTextCol text_s="operativeSegments" dataIndex="operativeSegments" width_n="100"/>
+                    <JDecCol text_s="综合评分(年度)" dataIndex="comprehensive" width_n="100" align="center"/>
+                    <JIntCol text_s="contractNum" dataIndex="contractNum" width_n="100" align="center"/>
+                    <JCurCol text_s="amount" dataIndex="amount" width_n="120" align="right"/>
+                    <JTextCol text_s="materialTypeName" dataIndex="materialTypeName" width_n="100" align="center"/>
+                </JEGrid>
+            </JFieldSet>
+
+            <JFieldSet pos="C1:D1" title_s="评价人员列表" col="1*1" row="flex" border_n="1">
+                <JEGrid pos="A1:A1" cid="scmSaeFormDto" store="Scmsae.store.ScmSaeFormStore" bcid="scmSaeObjectDto.bind" isBind_b="true" sortableColumns_b="true">
+                    <JHidden text_s="scmSaeObjectId" dataIndex="scmSaeObjectId" width_n="120"></JHidden>
+                    <!--
+                    <JGridFieldCol text_s="userCode" dataIndex="userCode" width_n="120">
+                        <JUserGrid valueField_s="userId" displayDesc_b="true"
+                                   descField_s="userName" allowblank_b="true"/>
+                    </JGridFieldCol>-->
+
+                    <JGridFieldCol text_s="userCode" dataIndex="userCode" width_n="120">
+                        <JUserGrid valueField_s="userId" displayDesc_b="true"
+                                   descField_s="userName" allowblank_b="false"
+                                   refer_j='[{"refField":"officeIdDesc","valueField":"orgName"}]'/>
+                    </JGridFieldCol>
+
+                    <!--
+                    <JTextCol text_s="officeIdDesc" dataIndex="officeIdDesc" width_n="120" readOnly_b = "true"/>-->
+
+                    <JGridFieldCol text_s="officeId" dataIndex="officeId" width_n="120">
+                        <JErpDepartMent valueField_s="orgCode" displayDesc_b="true"
+                                        descField_s="orgName" allowblank_b="true" readOnly_b = "true"  adaptable_b="false"/>
+                    </JGridFieldCol>
+
+                    <JTextCol text_s="state" dataIndex="state" width_n="120" readOnly_b = "true"/>
+                    <JDecCol text_s="综合评分(个人)" dataIndex="comprehensive" width_n="150" align="center"/>
+                </JEGrid>
+            </JFieldSet>
+
+        </JPanel>
+
+    </JPanel>
+
+</view>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[
+                SELECT (SELECT CODE_DESC
+                          FROM SCDP_CODE A
+                         WHERE A.SYS_CODE = T.CDM_FILE_TYPE
+                           AND CODE_TYPE = 'CDM_FILE_TYPE') AS CDM_FILE_TYPE_COMBO,
+                       T.*
+                  FROM CDM_FILE_RELATION T
+            where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+    <file_popup_query>
+        <common>
+            <![CDATA[
+                SELECT (SELECT CODE_DESC FROM SCDP_CODE A WHERE A.SYS_CODE = T.CDM_FILE_TYPE
+                AND CODE_TYPE = 'CDM_FILE_TYPE') AS CDM_FILE_TYPE_COMBO, T.*
+                FROM CDM_FILE_RELATION T
+                WHERE T.DATA_ID=? AND (T.IS_VOID IS NULL OR T.IS_VOID='0')]]>
+        </common>
+    </file_popup_query>
+</DAO>

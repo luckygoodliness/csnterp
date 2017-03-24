@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <fad_non_project_set_rule>
+        <common>
+            <![CDATA[
+            select
+            *
+            from
+            (
+                select
+                uuid,
+
+                fad_non_project_set_rule.office,
+                scdp_org.org_name office_desc,
+
+                fad_non_project_set_rule.financial_subject,
+                non_project_subject_subject.financial_subject_code || '[' || non_project_subject_subject.financial_subject || ']' financial_subject_name,
+
+                fad_non_project_set_rule.debtor_subject4a51,
+                debtorSubject4a51.subject_name debtor_subject4a51_name,
+
+                fad_non_project_set_rule.debtor_subject1,
+                debtorSubject1.subject_name debtor_subject1_name,
+
+                fad_non_project_set_rule.debtor_subject2,
+                debtorSubject2.subject_name debtor_subject2_name,
+
+                fad_non_project_set_rule.creditor_subject4a51a1a2,
+                creditorSubject4a51a1a2.subject_name creditor_subject4a51a1a2_name,
+
+                fad_non_project_set_rule.creditor_rtfree4a51a1a2,
+                creditorRtfree4a51a1a2.account_info_name creditor_rtfree4a51a1a2_name,
+
+                create_by,
+                create_time,
+                update_by,
+                update_time,
+                loc_timezone,
+                tbl_version,
+                is_void,
+                seq_no
+
+                from
+                fad_non_project_set_rule
+                left join (select org_code,org_name from scdp_org) scdp_org on fad_non_project_set_rule.office = scdp_org.org_code
+                left join (select financial_subject_code,financial_subject from non_project_subject_subject) non_project_subject_subject on fad_non_project_set_rule.financial_subject = non_project_subject_subject.financial_subject_code
+
+                left join (select distinct subject_code,subject_name from fad_accsubj_rtfreevalue) debtorSubject4a51 on fad_non_project_set_rule.debtor_subject4a51 = debtorSubject4a51.subject_code
+                left join (select distinct subject_code,subject_name from fad_accsubj_rtfreevalue) debtorSubject1 on fad_non_project_set_rule.debtor_subject1 = debtorSubject1.subject_code
+                left join (select distinct subject_code,subject_name from fad_accsubj_rtfreevalue) debtorSubject2 on fad_non_project_set_rule.debtor_subject2 = debtorSubject2.subject_code
+
+                left join (select distinct subject_code,subject_name from fad_accsubj_rtfreevalue) creditorSubject4a51a1a2 on fad_non_project_set_rule.creditor_subject4a51a1a2 = creditorSubject4a51a1a2.subject_code
+                left join (select distinct account_info_code,account_info_name from fad_rtfreevalue where account_no='96') creditorRtfree4a51a1a2 on fad_non_project_set_rule.creditor_rtfree4a51a1a2 = creditorRtfree4a51a1a2.account_info_code
+            ) fad_non_project_set_rule
+            where
+            ${conditions}
+            and
+            ${voidfilter}
+            ]]>
+        </common>
+    </fad_non_project_set_rule>
+    <fad_project_set_rule>
+        <common>
+            <![CDATA[
+            select
+            *
+            from
+            (
+                select
+                uuid,
+
+                fad_project_set_rule.office,
+                scdp_org_code_name(
+                  fad_project_set_rule.office
+                ) office_desc,
+
+                fad_project_set_rule.subject,
+                fad_base_subject.subject_no || '[' || fad_base_subject.subject_name || ']' subject_name,
+
+                fad_project_set_rule.project_code,
+
+                fad_project_set_rule.prm_code_type,
+                scdp_code.code_desc prm_code_type_name,
+
+                fad_project_set_rule.debtor_subject6a7,
+                debtorsubject6a7.subject_name debtor_subject6a7_name,
+
+                fad_project_set_rule.creditor_subject6a7,
+                creditorsubject6a7.subject_name creditor_subject6a7_name,
+
+                fad_project_set_rule.debtor_subject8,
+                debtorsubject8.subject_name debtor_subject8_name,
+
+                fad_project_set_rule.creditor_subject8,
+                creditorsubject8.subject_name creditor_subject8_name,
+
+                fad_project_set_rule.debtor_subject9a10,
+                debtorsubject9a10.subject_name debtor_subject9a10_name,
+
+                fad_project_set_rule.creditor_subject9a10,
+                creditorsubject9a10.subject_name creditor_subject9a10_name,
+
+                fad_project_set_rule.creditor_rtfree9a10,
+                creditorrtfree9a10.account_info_name creditor_rtfree9a10_name,
+
+                fad_project_set_rule.debtor_subject1,
+                debtorsubject1.subject_name debtor_subject1_name,
+
+                fad_project_set_rule.debtor_subject2,
+                debtorsubject2.subject_name debtor_subject2_name,
+
+                create_by,
+                create_time,
+                update_by,
+                update_time,
+                loc_timezone,
+                tbl_version,
+                is_void,
+                seq_no
+
+                from
+                fad_project_set_rule
+                left join (select subject_no,subject_name from fad_base_subject) fad_base_subject on fad_project_set_rule.subject = fad_base_subject.subject_no
+                left join (select sys_code,case when length(substr(code_desc,1,case when code_desc like '%（%' then instr(code_desc,'（',1,1) - 1 else length(code_desc) end )) = 2 then substr(code_desc,1,case when code_desc like '%（%' then instr(code_desc,'（',1,1) - 1 else length(code_desc) end ) || '类' else substr(code_desc,1,case when code_desc like '%（%' then instr(code_desc,'（',1,1) - 1 else length(code_desc) end ) end code_desc from scdp_code where code_type = 'PRM_CODE_TYPE_PP') scdp_code on fad_project_set_rule.prm_code_type = scdp_code.sys_code
+
+                left join (select distinct subject_code,subject_name from fad_accsubj_rtfreevalue) debtorsubject6a7 on fad_project_set_rule.debtor_subject6a7 = debtorsubject6a7.subject_code
+                left join (select distinct subject_code,subject_name from fad_accsubj_rtfreevalue) creditorsubject6a7 on fad_project_set_rule.creditor_subject6a7 = creditorsubject6a7.subject_code
+
+                left join (select distinct subject_code,subject_name from fad_accsubj_rtfreevalue) debtorsubject8 on fad_project_set_rule.debtor_subject8 = debtorsubject8.subject_code
+                left join (select distinct subject_code,subject_name from fad_accsubj_rtfreevalue) creditorsubject8 on fad_project_set_rule.creditor_subject8 = creditorsubject8.subject_code
+
+                left join (select distinct subject_code,subject_name from fad_accsubj_rtfreevalue) debtorsubject9a10 on fad_project_set_rule.debtor_subject9a10 = debtorsubject9a10.subject_code
+                left join (select distinct subject_code,subject_name from fad_accsubj_rtfreevalue) creditorsubject9a10 on fad_project_set_rule.creditor_subject9a10 = creditorsubject9a10.subject_code
+                left join (select distinct account_info_code,account_info_name from fad_rtfreevalue where account_no='96') creditorrtfree9a10 on fad_project_set_rule.creditor_rtfree9a10 = creditorrtfree9a10.account_info_code
+
+                left join (select distinct subject_code,subject_name from fad_accsubj_rtfreevalue) debtorsubject1 on fad_project_set_rule.debtor_subject1 = debtorsubject1.subject_code
+                left join (select distinct subject_code,subject_name from fad_accsubj_rtfreevalue) debtorsubject2 on fad_project_set_rule.debtor_subject2 = debtorsubject2.subject_code
+            ) fad_project_set_rule
+            where
+            ${conditions}
+            and
+            ${voidfilter}
+            and
+            ${selfconditions}
+            ]]>
+        </common>
+    </fad_project_set_rule>
+    <fad_project_run_set_rule>
+        <common>
+            <![CDATA[
+            select
+            *
+            from
+            (
+                select
+                uuid,
+
+                fad_project_run_set_rule.run_subject,
+                fad_base_subject.subject_no || '[' || fad_base_subject.subject_name || ']' subject_name,
+
+                fad_project_run_set_rule.debtor_subject1,
+                debtorsubject1.subject_name debtor_subject1_name,
+
+                fad_project_run_set_rule.debtor_subject2,
+                debtorsubject2.subject_name debtor_subject2_name,
+
+                fad_project_run_set_rule.debtor_subject801,
+                debtorsubject801.subject_name debtor_subject801_name,
+
+                fad_project_run_set_rule.debtor_subject80201,
+                debtorsubject80201.subject_name debtor_subject80201_name,
+
+                fad_project_run_set_rule.debtor_subject80202,
+                debtorsubject80202.subject_name debtor_subject80202_name,
+
+                fad_project_run_set_rule.debtor_subject80203,
+                debtorsubject80203.subject_name debtor_subject80203_name,
+
+                fad_project_run_set_rule.debtor_subject803,
+                debtorsubject803.subject_name debtor_subject803_name,
+
+                fad_project_run_set_rule.debtor_subject804,
+                debtorsubject804.subject_name debtor_subject804_name,
+
+                fad_project_run_set_rule.debtor_subject805,
+                debtorsubject805.subject_name debtor_subject805_name,
+
+                fad_project_run_set_rule.creditor_subject8,
+                creditorsubject8.subject_name creditor_subject8_name,
+
+                fad_project_run_set_rule.debtor_subject6a7,
+                debtorsubject6a7.subject_name debtor_subject6a7_name,
+
+                fad_project_run_set_rule.creditor_subject6a7,
+                creditorsubject6a7.subject_name creditor_subject6a7_name,
+
+                fad_project_run_set_rule.debtor_subject9a10,
+                debtorsubject9a10.subject_name debtor_subject9a10_name,
+
+                fad_project_run_set_rule.creditor_subject9a10,
+                creditorsubject9a10.subject_name creditor_subject9a10_name,
+
+                fad_project_run_set_rule.creditor_rtfree9a10,
+                creditorrtfree9a10.account_info_name creditor_rtfree9a10_name,
+
+                create_by,
+                create_time,
+                update_by,
+                update_time,
+                loc_timezone,
+                tbl_version,
+                is_void,
+                seq_no
+
+                from
+                fad_project_run_set_rule
+                left join (select subject_no,subject_name from fad_base_subject) fad_base_subject on fad_project_run_set_rule.run_subject = fad_base_subject.subject_no
+
+                left join (select distinct subject_code,subject_name from fad_accsubj_rtfreevalue) debtorsubject801 on fad_project_run_set_rule.debtor_subject801 = debtorsubject801.subject_code
+                left join (select distinct subject_code,subject_name from fad_accsubj_rtfreevalue) debtorsubject80201 on fad_project_run_set_rule.debtor_subject80201 = debtorsubject80201.subject_code
+                left join (select distinct subject_code,subject_name from fad_accsubj_rtfreevalue) debtorsubject80202 on fad_project_run_set_rule.debtor_subject80202 = debtorsubject80202.subject_code
+                left join (select distinct subject_code,subject_name from fad_accsubj_rtfreevalue) debtorsubject80203 on fad_project_run_set_rule.debtor_subject80203 = debtorsubject80203.subject_code
+                left join (select distinct subject_code,subject_name from fad_accsubj_rtfreevalue) debtorsubject803 on fad_project_run_set_rule.debtor_subject803 = debtorsubject803.subject_code
+                left join (select distinct subject_code,subject_name from fad_accsubj_rtfreevalue) debtorsubject804 on fad_project_run_set_rule.debtor_subject804 = debtorsubject804.subject_code
+                left join (select distinct subject_code,subject_name from fad_accsubj_rtfreevalue) debtorsubject805 on fad_project_run_set_rule.debtor_subject805 = debtorsubject805.subject_code
+                left join (select distinct subject_code,subject_name from fad_accsubj_rtfreevalue) creditorsubject8 on fad_project_run_set_rule.creditor_subject8 = creditorsubject8.subject_code
+
+                left join (select distinct subject_code,subject_name from fad_accsubj_rtfreevalue) debtorsubject6a7 on fad_project_run_set_rule.debtor_subject6a7 = debtorsubject6a7.subject_code
+                left join (select distinct subject_code,subject_name from fad_accsubj_rtfreevalue) creditorsubject6a7 on fad_project_run_set_rule.creditor_subject6a7 = creditorsubject6a7.subject_code
+
+                left join (select distinct subject_code,subject_name from fad_accsubj_rtfreevalue) debtorsubject9a10 on fad_project_run_set_rule.debtor_subject9a10 = debtorsubject9a10.subject_code
+                left join (select distinct subject_code,subject_name from fad_accsubj_rtfreevalue) creditorsubject9a10 on fad_project_run_set_rule.creditor_subject9a10 = creditorsubject9a10.subject_code
+                left join (select distinct account_info_code,account_info_name from fad_rtfreevalue where account_no='96') creditorrtfree9a10 on fad_project_run_set_rule.creditor_rtfree9a10 = creditorrtfree9a10.account_info_code
+
+                left join (select distinct subject_code,subject_name from fad_accsubj_rtfreevalue) debtorsubject1 on fad_project_run_set_rule.debtor_subject1 = debtorsubject1.subject_code
+                left join (select distinct subject_code,subject_name from fad_accsubj_rtfreevalue) debtorsubject2 on fad_project_run_set_rule.debtor_subject2 = debtorsubject2.subject_code
+            ) fad_project_run_set_rule
+            where
+            ${conditions}
+            and
+            ${voidfilter}
+            ]]>
+        </common>
+    </fad_project_run_set_rule>
+    <non_project_subject_subject>
+        <common>
+            <![CDATA[
+            select
+            *
+            from
+            (
+                select
+                office_id office,
+                org_name office_desc,
+                financial_subject_code,
+                financial_subject_code || '[' || financial_subject || ']' financial_subject,
+                non_project_subject_subject.is_void
+                from
+                non_project_subject_subject
+                left join
+                scdp_org
+                on
+                office_id = org_code
+            ) non_project_subject_subject
+            where
+            ${conditions}
+            and
+            ${voidfilter}
+            ]]>
+        </common>
+    </non_project_subject_subject>
+    <fad_base_subject>
+        <common>
+            <![CDATA[
+            select
+            *
+            from
+            (
+                select
+                subject_no,
+                subject_no || '[' || subject_name || ']' subject_name,
+                is_void
+                from
+                fad_base_subject
+                /*where subject_type = '1'*/
+            ) fad_base_subject
+            where
+            ${conditions}
+            and
+            ${voidfilter}
+            ]]>
+        </common>
+    </fad_base_subject>
+    <common_query_accsubj>
+        <common>
+            <![CDATA[
+            select
+            *
+            from
+            (
+              select
+              max(uuid) uuid,
+              subject_code,
+              subject_name,
+              is_void
+              from
+              fad_accsubj_rtfreevalue
+              group by subject_code,subject_name,is_void
+            ) fad_accsubj_rtfreevalue
+            where
+            ${conditions}
+            and
+            ${voidfilter}
+            ]]>
+        </common>
+    </common_query_accsubj>
+    <prm_code_type_pp>
+        <common>
+            <![CDATA[
+            select
+            prm_code_type,
+            prm_code_type_name
+            from
+            (
+              select sys_code prm_code_type,case when length(substr(code_desc,1,case when code_desc like '%（%' then instr(code_desc,'（',1,1) - 1 else length(code_desc) end )) = 2 then substr(code_desc,1,case when code_desc like '%（%' then instr(code_desc,'（',1,1) - 1 else length(code_desc) end ) || '类' else substr(code_desc,1,case when code_desc like '%（%' then instr(code_desc,'（',1,1) - 1 else length(code_desc) end ) end prm_code_type_name,is_void from scdp_code where code_type = 'PRM_CODE_TYPE_PP'
+            ) scdp_code
+            where
+            ${conditions}
+            and
+            ${voidfilter}
+            ]]>
+        </common>
+    </prm_code_type_pp>
+    <scdp_org>
+        <common>
+            <![CDATA[
+            select
+            org_code,
+            org_name
+            from
+            scdp_org
+            where
+            org_type='D'
+            and
+            ${conditions}
+            and
+            ${voidfilter}
+            ]]>
+        </common>
+    </scdp_org>
+</DAO>

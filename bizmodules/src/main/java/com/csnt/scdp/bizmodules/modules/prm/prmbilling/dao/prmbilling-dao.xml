@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select distinct pb.uuid,
+       pb.prm_project_main_id,
+       pb.customer_id,
+       pb.customer_name,
+       pb.customer_invoice_name,
+       pb.customer_invoice_name_en,
+       pb.customer_location,
+       pb.exchange_rate,
+       pb.invoice_currency,
+       pb.original_currency,
+       pb.original_money,
+       pb.phone,
+       pb.tax_no,
+       pb.bank_name,
+       pb.bank_account,
+       pb.invoice_money,
+       pb.invoice_no,
+       pb.invoice_date,
+       pb.req_person,
+       pb.req_office,
+       pb.maker,
+       pb.invoice_type,
+       pb.tax_rate,
+       pb.state,
+       pb.company_code,
+       pb.project_id,
+       pb.department_code,
+       pb.create_by,
+       pb.create_time,
+       pb.update_by,
+       pb.update_time,
+       pb.loc_timezone,
+       pb.tbl_version,
+       pb.is_void,
+       pb.seq_no,
+       pb.BILL_TYPE,
+       pb.REPEAL_UUID,
+       pb.REASON,
+        CASE
+              WHEN PB.STATE in ('2','4','8')
+                   AND PB.INVOICE_NO IS NOT NULL THEN
+               '已完成'
+              ELSE
+               '未完成'
+            END AS BILLING_STATUS,
+       (select o.org_name from scdp_org o where o.org_code = pb.req_office) as org_name,
+       (select pc.customer_name from prm_customer pc where pc.uuid = pb.customer_name) as customer,
+       (select c.code_desc
+          from scdp_code c
+         where c.code_type = 'CDM_BILL_STATE'
+           and c.sys_code = pb.state) as cdm_bill_state_combo,
+       ppm.project_name,
+       ppm.project_code
+  from prm_billing pb
+  left join prm_project_main ppm
+    on pb.prm_project_main_id = ppm.uuid
+ where 1 = 1
+   and ${conditions} and ${selfconditions} and pb.BILL_TYPE=0 ]]>
+        </common>
+    </common_query>
+
+    <invalid_query>
+        <common>
+            <![CDATA[select distinct pb.uuid,
+       pb.prm_project_main_id,
+       pb.customer_id,
+       pb.customer_name,
+       pb.customer_invoice_name,
+       pb.customer_invoice_name_en,
+       pb.customer_location,
+       pb.exchange_rate,
+       pb.invoice_currency,
+       pb.original_currency,
+       pb.original_money,
+       pb.phone,
+       pb.tax_no,
+       pb.bank_name,
+       pb.bank_account,
+       pb.invoice_money,
+       pb.invoice_no,
+       pb.invoice_date,
+       pb.req_person,
+       pb.req_office,
+       pb.maker,
+       pb.invoice_type,
+       pb.tax_rate,
+       pb.state,
+       pb.company_code,
+       pb.project_id,
+       pb.department_code,
+       pb.create_by,
+       pb.create_time,
+       pb.update_by,
+       pb.update_time,
+       pb.loc_timezone,
+       pb.tbl_version,
+       pb.is_void,
+       pb.seq_no,
+       pb.BILL_TYPE,
+       pb.REPEAL_UUID,
+       pb.REASON,
+       (select o.org_name from scdp_org o where o.org_code = pb.req_office) as org_name,
+       (select pc.customer_name from prm_customer pc where pc.uuid = pb.customer_name) as customer,
+       (select c.code_desc
+          from scdp_code c
+         where c.code_type = 'CDM_BILL_STATE'
+           and c.sys_code = pb.state) as cdm_bill_state_combo,
+       ppm.project_name,
+       ppm.project_code
+  from prm_billing pb
+  left join prm_project_main ppm
+    on pb.prm_project_main_id = ppm.uuid
+ where 1 = 1
+   and ${conditions} and ${selfconditions} and pb.BILL_TYPE=1]]>
+        </common>
+    </invalid_query>
+</DAO>

@@ -1,0 +1,583 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="ds1" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="uuid"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+ASSET_HANDOVER.UUID,
+ASSET_HANDOVER.HANDOVER_NO,--资产验收交接单编号
+ASSET_HANDOVER.ASSET_TYPE_CODE AS ASSET_TYPE_NAME,--资产类别
+ASSET_HANDOVER.ASSET_CODE,--资产编号
+ASSET_HANDOVER.ASSET_NAME,--资产名称
+ASSET_HANDOVER.LIMIT_MONTH,
+ASSET_HANDOVER.PURCHASE_REQ_NO,
+SCDP_ORG1.ORG_NAME AS OFFICE_NAME1,--使用部门名称
+SCDP_ORG2.ORG_NAME AS OFFICE_NAME2,--移交部门名称
+SOURCE,--资产来源
+MODEL,--型号
+SPECIFICATION,--规格
+FACTORY_NAME,--制造商
+RELEASE_DATE,--出厂日期
+UNIT,--单位
+1 NCOUNT,--数量
+NET_VALUE,--净值
+LOCAL_VALUE,--单价
+1 * LOCAL_VALUE MONEY,--金额
+ACCESSORY,--附件
+DESCP,--备注
+CHECK_ACCEPTANCE_RESULT,--检查验收结果
+TO_CHAR(ASSET_HANDOVER.HANDOVER_DATE, 'yyyy') || '年' ||
+TO_CHAR(ASSET_HANDOVER.HANDOVER_DATE, 'mm') || '月' ||
+TO_CHAR(ASSET_HANDOVER.HANDOVER_DATE, 'dd') || '日' AS CDATE,--交接日期
+
+WORKFLOW1.USER_NAME DEPARTMENT_SUPERVISOR,--使用部门主管
+WORKFLOW2.USER_NAME EQUIPMENT_COLLAR,--使用部门设备员
+WORKFLOW3.USER_NAME MANAGE_DEPARTMENT_SUPERVISOR,--管理部门主管
+WORKFLOW4.USER_NAME EQUIPMENT_MANAGER,--设备管理员
+WORKFLOW5.USER_NAME TECHNICAL_ACCEPTANCE,--技术验收人
+SCDP_USER.USER_NAME HANDOVER_SUPERVISOR--移交部门主管
+FROM ASSET_HANDOVER
+LEFT JOIN PRM_PURCHASE_REQ ON ASSET_HANDOVER.PURCHASE_REQ_NO = PRM_PURCHASE_REQ.PURCHASE_REQ_NO
+LEFT JOIN SCDP_ORG SCDP_ORG1 ON ASSET_HANDOVER.OFFICE_ID = SCDP_ORG1.ORG_CODE
+LEFT JOIN (SELECT SCDP_USER.USER_NAME,VW_ASSET_REGISTER_WORKFLOW.UUID FROM (SELECT USER_ID,UUID FROM VW_ASSET_REGISTER_WORKFLOW WHERE NODE = '申请部门领导') VW_ASSET_REGISTER_WORKFLOW LEFT JOIN SCDP_USER ON VW_ASSET_REGISTER_WORKFLOW.USER_ID = SCDP_USER.USER_ID) WORKFLOW1 ON ASSET_HANDOVER.UUID = WORKFLOW1.UUID
+LEFT JOIN (SELECT SCDP_USER.USER_NAME,VW_ASSET_REGISTER_WORKFLOW.UUID FROM (SELECT USER_ID,UUID FROM VW_ASSET_REGISTER_WORKFLOW WHERE NODE = '设备管理员') VW_ASSET_REGISTER_WORKFLOW LEFT JOIN SCDP_USER ON VW_ASSET_REGISTER_WORKFLOW.USER_ID = SCDP_USER.USER_ID) WORKFLOW2 ON ASSET_HANDOVER.UUID = WORKFLOW2.UUID
+LEFT JOIN (SELECT SCDP_USER.USER_NAME,VW_ASSET_REGISTER_WORKFLOW.UUID FROM (SELECT USER_ID,UUID FROM VW_ASSET_REGISTER_WORKFLOW WHERE NODE = '资产部主任') VW_ASSET_REGISTER_WORKFLOW LEFT JOIN SCDP_USER ON VW_ASSET_REGISTER_WORKFLOW.USER_ID = SCDP_USER.USER_ID) WORKFLOW3 ON ASSET_HANDOVER.UUID = WORKFLOW3.UUID
+LEFT JOIN (SELECT SCDP_USER.USER_NAME,VW_ASSET_REGISTER_WORKFLOW.UUID FROM (SELECT USER_ID,UUID FROM VW_ASSET_REGISTER_WORKFLOW WHERE NODE = '资产部专员') VW_ASSET_REGISTER_WORKFLOW LEFT JOIN SCDP_USER ON VW_ASSET_REGISTER_WORKFLOW.USER_ID = SCDP_USER.USER_ID) WORKFLOW4 ON ASSET_HANDOVER.UUID = WORKFLOW4.UUID
+LEFT JOIN (SELECT SCDP_USER.USER_NAME,VW_ASSET_REGISTER_WORKFLOW.UUID FROM (SELECT USER_ID,UUID FROM VW_ASSET_REGISTER_WORKFLOW WHERE NODE = '设备领用人') VW_ASSET_REGISTER_WORKFLOW LEFT JOIN SCDP_USER ON VW_ASSET_REGISTER_WORKFLOW.USER_ID = SCDP_USER.USER_ID) WORKFLOW5 ON ASSET_HANDOVER.UUID = WORKFLOW5.UUID
+LEFT JOIN VW_PURCHASE_REQUEST_WORKFLOW ON PRM_PURCHASE_REQ.UUID = VW_PURCHASE_REQUEST_WORKFLOW.UUID
+LEFT JOIN SCDP_USER ON VW_PURCHASE_REQUEST_WORKFLOW.USER_ID = SCDP_USER.USER_ID
+LEFT JOIN SCDP_ORG SCDP_ORG2 ON SCDP_USER.ORG_UUID = SCDP_ORG2.UUID
+
+WHERE ASSET_HANDOVER.UUID = '${uuid}']]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[720000,1008000,1008000,1008000,1584000,1584000,1584000,1584000,1584000,1584000,1584000,2781300,723900,723900,723900,723900,720000,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[3168000,3168000,3168000,3168000,3168000,3168000,3168000,3168000,3168000,3168000,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" s="0">
+<O>
+<![CDATA[资产类别:]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" cs="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="ASSET_TYPE_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="1" cs="4" s="2">
+<O>
+<![CDATA[中海网络科技股份有限公司]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="1" s="0">
+<O>
+<![CDATA[交接单号：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="1" cs="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="HANDOVER_NO"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="2" s="0">
+<O>
+<![CDATA[资产编号:]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="2" cs="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="ASSET_CODE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="2" cs="4" s="4">
+<O>
+<![CDATA[低值易耗品验收交接单]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="2">
+<PrivilegeControl/>
+</C>
+<C c="8" r="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="3" s="0">
+<O>
+<![CDATA[使用部门:]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="3" cs="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="OFFICE_NAME1"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="3" s="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="3" s="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="3" s="0">
+<O>
+<![CDATA[交接日期：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="3" cs="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="CDATE"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="4" s="5">
+<O>
+<![CDATA[名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="4" cs="5" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="ASSET_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="4" cs="2" s="5">
+<O>
+<![CDATA[型号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="4" cs="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="MODEL"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="5" s="5">
+<O>
+<![CDATA[规格]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="5" cs="5" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SPECIFICATION"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="5" cs="2" s="5">
+<O>
+<![CDATA[估计使用年限]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="5" cs="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="LIMIT_MONTH"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="6" rs="2" s="5">
+<O>
+<![CDATA[单位]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="6" cs="2" rs="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="UNIT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="6" rs="2" s="5">
+<O>
+<![CDATA[数量]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="6" cs="2" rs="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="NCOUNT"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="6" rs="2" s="5">
+<O>
+<![CDATA[金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="6" s="5">
+<O>
+<![CDATA[单价]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="6" cs="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="LOCAL_VALUE"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="7" s="5">
+<O>
+<![CDATA[总价]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="7" cs="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="8" cs="3" s="5">
+<O>
+<![CDATA[购置费用代号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="8" cs="3" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="PURCHASE_REQ_NO"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="8" cs="2" s="5">
+<O>
+<![CDATA[使用人(签字)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="8" cs="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="TECHNICAL_ACCEPTANCE"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="9" cs="3" s="5">
+<O>
+<![CDATA[管理员(签字)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="9" cs="3" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="EQUIPMENT_MANAGER"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="9" cs="2" s="5">
+<O>
+<![CDATA[经办人(签字)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="9" cs="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="EQUIPMENT_COLLAR"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="10" cs="3" s="5">
+<O>
+<![CDATA[资产管理部门主管(签字)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="10" cs="3" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="MANAGE_DEPARTMENT_SUPERVISOR"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="10" cs="2" s="5">
+<O>
+<![CDATA[使用部门主管(签字)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="10" cs="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="DEPARTMENT_SUPERVISOR"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="11" rs="5" s="5">
+<O>
+<![CDATA[备注]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="11" cs="9" rs="5" s="5">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="DESCP"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting orientation="1">
+<Margin top="4320000" left="5472000" bottom="4320000" right="5472000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="96"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="96" underline="1"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="112"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="2" imageLayout="1">
+<FRFont name="SimSun" style="0" size="96"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="112"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="96"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

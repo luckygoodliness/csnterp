@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JTab pos="A1:A1" row="flex" col="1*1" border_n="1" autoExpand_b="true">
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="prmFinalEstimateBasic" border_n="1" autoExpand_b="true">
+            <JForm pos="A1:A1" cid="prmFinalEstimateDto" row="23*4" col="0.25*4" title_s="" border_n="1"
+                   autoExpand_b="true" labelWidth_n="110">
+                <JHidden cid="uuid"/>
+                <JHidden cid="tblVersion"/>
+                <JHidden cid="prmProjectMainIdDesc"/>
+                <JHidden cid="costCorrection"/>
+                <JNoneFinishedProject pos="A1:B1" cid="prmProjectMainId" fieldLabel_s="prmProjectMainId"
+                                      allowBlank_b="false" readOnly_b="true" adaptable_b="false"
+                                      descField_s="projectName" valueField_s="uuid"/>
+                <JHidden cid="departmentCodeDesc"/>
+                <JText pos="C1:C1" fieldLabel_s="projectCode" cid="projectCode"
+                       readOnly_b="true" adaptable_b="false"/>
+                <JErpDepartMent pos="D1:D1" fieldLabel_s="departmentCode" cid="departmentCode"
+                                canSelectFolders_b="true"
+                                valueField="orgCode" readOnly_b="true" adaptable_b="false"
+                                selectChildren_b="false" store="SysOrg.store.ScdpDepartTreeStore"/>
+                <JCombo pos="A2:A2" cid="squareType" fieldLabel_s="squareType" allowBlank_b="false"
+                        comboType="scdp_fmcode" readOnly_b="true" adaptable_b="false"
+                        codeType="PRM_SQUARE_TYPE" displayDesc_b="true" fullInfo_b="false" multiSelect_b="false"/>
+                <JDate pos="B2:B2" cid="squareDate" fieldLabel_s="squareDate" allowBlank_b="true" readOnly_b="true"
+                       adaptable_b="false"/>
+                <JCombo pos="C2:C2" cid="state" fieldLabel_s="state" allowBlank_b="true"
+                        comboType="scdp_fmcode"
+                        codeType="CDM_BILL_STATE" displayDesc_b="true" fullInfo_b="false" multiSelect_b="false"
+                        readOnly_b="true" adaptable_b="false"/>
+                <JCheck pos="D2:D2" fieldLabel_s="isArchiving" cid="isArchiving" readOnly_b="true" adaptable_b="false"/>
+                <JCur pos="A3:A3" cid="squareProjectMoney" fieldLabel_s="squareProjectMoney" allowBlank_b="false"
+                      minValue_n="0.00" hideTrigger_b="true"/>
+                <JCur pos="B3:B3" cid="squareCost" fieldLabel_s="squareCost" allowBlank_b="false"
+                      readOnly_b="true" adaptable_b="false"/>
+                <JCur pos="C3:C3" cid="squareGrossProfit" fieldLabel_s="squareGrossProfit" allowBlank_b="true"
+                      hideTrigger_b="true"/>
+                <JDec pos="D3:D3" cid="squareProportion" fieldLabel_s="squareProportion" allowBlank_b="true"
+                      readOnly_b="true" adaptable_b="false"/>
+                <JCur pos="A4:A4" cid="rax" fieldLabel_s="rax" allowBlank_b="true"
+                      readOnly_b="true" adaptable_b="false"/>
+                <JCur pos="B4:B4" cid="taxCorrection" fieldLabel_s="taxCorrection" allowBlank_b="true" readOnly_b="true"
+                      adaptable_b="false"/>
+                <JDate pos="C4:C4" cid="reviseTaxDate" fieldLabel_s="reviseTaxDate" allowBlank_b="true"
+                       readOnly_b="true"
+                       adaptable_b="false"/>
+                <JDatetime pos="A5:A5" cid="examDate" fieldLabel_s="examDate" allowBlank_b="true"
+                           readOnly_b="true"  adaptable_b="false"/>
+                <JDatetime pos="B5:B5" cid="examRTaxDate" fieldLabel_s="examRTaxDate" allowBlank_b="true"
+                           readOnly_b="true"  adaptable_b="false"/>
+            </JForm>
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="prmFinalEstimateHistory" border_n="1" autoExpand_b="true">
+            <JForm pos="A1:A1" cid="prmFinalProjectInfoDto" row="23*5" col="0.25*4" labelWidth_n="120" title_s=""
+                   border_n="1" autoExpand_b="true">
+                <JHidden cid="plannedTax"/>
+                <JCur pos="A1:A1" cid="totalSquareMoney" fieldLabel_s="totalSquareMoney"
+                      allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+                <JCur pos="B1:B1" cid="plannedCost" fieldLabel_s="plannedCost" allowBlank_b="true"
+                      readOnly_b="true" adaptable_b="false"/>
+                <JCur pos="C1:C1" cid="plannedProfit" fieldLabel_s="plannedProfit"
+                      allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+                <JCur pos="D1:D1" cid="projectActualMoneySum" fieldLabel_s="projectActualMoneySum"
+                      allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+
+                <JCur pos="A2:A2" cid="squareMoneySum" fieldLabel_s="squareMoneySum"
+                      allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+                <JCur pos="B2:B2" cid="squareCostSum" fieldLabel_s="squareCostSum"
+                      allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+                <JCur pos="C2:C2" cid="squareGrossProfitSum" fieldLabel_s="squareGrossProfitSum"
+                      allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+                <JCur pos="D2:D2" cid="raxSum" fieldLabel_s="raxSum" allowBlank_b="true"
+                      readOnly_b="true" adaptable_b="false"/>
+                <JCur pos="A3:A3" cid="registeredMoney" fieldLabel_s="registeredMoney"
+                      allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+                <JCur pos="B3:B3" cid="registeredCost" fieldLabel_s="registeredCost"
+                      allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+                <JCur pos="C3:C3" cid="registeredProfit" fieldLabel_s="registeredProfit"
+                      allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+                <JCur pos="D3:D3" cid="registeredReceiveMoney" fieldLabel_s="registeredReceiveMoney"
+                      allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+                <JDec pos="A4:A4" cid="plannedProfitPercent" fieldLabel_s="plannedProfitPercent"
+                      allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+                <JCur pos="B4:B4" cid="lockedBudgetSum" fieldLabel_s="lockedBudgetSum"
+                      allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+                <JCur pos="C4:C4" cid="billedCostSum" fieldLabel_s="billedCostSum"
+                      allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+                <JCur pos="D4:D4" cid="costCorrection" fieldLabel_s="costCorrection"
+                      allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+                <JCur pos="A5:A5" cid="taxMoneySum" fieldLabel_s="taxMoneySum"
+                      allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+            </JForm>
+        </JPanel>
+    </JTab>
+</view>

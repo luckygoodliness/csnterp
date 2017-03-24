@@ -1,0 +1,1093 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="T1" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="year"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="month"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="projectCode"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="projectName"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="build_region"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="affiliated_institutions"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+UUID,
+ORG_CODE,
+SHORT_CODE,
+SEQ_NO,
+ESTABLISH_DATE,
+PROJECT_CODE,
+PROJECT_NAME,
+PRM_CODE_TYPE,
+
+MONTH_AMOUNT_R,
+YEAR_AMOUNT_R,
+TOTAL_AMOUNT_R,
+
+MONTH_AMOUNT_P,
+YEAR_AMOUNT_P,
+TOTAL_AMOUNT_P,
+CASE WHEN PRM_CODE_TYPE IN ('YAN_FA','JI_GAI','NEI_WEI') THEN 0 ELSE TOTAL_INTEREST_PA_RA END TOTAL_INTEREST_PA_RA,
+CASE WHEN PRM_CODE_TYPE IN ('YAN_FA','JI_GAI','NEI_WEI') THEN 0 ELSE TOTAL_INTEREST_PA_RA_CY END TOTAL_INTEREST_PA_RA_CY
+FROM
+(
+  SELECT
+  M.UUID,
+  O.ORG_CODE,
+  O.SHORT_CODE,
+  O.SEQ_NO,
+  M.ESTABLISH_DATE,
+  M.PROJECT_CODE,
+  M.PROJECT_NAME,
+  M.PRM_CODE_TYPE,
+  
+  --收字段
+  NVL(R.MONTH_AMOUNT_R, 0) MONTH_AMOUNT_R,
+  NVL(R.YEAR_AMOUNT_R, 0) YEAR_AMOUNT_R,
+  NVL(R.TOTAL_AMOUNT_R, 0) TOTAL_AMOUNT_R,
+  
+  --支字段
+  NVL(P.MONTH_AMOUNT_P, 0) MONTH_AMOUNT_P,
+  NVL(P.YEAR_AMOUNT_P, 0) YEAR_AMOUNT_P,
+  NVL(P.TOTAL_AMOUNT_P, 0) TOTAL_AMOUNT_P,
+  
+  PA_RA.TOTAL_INTEREST_PA_RA,--累计收支差累计日息
+  PA_RA_CY.TOTAL_INTEREST_PA_RA_CY,--本年收支差累计日息
+  
+  E.SQUARE_DATE--结案日期
+  
+  --项目
+  FROM
+  PRM_PROJECT_MAIN M
+  
+  --部门
+  LEFT JOIN
+  (SELECT * FROM SCDP_ORG WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) O
+  ON
+  M.CONTRACTOR_OFFICE = O.ORG_CODE
+  
+  --收
+  LEFT JOIN
+  (
+    SELECT
+    PR.PRM_PROJECT_MAIN_ID PROJECT_ID,
+    SUM(DECODE(TO_CHAR(PR.ACTUAL_DATE, 'YYYY-MM'),'${year}' || '-' || DECODE(LENGTH('${month}'),1,'0' || '${month}','${month}'),PR.ACTUAL_MONEY,0)) MONTH_AMOUNT_R,
+    SUM(DECODE(TO_CHAR(PR.ACTUAL_DATE, 'YYYY'),'${year}',PR.ACTUAL_MONEY,0)) YEAR_AMOUNT_R,
+    SUM(PR.ACTUAL_MONEY) TOTAL_AMOUNT_R
+    FROM
+    PRM_RECEIPTS PR
+    WHERE
+    PR.STATE IN ('2', '4', '8')
+    AND
+    TO_NUMBER(TO_CHAR(PR.ACTUAL_DATE, 'YYYYMM')) <= '${year}' || DECODE(LENGTH('${month}'),1,'0' || '${month}','${month}')
+    AND (IS_VOID = 0 OR IS_VOID IS NULL)
+    GROUP BY
+    PR.PRM_PROJECT_MAIN_ID
+  ) R
+  ON
+  M.UUID = R.PROJECT_ID
+       
+  --支
+  LEFT JOIN
+  (
+    SELECT
+    PRMP.PROJECT_ID,
+    SUM(DECODE(TO_CHAR(PRMP.CERTIFICATE_CREATE_TIME,'YYYY-MM'),'${year}' || '-' || DECODE(LENGTH('${month}'),1,'0' || '${month}','${month}'),PRMP.MONEY,0)) MONTH_AMOUNT_P,
+    SUM(DECODE(TO_CHAR(PRMP.CERTIFICATE_CREATE_TIME,'YYYY'),'${year}',PRMP.MONEY,0)) YEAR_AMOUNT_P,
+    SUM(PRMP.MONEY) TOTAL_AMOUNT_P
+    FROM VW_BUDGET_DETAIL PRMP
+    WHERE
+    TO_NUMBER(TO_CHAR(PRMP.CERTIFICATE_CREATE_TIME, 'YYYYMM')) <= '${year}' || DECODE(LENGTH('${month}'),1,'0' || '${month}','${month}')
+    GROUP BY
+    PRMP.PROJECT_ID
+  ) P
+  ON
+  M.UUID = P.PROJECT_ID
+  
+  --项目结案
+  LEFT JOIN
+  (
+    SELECT
+    PRM_FINAL_ESTIMATE.PRM_PROJECT_MAIN_ID,
+    MAX(PRM_FINAL_ESTIMATE.SQUARE_DATE) SQUARE_DATE
+    FROM
+    PRM_FINAL_ESTIMATE,
+    PRM_PROJECT_MAIN
+    WHERE
+    PRM_FINAL_ESTIMATE.PRM_PROJECT_MAIN_ID = PRM_PROJECT_MAIN.UUID
+    AND
+    PRM_PROJECT_MAIN.STATE = '1'
+    AND (PRM_FINAL_ESTIMATE.IS_VOID = 0 OR PRM_FINAL_ESTIMATE.IS_VOID IS NULL)
+    AND (PRM_PROJECT_MAIN.IS_VOID = 0 OR PRM_PROJECT_MAIN.IS_VOID IS NULL)
+    GROUP BY
+    PRM_FINAL_ESTIMATE.PRM_PROJECT_MAIN_ID
+  ) E
+  ON M.UUID = E.PRM_PROJECT_MAIN_ID
+  
+  --累计收支差日息相关
+  LEFT JOIN
+  (
+    SELECT
+    PROJECT_ID,
+    SUM(TOTAL_INTEREST_PA_RA) TOTAL_INTEREST_PA_RA
+    FROM
+    (        
+            SELECT
+            YHDATE,
+            PROJECT_ID,
+            
+            DEPOSIT_RATE,
+            RATE,
+        
+            DAY_AMOUNT_PA,
+            DAY_AMOUNT_RA,
+            NVL(DAY_AMOUNT_PA, 0) - NVL(DAY_AMOUNT_RA, 0) PA_L_RA_DEV,
+            (
+            CASE
+            WHEN SQUARE_DATE IS NOT NULL AND YHDATE > TO_CHAR(SQUARE_DATE,'YYYYMMDD')
+            THEN
+              0
+            ELSE
+              CASE
+              WHEN
+                          NVL(DAY_AMOUNT_PA, 0) < NVL(DAY_AMOUNT_RA, 0)
+              THEN
+                          (NVL(DAY_AMOUNT_PA, 0) - NVL(DAY_AMOUNT_RA, 0)) * NVL(DEPOSIT_RATE, 0)
+              ELSE
+                          (NVL(DAY_AMOUNT_PA, 0) - NVL(DAY_AMOUNT_RA, 0)) * NVL(RATE, 0)
+              END
+              /
+              365.242199
+            END
+            )
+            TOTAL_INTEREST_PA_RA
+            FROM
+            (
+                SELECT
+                LEADING_DATE.YHDATE,
+                LEADING_DATE.PROJECT_ID,
+                NVL(LEADING_DATE.DEPOSIT_RATE, 0) DEPOSIT_RATE,
+                NVL(LEADING_DATE.RATE, 0) RATE,
+                SUM(NVL(CASE WHEN PRDATA.SQUARE_DATE IS NOT NULL AND PRDATA.YMDDATE > TO_CHAR(PRDATA.SQUARE_DATE,'YYYYMMDD') THEN 0 ELSE PRDATA.DAY_AMOUNT_PA END, 0)) DAY_AMOUNT_PA,
+                SUM(NVL(CASE WHEN PRDATA.SQUARE_DATE IS NOT NULL AND PRDATA.YMDDATE > TO_CHAR(PRDATA.SQUARE_DATE,'YYYYMMDD') THEN 0 ELSE PRDATA.DAY_AMOUNT_RA END, 0)) DAY_AMOUNT_RA,
+                MIN(PRDATA.SQUARE_DATE) SQUARE_DATE
+                FROM
+                (
+                      SELECT
+                      DISTINCT
+                      FAD_INTEREST_RATE.YHDATE,
+                      PRM_PROJECT_MAIN.UUID PROJECT_ID,
+                      NVL(RATE.DEPOSIT_RATE, 0) DEPOSIT_RATE,
+                      NVL(RATE.RATE, 0) RATE
+                      FROM
+                      (
+                        SELECT
+                        TO_CHAR(VALIDITY_DATE_FROM + (ROWNUM - 1),'YYYYMMDD') YHDATE
+                        FROM
+                        (SELECT MIN(VALIDITY_DATE_FROM) VALIDITY_DATE_FROM,MAX(VALIDITY_DATE_TO) VALIDITY_DATE_TO FROM FAD_INTEREST_RATE WHERE (IS_VOID = 0 OR IS_VOID IS NULL) AND (VALIDITY_DATE_FROM <= VALIDITY_DATE_TO)) FAD_INTEREST_RATE
+                        CONNECT BY ROWNUM <= (VALIDITY_DATE_TO - VALIDITY_DATE_FROM) + 1
+                      ) FAD_INTEREST_RATE,
+                      (SELECT UUID FROM PRM_PROJECT_MAIN WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PRM_PROJECT_MAIN,
+                      (SELECT * FROM FAD_INTEREST_RATE WHERE (IS_VOID = 0 OR IS_VOID IS NULL) AND (VALIDITY_DATE_FROM <= VALIDITY_DATE_TO)) RATE
+                      WHERE
+                      FAD_INTEREST_RATE.YHDATE >= TO_CHAR(RATE.VALIDITY_DATE_FROM,'YYYYMMDD')
+                      AND
+                      FAD_INTEREST_RATE.YHDATE <= TO_CHAR(RATE.VALIDITY_DATE_TO,'YYYYMMDD')
+                      AND FAD_INTEREST_RATE.YHDATE <= TO_CHAR(SYSDATE,'YYYYMMDD')
+                      AND SUBSTR(FAD_INTEREST_RATE.YHDATE,1,6) <= '${year}' || DECODE(LENGTH('${month}'),1,'0' || '${month}','${month}')
+                ) LEADING_DATE
+                LEFT JOIN
+                (
+                  SELECT
+                  NVL(PA.PROJECT_ID, RA.PROJECT_ID) PROJECT_ID,
+                  NVL(PA.YMDDATE, RA.YMDDATE) YMDDATE,
+                  NVL(PA.DAY_AMOUNT_PA, 0) DAY_AMOUNT_PA,
+                  NVL(RA.DAY_AMOUNT_RA, 0) DAY_AMOUNT_RA,
+                  E.SQUARE_DATE
+                  FROM
+                  (
+                    SELECT
+                    TO_CHAR(PRMP.CERTIFICATE_CREATE_TIME,'YYYYMMDD') YMDDATE,
+                    PRMP.PROJECT_ID,
+                    SUM(PRMP.MONEY) DAY_AMOUNT_PA
+                    FROM VW_BUDGET_DETAIL PRMP
+                    WHERE
+                    TO_NUMBER(TO_CHAR(PRMP.CERTIFICATE_CREATE_TIME, 'YYYYMM')) <= '${year}' || DECODE(LENGTH('${month}'),1,'0' || '${month}','${month}')
+                    GROUP BY
+                    TO_CHAR(PRMP.CERTIFICATE_CREATE_TIME,'YYYYMMDD'),
+                    PRMP.PROJECT_ID
+                  ) PA
+                  FULL JOIN
+                  (
+                    SELECT
+                    TO_CHAR(PR.ACTUAL_DATE,'YYYYMMDD') YMDDATE,
+                    PR.PRM_PROJECT_MAIN_ID PROJECT_ID,
+                    SUM(PR.ACTUAL_MONEY) DAY_AMOUNT_RA
+                    FROM
+                    PRM_RECEIPTS PR
+                    WHERE
+                    PR.STATE IN ('2', '4', '8')
+                    AND
+                    TO_NUMBER(TO_CHAR(PR.ACTUAL_DATE, 'YYYYMM')) <= '${year}' || DECODE(LENGTH('${month}'),1,'0' || '${month}','${month}')
+                    AND (IS_VOID = 0 OR IS_VOID IS NULL)
+                    GROUP BY
+                    TO_CHAR(PR.ACTUAL_DATE,'YYYYMMDD'),
+                    PR.PRM_PROJECT_MAIN_ID
+                  ) RA
+                  ON
+                  PA.PROJECT_ID = RA.PROJECT_ID
+                  AND
+                  PA.YMDDATE = RA.YMDDATE
+                      
+                  LEFT JOIN
+                  (
+                    SELECT
+                    PRM_FINAL_ESTIMATE.PRM_PROJECT_MAIN_ID,
+                    MAX(PRM_FINAL_ESTIMATE.SQUARE_DATE) SQUARE_DATE
+                    FROM
+                    PRM_FINAL_ESTIMATE,
+                    PRM_PROJECT_MAIN
+                    WHERE
+                    PRM_FINAL_ESTIMATE.PRM_PROJECT_MAIN_ID = PRM_PROJECT_MAIN.UUID
+                    AND
+                    PRM_PROJECT_MAIN.STATE IN ('1','3')
+                    AND (PRM_FINAL_ESTIMATE.IS_VOID = 0 OR PRM_FINAL_ESTIMATE.IS_VOID IS NULL)
+                    AND (PRM_PROJECT_MAIN.IS_VOID = 0 OR PRM_PROJECT_MAIN.IS_VOID IS NULL)
+                    GROUP BY
+                    PRM_FINAL_ESTIMATE.PRM_PROJECT_MAIN_ID
+                  ) E
+                  ON NVL(PA.PROJECT_ID, RA.PROJECT_ID) = E.PRM_PROJECT_MAIN_ID
+                  
+                  WHERE
+                  NVL(PA.PROJECT_ID, RA.PROJECT_ID) IS NOT NULL
+                ) PRDATA
+                ON
+                LEADING_DATE.PROJECT_ID=PRDATA.PROJECT_ID
+                AND
+                LEADING_DATE.YHDATE >= PRDATA.YMDDATE
+                GROUP BY
+                LEADING_DATE.YHDATE,
+                LEADING_DATE.PROJECT_ID,
+                NVL(LEADING_DATE.DEPOSIT_RATE, 0),
+                NVL(LEADING_DATE.RATE, 0)
+            )
+    )
+    GROUP BY PROJECT_ID
+  ) PA_RA
+  ON
+  M.UUID = PA_RA.PROJECT_ID
+  
+  --本年收支差日息相关
+  LEFT JOIN
+  (
+    SELECT
+    PROJECT_ID,
+    SUM(TOTAL_INTEREST_PA_RA) TOTAL_INTEREST_PA_RA_CY
+    FROM
+    (        
+            SELECT
+            YHDATE,
+            PROJECT_ID,
+            
+            DEPOSIT_RATE,
+            RATE,
+        
+            DAY_AMOUNT_PA,
+            DAY_AMOUNT_RA,
+            NVL(DAY_AMOUNT_PA, 0) - NVL(DAY_AMOUNT_RA, 0) PA_L_RA_DEV,
+            (
+            CASE
+            WHEN SQUARE_DATE IS NOT NULL AND YHDATE > TO_CHAR(SQUARE_DATE,'YYYYMMDD')
+            THEN
+              0
+            ELSE
+              CASE
+              WHEN
+                          NVL(DAY_AMOUNT_PA, 0) < NVL(DAY_AMOUNT_RA, 0)
+              THEN
+                          (NVL(DAY_AMOUNT_PA, 0) - NVL(DAY_AMOUNT_RA, 0)) * NVL(DEPOSIT_RATE, 0)
+              ELSE
+                          (NVL(DAY_AMOUNT_PA, 0) - NVL(DAY_AMOUNT_RA, 0)) * NVL(RATE, 0)
+              END
+              /
+              365.242199
+            END
+            )
+            TOTAL_INTEREST_PA_RA
+            FROM
+            (
+                SELECT
+                LEADING_DATE.YHDATE,
+                LEADING_DATE.PROJECT_ID,
+                NVL(LEADING_DATE.DEPOSIT_RATE, 0) DEPOSIT_RATE,
+                NVL(LEADING_DATE.RATE, 0) RATE,
+                SUM(NVL(CASE WHEN PRDATA.SQUARE_DATE IS NOT NULL AND PRDATA.YMDDATE > TO_CHAR(PRDATA.SQUARE_DATE,'YYYYMMDD') THEN 0 ELSE PRDATA.DAY_AMOUNT_PA END, 0)) DAY_AMOUNT_PA,
+                SUM(NVL(CASE WHEN PRDATA.SQUARE_DATE IS NOT NULL AND PRDATA.YMDDATE > TO_CHAR(PRDATA.SQUARE_DATE,'YYYYMMDD') THEN 0 ELSE PRDATA.DAY_AMOUNT_RA END, 0)) DAY_AMOUNT_RA,
+                MIN(PRDATA.SQUARE_DATE) SQUARE_DATE
+                FROM
+                (
+                      SELECT
+                      DISTINCT
+                      FAD_INTEREST_RATE.YHDATE,
+                      PRM_PROJECT_MAIN.UUID PROJECT_ID,
+                      NVL(RATE.DEPOSIT_RATE, 0) DEPOSIT_RATE,
+                      NVL(RATE.RATE, 0) RATE
+                      FROM
+                      (
+                        SELECT
+                        TO_CHAR(VALIDITY_DATE_FROM + (ROWNUM - 1),'YYYYMMDD') YHDATE
+                        FROM
+                        (SELECT MIN(VALIDITY_DATE_FROM) VALIDITY_DATE_FROM,MAX(VALIDITY_DATE_TO) VALIDITY_DATE_TO FROM FAD_INTEREST_RATE WHERE (IS_VOID = 0 OR IS_VOID IS NULL) AND (VALIDITY_DATE_FROM <= VALIDITY_DATE_TO)) FAD_INTEREST_RATE
+                        CONNECT BY ROWNUM <= (VALIDITY_DATE_TO - VALIDITY_DATE_FROM) + 1
+                      ) FAD_INTEREST_RATE,
+                      (SELECT UUID FROM PRM_PROJECT_MAIN WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) PRM_PROJECT_MAIN,
+                      (SELECT * FROM FAD_INTEREST_RATE WHERE (IS_VOID = 0 OR IS_VOID IS NULL) AND (VALIDITY_DATE_FROM <= VALIDITY_DATE_TO)) RATE
+                      WHERE
+                      FAD_INTEREST_RATE.YHDATE >= TO_CHAR(RATE.VALIDITY_DATE_FROM,'YYYYMMDD')
+                      AND
+                      FAD_INTEREST_RATE.YHDATE <= TO_CHAR(RATE.VALIDITY_DATE_TO,'YYYYMMDD')
+                      AND FAD_INTEREST_RATE.YHDATE <= TO_CHAR(SYSDATE,'YYYYMMDD')
+                      AND SUBSTR(FAD_INTEREST_RATE.YHDATE,1,6) <= '${year}' || DECODE(LENGTH('${month}'),1,'0' || '${month}','${month}')
+                      AND SUBSTR(FAD_INTEREST_RATE.YHDATE,1,4) = '${year}'
+                ) LEADING_DATE
+                LEFT JOIN
+                (
+                  SELECT
+                  NVL(PA.PROJECT_ID, RA.PROJECT_ID) PROJECT_ID,
+                  NVL(PA.YMDDATE, RA.YMDDATE) YMDDATE,
+                  NVL(PA.DAY_AMOUNT_PA, 0) DAY_AMOUNT_PA,
+                  NVL(RA.DAY_AMOUNT_RA, 0) DAY_AMOUNT_RA,
+                  E.SQUARE_DATE
+                  FROM
+                  (
+                    SELECT
+                    TO_CHAR(PRMP.CERTIFICATE_CREATE_TIME,'YYYYMMDD') YMDDATE,
+                    PRMP.PROJECT_ID,
+                    SUM(PRMP.MONEY) DAY_AMOUNT_PA
+                    FROM VW_BUDGET_DETAIL PRMP
+                    WHERE
+                    TO_NUMBER(TO_CHAR(PRMP.CERTIFICATE_CREATE_TIME, 'YYYYMM')) <= '${year}' || DECODE(LENGTH('${month}'),1,'0' || '${month}','${month}')
+                    GROUP BY
+                    TO_CHAR(PRMP.CERTIFICATE_CREATE_TIME,'YYYYMMDD'),
+                    PRMP.PROJECT_ID
+                  ) PA
+                  FULL JOIN
+                  (
+                    SELECT
+                    TO_CHAR(PR.ACTUAL_DATE,'YYYYMMDD') YMDDATE,
+                    PR.PRM_PROJECT_MAIN_ID PROJECT_ID,
+                    SUM(PR.ACTUAL_MONEY) DAY_AMOUNT_RA
+                    FROM
+                    PRM_RECEIPTS PR
+                    WHERE
+                    PR.STATE IN ('2', '4', '8')
+                    AND
+                    TO_NUMBER(TO_CHAR(PR.ACTUAL_DATE, 'YYYYMM')) <= '${year}' || DECODE(LENGTH('${month}'),1,'0' || '${month}','${month}')
+                    AND (IS_VOID = 0 OR IS_VOID IS NULL)
+                    GROUP BY
+                    TO_CHAR(PR.ACTUAL_DATE,'YYYYMMDD'),
+                    PR.PRM_PROJECT_MAIN_ID
+                  ) RA
+                  ON
+                  PA.PROJECT_ID = RA.PROJECT_ID
+                  AND
+                  PA.YMDDATE = RA.YMDDATE
+                      
+                  LEFT JOIN
+                  (
+                    SELECT
+                    PRM_FINAL_ESTIMATE.PRM_PROJECT_MAIN_ID,
+                    MAX(PRM_FINAL_ESTIMATE.SQUARE_DATE) SQUARE_DATE
+                    FROM
+                    PRM_FINAL_ESTIMATE,
+                    PRM_PROJECT_MAIN
+                    WHERE
+                    PRM_FINAL_ESTIMATE.PRM_PROJECT_MAIN_ID = PRM_PROJECT_MAIN.UUID
+                    AND
+                    PRM_PROJECT_MAIN.STATE IN ('1','3')
+                    AND (PRM_FINAL_ESTIMATE.IS_VOID = 0 OR PRM_FINAL_ESTIMATE.IS_VOID IS NULL)
+                    AND (PRM_PROJECT_MAIN.IS_VOID = 0 OR PRM_PROJECT_MAIN.IS_VOID IS NULL)
+                    GROUP BY
+                    PRM_FINAL_ESTIMATE.PRM_PROJECT_MAIN_ID
+                  ) E
+                  ON NVL(PA.PROJECT_ID, RA.PROJECT_ID) = E.PRM_PROJECT_MAIN_ID
+                  
+                  WHERE
+                  NVL(PA.PROJECT_ID, RA.PROJECT_ID) IS NOT NULL
+                ) PRDATA
+                ON
+                LEADING_DATE.PROJECT_ID=PRDATA.PROJECT_ID
+                AND
+                LEADING_DATE.YHDATE >= PRDATA.YMDDATE
+                GROUP BY
+                LEADING_DATE.YHDATE,
+                LEADING_DATE.PROJECT_ID,
+                NVL(LEADING_DATE.DEPOSIT_RATE, 0),
+                NVL(LEADING_DATE.RATE, 0)
+            )
+    )
+    GROUP BY PROJECT_ID
+  ) PA_RA_CY
+  ON
+  M.UUID = PA_RA_CY.PROJECT_ID
+  WHERE (M.IS_VOID = 0 OR M.IS_VOID IS NULL)
+) T
+WHERE
+('${officeId}' IS NULL OR T.ORG_CODE = '${officeId}')
+AND
+('${projectCode}' IS NULL OR T.PROJECT_CODE LIKE '%${projectCode}%')
+AND
+('${projectName}' IS NULL OR T.PROJECT_NAME LIKE '%${projectName}%')
+AND
+(T.SQUARE_DATE IS NULL OR TO_NUMBER(TO_CHAR(T.SQUARE_DATE, 'YYYY')) >= '${year}')
+/*AND
+(T.YEAR_AMOUNT_P <> 0 OR T.YEAR_AMOUNT_R <> 0)*/
+
+AND ('${build_region}' IS NULL OR
+  (EXISTS
+  (SELECT 1
+   FROM PRM_CONTRACT C
+   LEFT JOIN PRM_CONTRACT_DETAIL CD ON C.UUID = CD.PRM_CONTRACT_ID
+   WHERE CD.PRM_PROJECT_MAIN_ID = T.UUID
+   AND C.BUILD_REGION = '${build_region}')))
+                    
+AND ('${affiliated_institutions}' IS NULL OR
+   (EXISTS
+   (SELECT 1
+    FROM PRM_CONTRACT C
+    LEFT JOIN PRM_CONTRACT_DETAIL CD ON C.UUID = CD.PRM_CONTRACT_ID
+    WHERE CD.PRM_PROJECT_MAIN_ID = T.UUID
+    AND C.AFFILIATED_INSTITUTIONS = '${affiliated_institutions}')))
+
+ORDER BY
+T.SEQ_NO ASC,
+T.SHORT_CODE ASC,
+T.ESTABLISH_DATE ASC,
+T.PROJECT_CODE ASC]]></Query>
+</TableData>
+</TableDataMap>
+<ReportWebAttr>
+<ServerPrinter/>
+<WebPageContent>
+<ToolBars>
+<ToolBarManager>
+<Location>
+<Embed position="1"/>
+</Location>
+<ToolBar>
+<Widget class="com.fr.report.web.button.page.First">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-First')}]]></Text>
+<IconName>
+<![CDATA[first]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Previous">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-Previous')}]]></Text>
+<IconName>
+<![CDATA[previous]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.PageNavi">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Next">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-Next')}]]></Text>
+<IconName>
+<![CDATA[next]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Last">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-Last')}]]></Text>
+<IconName>
+<![CDATA[last]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.FlashPrint">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Utils-Print[Client]A')}]]></Text>
+<IconName>
+<![CDATA[flashprint]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.Print">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Print')}]]></Text>
+<IconName>
+<![CDATA[print]]></IconName>
+<PrintButtons/>
+</Widget>
+<Widget class="com.fr.report.web.button.Export">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Export')}]]></Text>
+<IconName>
+<![CDATA[export]]></IconName>
+<Buttons pdf="true" excelP="true" excelO="true" excelS="true" word="true" image="true" html="true"/>
+</Widget>
+<Widget class="com.fr.report.web.button.Email">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Email')}]]></Text>
+<IconName>
+<![CDATA[email]]></IconName>
+</Widget>
+</ToolBar>
+</ToolBarManager>
+</ToolBars>
+<WebPage isPage="true" isShowAsImage="false" isAutoScale="false" isTDHeavy="false"/>
+</WebPageContent>
+</ReportWebAttr>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR F="1" T="1"/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[720000,720000,723900,720000,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[0,1152000,3505200,3600000,5472000,3619500,4381500,4191000,3168000,3924300,4267200,3733800,3924300,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="0" cs="12" s="0">
+<O>
+<![CDATA[项目现金收支明细表(单位:元)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" s="1">
+<O>
+<![CDATA[项目ID]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" s="1">
+<O>
+<![CDATA[序号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="1" s="1">
+<O>
+<![CDATA[部门]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="1" s="1">
+<O>
+<![CDATA[项目代号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="1" s="1">
+<O>
+<![CDATA[项目名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="1" s="1">
+<O>
+<![CDATA[当月收款]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="1" s="1">
+<O>
+<![CDATA[本年收款]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="1" s="1">
+<O>
+<![CDATA[累计收款]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="1" s="1">
+<O>
+<![CDATA[当月支出]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="1" s="1">
+<O>
+<![CDATA[本年支出]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="1" s="1">
+<O>
+<![CDATA[累计支出]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="1" s="1">
+<O>
+<![CDATA[本年资金成本]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="1" s="1">
+<O>
+<![CDATA[累计资金成本]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="2" s="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="2" s="1">
+<O>
+<![CDATA[汇总：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="2" s="2">
+<PrivilegeControl/>
+</C>
+<C c="4" r="2" s="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="2" s="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(F4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="2" s="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(G4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="2" s="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(H4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="2" s="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(I4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="2" s="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(J4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="2" s="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(K4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="2" s="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(L4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="2" s="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(M4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="3" s="2">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="UUID"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="3" s="1">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=seq()]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand leftParentDefault="false" left="D4"/>
+</C>
+<C c="2" r="3" s="1">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="SHORT_CODE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="3" s="4">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="PROJECT_CODE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="网络报表1">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters>
+<Parameter>
+<Attributes name="project_id"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=A4]]></Attributes>
+</O>
+</Parameter>
+</Parameters>
+<TargetFrame>
+<![CDATA[_blank]]></TargetFrame>
+<Features width="600" height="400"/>
+<ReportletName showPI="true" byPost="true">
+<![CDATA[/erp/ygb/YG009.cpt]]></ReportletName>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand dir="0"/>
+</C>
+<C c="4" r="3" s="2">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="PROJECT_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="MONTH_AMOUNT_R"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="YEAR_AMOUNT_R"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="3" s="5">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="TOTAL_AMOUNT_R"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="网络报表1">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters>
+<Parameter>
+<Attributes name="project_id"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=A4]]></Attributes>
+</O>
+</Parameter>
+</Parameters>
+<TargetFrame>
+<![CDATA[_blank]]></TargetFrame>
+<Features width="600" height="400"/>
+<ReportletName extendParameters="true" showPI="true" byPost="true">
+<![CDATA[/erp/prm/项目收款明细表.cpt]]></ReportletName>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand dir="0"/>
+</C>
+<C c="8" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="MONTH_AMOUNT_P"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="YEAR_AMOUNT_P"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="10" r="3" s="5">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="TOTAL_AMOUNT_P"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="网络报表1">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<JavaScript class="com.fr.js.ReportletHyperlink">
+<Parameters>
+<Parameter>
+<Attributes name="project_id"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=A4]]></Attributes>
+</O>
+</Parameter>
+</Parameters>
+<TargetFrame>
+<![CDATA[_blank]]></TargetFrame>
+<Features width="600" height="400"/>
+<ReportletName extendParameters="true" showPI="true" byPost="true">
+<![CDATA[/erp/prm/项目支出明细表.cpt]]></ReportletName>
+</JavaScript>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand dir="0"/>
+</C>
+<C c="11" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="TOTAL_INTEREST_PA_RA_CY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="12" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="TOTAL_INTEREST_PA_RA"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting orientation="1">
+<PaperSize width="33912000" height="46411200"/>
+<Margin top="986400" left="720000" bottom="986400" right="720000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="96"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72" foreground="-16776961" underline="1"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72" foreground="-16776961" underline="1"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20141222" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="ds1" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="supplierName"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="projectName"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="whetherconsistent"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select SUPPLIER_NAME,
+       project_name,
+       REMARK,
+       SCM_NEED_PAY_MONEY,
+       ye,
+       Whether_consistent
+  from (select nvl(B.SUPPLIER_NAME, ncc.SUPPLIER_NAME) AS SUPPLIER_NAME,
+               nvl(B.project_name, ncc.kjxmname) AS project_name,
+               nvl(B.SCM_NEED_PAY_MONEY, 0) as SCM_NEED_PAY_MONEY,
+               nvl(ncc.ye, 0) as ye,
+               REMARK,
+               CASE
+                 WHEN nvl(B.SCM_NEED_PAY_MONEY, 0) = nvl(ncc.ye, 0) THEN
+                  '是'
+                 ELSE
+                  '否'
+               END AS Whether_consistent
+          from (SELECT A.PROJECT_NAME,
+                       LISTAGG(A.PROJECT_CODE_PAY, ' ,') WITHIN
+                 GROUP(
+                 ORDER BY A.SUPPLIER_NAME, A.PROJECT_NAME) AS REMARK, A.SUPPLIER_NAME, SUM(A.SCM_NEED_PAY_MONEY) AS SCM_NEED_PAY_MONEY
+                  FROM (SELECT NVL(P.MAIN_PROJECT_CODE, VW.SUBJECT_CODE) AS PROJECT_NAME,
+                               DECODE(P.MAIN_PROJECT_CODE,
+                                      P.PROJECT_CODE,
+                                      NULL,
+                                      P.PROJECT_CODE || '_' ||
+                                      VW.SCM_CONTRACT_CODE || ':' ||
+                                      VW.SCM_NEED_PAY_MONEY) AS PROJECT_CODE_PAY,
+                               VW.SCM_NEED_PAY_MONEY,
+                               NVL(S.COMPLETE_NAME, VW.SUPPLIER_NAME) AS SUPPLIER_NAME
+                        
+                          FROM VW_SCM_CONTRACT_EXECUTE_SIMPLE VW
+                          LEFT JOIN FAD_SUPPLIER_MAPPING FSM ON FSM.SUPPLIER_FROM_NAME =
+                                                                VW.SUPPLIER_NAME
+                          LEFT JOIN SCM_SUPPLIER S ON S.UUID =
+                                                      FSM.SUPPLIER_TO_UUID
+                          LEFT JOIN (SELECT M.UUID,
+                                           M.PROJECT_CODE AS PROJECT_CODE,
+                                           NVL(N.PROJECT_CODE, M.PROJECT_CODE) AS MAIN_PROJECT_CODE
+                                      FROM PRM_PROJECT_MAIN M
+                                      LEFT JOIN (SELECT D.PRM_PROJECT_MAIN_ID,
+                                                       M.PROJECT_CODE
+                                                  FROM PRM_CONTRACT_DETAIL D,
+                                                       PRM_CONTRACT        T,
+                                                       PRM_PURCHASE_REQ    R,
+                                                       PRM_PROJECT_MAIN    M
+                                                 WHERE D.PRM_CONTRACT_ID =
+                                                       T.UUID
+                                                   AND T.INNER_PURCHASE_REQ_ID =
+                                                       R.UUID
+                                                   AND R.PRM_PROJECT_MAIN_ID =
+                                                       M.UUID) 　N ON M.UUID =
+                                                                     N.PRM_PROJECT_MAIN_ID
+                                    
+                                    ) P ON VW.PROJECT_ID = P.UUID
+                        UNION ALL
+                        SELECT F.PROJECT_CODE AS PROJECT_NAME,
+                               NULL,
+                               F.AJUST_MONEY AS SCM_NEED_PAY_MONEY,
+                               NVL(S.COMPLETE_NAME, F.SUPPLIER_NAME) AS SUPPLIER_NAME
+                          FROM FAD_SUPPLIER_ADJUST F
+                          LEFT JOIN FAD_SUPPLIER_MAPPING FSM ON F.SUPPLIER_NAME =
+                                                                FSM.SUPPLIER_FROM_NAME
+                          LEFT JOIN SCM_SUPPLIER S ON S.UUID =
+                                                      FSM.SUPPLIER_TO_UUID) A
+                 GROUP BY A.SUPPLIER_NAME, A.PROJECT_NAME) B
+          full join (SELECT D.SUPPLIER_NAME, D.kjxmname, sum(D.ye) AS YE
+                      FROM (select trim(nvl(s.complete_name, nc.customname)) AS SUPPLIER_NAME,
+                                   nc.kjxmname,
+                                   sum(nc.ye) as ye
+                              FROM NC55.KJ_YFZK_KSKJXMYE@FROM_NC_T nc
+                              left join FAD_SUPPLIER_MAPPING fsm on fsm.supplier_from_name =
+                                                                    nc.customname
+                              left join Scm_Supplier s on s.uuid =
+                                                          fsm.supplier_to_uuid
+                             where nc.year = （SELECT
+                             EXTRACT(YEAR FROM SYSDATE) FROM dual)
+                     group by s.complete_name, nc.customname, nc.kjxmname) D
+         group by D.SUPPLIER_NAME, D.kjxmname) NCC on NCC.SUPPLIER_NAME =
+                                                      B.SUPPLIER_NAME
+                                                  and NCC.kjxmname =
+                                                      B.project_name) C
+
+                                                                   
+ where ('${supplierName}' IS NULL OR
+        SUPPLIER_NAME like '%'||trim('${supplierName}')||'%' ) 
+   and ('${projectName}' IS NULL OR
+       project_name like '%'||trim('${projectName}')||'%' )
+   and   
+   ('${whetherconsistent}' IS NULL OR
+       Whether_consistent = '${whetherconsistent}')  ORDER BY SUPPLIER_NAME,project_name
+      
+]]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR F="0" T="0"/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1143000,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[2362200,9639300,4686300,5791200,5524500,2133600,9944100,2743200,2743200,2743200,2743200,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" s="0">
+<O>
+<![CDATA[序号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="0" s="0">
+<O>
+<![CDATA[供应商名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="0" s="0">
+<O>
+<![CDATA[课题代号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="0" s="0">
+<O>
+<![CDATA[ERP应付账款（元）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="0" s="0">
+<O>
+<![CDATA[NC应付账款（元）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="0" s="0">
+<O>
+<![CDATA[是否一致]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="0" s="0">
+<O>
+<![CDATA[备注]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" s="1">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=seq()]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand leftParentDefault="false" left="B2"/>
+</C>
+<C c="1" r="1" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SUPPLIER_NAME"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="1" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="PROJECT_NAME"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="1" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="SCM_NEED_PAY_MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="1" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="YE"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="1" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="WHETHER_CONSISTENT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="1" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="REMARK"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="2" cs="3" s="4">
+<O>
+<![CDATA[合计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="2" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(D2)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="2" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(E2)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="2" s="6">
+<PrivilegeControl/>
+</C>
+<C c="6" r="2" s="6">
+<PrivilegeControl/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting>
+<PaperSize width="43200000" height="42768000"/>
+<Margin top="986400" left="432000" bottom="986400" right="432000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="ColorBackground" color="-3342388"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="ColorBackground" color="-3342388"/>
+<Border/>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="ColorBackground" color="-3342388"/>
+<Border/>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

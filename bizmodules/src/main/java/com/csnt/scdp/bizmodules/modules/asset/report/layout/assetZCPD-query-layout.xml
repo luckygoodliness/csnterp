@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonreport version="1.0">
+    <report>
+        <reporttype>L</reporttype>
+        <reporttemplate>erp/asset/AssetZCPD.cpt</reporttemplate>
+        <reportcache>false</reportcache>
+    </report>
+    <conditions columns="4">
+        <JHidden cid="officeIdDesc" field="officeIdDesc"/>
+        <JErpDepartMent pos="A1:A1" cid="officeId" fieldLabel_s="officeId" field="officeId" labelWidth_n="100"
+                        allowBlank_b="false"/>
+
+        <JCur pos="B1:B1" fieldLabel_s="localValueMin" cid="localValueMin" field="localValueMin"/>
+        <JCur pos="C1:C1" fieldLabel_s="localValueMax" cid="localValueMax" field="localValueMax"/>
+    </conditions>
+</commonreport>

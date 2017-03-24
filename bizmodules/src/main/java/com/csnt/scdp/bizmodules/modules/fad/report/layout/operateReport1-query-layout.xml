@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonreport version="1.0">
+    <report>
+        <reporttype>L</reporttype>
+        <reporttemplate>erp/ygb/重点经营项目汇总.cpt</reporttemplate>
+        <reportcache>false</reportcache>
+    </report>
+    <conditions columns="4">
+        <JHidden cid="officeIdDesc" field="officeIdDesc"/>
+        <JErpDepartMent pos="A1:A1" cid="officeId" fieldLabel_s="officeId" field="officeId" labelWidth_n="100"/>
+        <!--<JInt pos="B1:B1" cid="year" fieldLabel_s="year" field="year" minValue_n="1949" maxValue_n="2200"
+              allowBlank_b="false"
+              readOnly_b="true"/>
+        <JInt pos="C1:C1" cid="month" fieldLabel_s="month" field="month" minValue_n="1" maxValue_n="12"/>-->
+    </conditions>
+</commonreport>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>scmsae-dao</daotype>
+        <daokey>scmsaeobj_query</daokey>
+    </querysql>
+    <conditions columns="3">
+        <JSupplierGrid pos="A1:A1" fieldLabel_s="supplierName" cid="supplierName_query"
+                       refer_j='[{"refField":"supplierId","valueField":"uuid"}]'/>
+        <JHidden cid="supplierId" field="r.supplier_id"/>
+        <JMaterialGrid pos="B1:B1" fieldLabel_s="materialClassName" cid="materialClassName"
+                       refer_j='[{"refField":"materialClassCode","valueField":"code"}]'/>
+        <JHidden cid="materialClassCode" field="r.material_class_code"/>
+        <JHidden cid="connStr" field="connStr"/>
+        <JCombo pos="C1:C1" cid="caseType" fieldLabel_s="materialTypeName"
+                comboType="scm_sae_case_type" displayDesc_b="true" multiSelect_b="false" field="MATERIAL_TYPE"/>
+    </conditions>
+    <results resultGridConfig="{'autoResizeColumn':false}">
+        <JHidden dataIndex="materialClassCode"/>
+        <JHidden dataIndex="materialType"/>
+        <JHidden dataIndex="supplierId"/>
+        <JTextCol text_s="materialClassName" dataIndex="materialClassName" width_n="150"/>
+        <JTextCol text_s="materialTypeName" dataIndex="materialTypeName" width_n="150"/>
+        <JTextCol text_s="supplierName" dataIndex="supplierName" width_n="150"/>
+        <JTextCol text_s="supplierCode" dataIndex="supplierCode" width_n="150"/>
+        <JCurCol text_s="contractNum" dataIndex="contractNum" width_n="120"/>
+        <JCurCol text_s="amount" dataIndex="amount" width_n="120"/>
+        <JTextCol text_s="operativeSegments" dataIndex="operativeSegments" width_n="150"/>
+    </results>
+</commonquery>

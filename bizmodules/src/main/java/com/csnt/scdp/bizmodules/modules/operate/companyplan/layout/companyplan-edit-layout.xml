@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JPanel col="1*1" pos="A1:A1" row="flex" cid="generalTab" height="500">
+    <JForm pos="A1:A1" cid="operateCompanyPlanHDto" row="15,23,150,200,flex" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JHidden cid="startYear"/>
+        <JCombo pos="A2:A2" cid="startYearDesc" fieldLabel_s="year" displayDesc_b="true" comboType="scdp_fmcode"
+                codeType="CDM_YEAR" allowBlank_b="true" labelWidth_n="120" target='startYear|code'/>
+        <JText pos="B2:D2" cid="planName" fieldLabel_s="planName" allowBlank_b="true" labelWidth_n="120"/>
+        <JFieldSet pos="A3:D3" title_s="公司指标" col="0.25*4" row="23*5" border_n="1">
+            <JCur pos="A1:A1" cid="jhhte" fieldLabel_s="jhhte" allowBlank_b="true" minValue_n="0" labelWidth_n="120"/>
+            <JCur pos="B1:B1" cid="jhlxlr" fieldLabel_s="jhlxlr" allowBlank_b="true" minValue_n="0" labelWidth_n="120"/>
+            <JCur pos="C1:C1" cid="jhsr" fieldLabel_s="jhsr" allowBlank_b="true" minValue_n="0" labelWidth_n="120"/>
+            <JCur pos="D1:D1" cid="jhjssr" fieldLabel_s="jhjssr" allowBlank_b="true" minValue_n="0" labelWidth_n="120"/>
+            <JCur pos="A2:A2" cid="jhjslr" fieldLabel_s="jhjslr" allowBlank_b="true" minValue_n="0" labelWidth_n="120"/>
+            <JTextArea pos="A3:D5" cid="remark" fieldLabel_s="remark" allowBlank_b="true" wrap_b="true"
+                       labelWidth_n="120"/>
+        </JFieldSet>
+        <JFieldSet pos="A4:D4" title_s="部门指标" col="flex" row="flex" border_n="1">
+            <JEGrid pos="A1:A1" cid="operateCompanyPlanCDto" store="Companyplan.store.OperateCompanyPlanCStore">
+                <JHidden text_s="objectId" dataIndex="objectId">
+                </JHidden>
+                <JTextCol text_s="objectId" dataIndex="officeName" width_n="140">
+                </JTextCol>
+                <JCurCol text_s="jhhte" dataIndex="jhhte" width_n="120" align="right">
+                    <JCur allowBlank_b="true" minValue_n="0.01"/>
+                </JCurCol>
+                <JCurCol text_s="jhlxlr" dataIndex="jhlxlr" width_n="120" align="right">
+                    <JCur allowBlank_b="true" minValue_n="0.01"/>
+                </JCurCol>
+                <JCurCol text_s="jhsr" dataIndex="jhsr" width_n="120" align="right">
+                    <JCur allowBlank_b="true" minValue_n="0.01"/>
+                </JCurCol>
+                <JCurCol text_s="jhjssr" dataIndex="jhjssr" width_n="120" align="right">
+                    <JCur allowBlank_b="true" minValue_n="0.01"/>
+                </JCurCol>
+                <JCurCol text_s="jhjslr" dataIndex="jhjslr" width_n="120" align="right">
+                    <JCur allowBlank_b="true" minValue_n="0.01"/>
+                </JCurCol>
+                <JCurCol text_s="jhszyy" dataIndex="jhszyy" width_n="120" align="right">
+                    <JCur allowBlank_b="true" minValue_n="0.01"/>
+                </JCurCol>
+                <JCurCol text_s="jzhte" dataIndex="jzhte" width_n="120" align="right">
+                    <JCur allowBlank_b="true" decimalPrecision_n="4"/>
+                </JCurCol>
+                <JCurCol text_s="jzsr" dataIndex="jzsr" width_n="120" align="right">
+                    <JCur allowBlank_b="true" decimalPrecision_n="4"/>
+                </JCurCol>
+                <JCurCol text_s="jzlr" dataIndex="jzlr" width_n="120" align="right">
+                    <JCur allowBlank_b="true" decimalPrecision_n="4"/>
+                </JCurCol>
+                <JCurCol text_s="htexz" dataIndex="htexz" width_n="120" align="right">
+                    <JCur allowBlank_b="true" decimalPrecision_n="4"/>
+                </JCurCol>
+                <JCurCol text_s="lxlrxz" dataIndex="lxlrxz" width_n="120" align="right">
+                    <JCur allowBlank_b="true" decimalPrecision_n="4"/>
+                </JCurCol>
+                <JCurCol text_s="lxyxexz" dataIndex="lxyxexz" width_n="120" align="right">
+                    <JCur allowBlank_b="true" decimalPrecision_n="4"/>
+                </JCurCol>
+                <JCurCol text_s="bmjslrxz" dataIndex="bmjslrxz" width_n="120" align="right">
+                    <JCur allowBlank_b="true" decimalPrecision_n="4"/>
+                </JCurCol>
+                <JCurCol text_s="bmjssrxz" dataIndex="bmjssrxz" width_n="120" align="right">
+                    <JCur allowBlank_b="true" decimalPrecision_n="4"/>
+                </JCurCol>
+                <JCurCol text_s="bmsrxz" dataIndex="bmsrxz" width_n="120" align="right">
+                    <JCur allowBlank_b="true" decimalPrecision_n="4"/>
+                </JCurCol>
+                <JComboCol text_s="state" dataIndex="state" width_n="100" align="center">
+                    <JCombo displayDesc_b="true" comboType="scdp_fmcode"
+                            codeType="OPERATE_COMPANY_PLAN_STATE" allowBlank_b="true"/>
+                </JComboCol>
+            </JEGrid>
+        </JFieldSet>
+        <JFieldSet pos="A5:D5" title_s="部门指标明细" col="flex" row="flex" border_n="1">
+            <JEGrid pos="A1:A1" cid="operateCompanyPlanDDto" bcid="operateCompanyPlanCDto.bind" isBind_b="true" store="Companyplan.store.OperateCompanyPlanDStore">
+
+                <JComboCol text_s="objectType" dataIndex="objectType" width_n="100" align="center">
+                    <JCombo displayDesc_b="true" comboType="scdp_fmcode"
+                            codeType="OPERATE_COMPANY_PLAN_D_TYPE" allowBlank_b="false"/>
+                </JComboCol>
+                <JCurCol text_s="jhhte" dataIndex="jhhte" width_n="120" align="right">
+                    <JCur allowBlank_b="true" minValue_n="0.01"/>
+                </JCurCol>
+                <JCurCol text_s="jhlxlr" dataIndex="jhlxlr" width_n="120" align="right">
+                    <JCur allowBlank_b="true" minValue_n="0.01"/>
+                </JCurCol>
+                <JCurCol text_s="jhsr" dataIndex="jhsr" width_n="120" align="right">
+                    <JCur allowBlank_b="true" minValue_n="0.01"/>
+                </JCurCol>
+                <!--<JCurCol text_s="jhjssr" dataIndex="jhjssr" width_n="120" align="right">-->
+                    <!--<JCur allowBlank_b="true" minValue_n="0.01"/>-->
+                <!--</JCurCol>-->
+                <!--<JCurCol text_s="jhjslr" dataIndex="jhjslr" width_n="120" align="right">-->
+                    <!--<JCur allowBlank_b="true" minValue_n="0.01"/>-->
+                <!--</JCurCol>-->
+                <!--<JCurCol text_s="jhszyy" dataIndex="jhszyy" width_n="120" align="right">-->
+                    <!--<JCur allowBlank_b="true" minValue_n="0.01"/>-->
+                <!--</JCurCol>-->
+                <!--<JCurCol text_s="jzhte" dataIndex="jzhte" width_n="120" align="right">-->
+                    <!--<JCur allowBlank_b="true" decimalPrecision_n="4"/>-->
+                <!--</JCurCol>-->
+                <!--<JCurCol text_s="jzsr" dataIndex="jzsr" width_n="120" align="right">-->
+                    <!--<JCur allowBlank_b="true" decimalPrecision_n="4"/>-->
+                <!--</JCurCol>-->
+                <!--<JCurCol text_s="jzlr" dataIndex="jzlr" width_n="120" align="right">-->
+                    <!--<JCur allowBlank_b="true" decimalPrecision_n="4"/>-->
+                <!--</JCurCol>-->
+                <!--<JCurCol text_s="htexz" dataIndex="htexz" width_n="120" align="right">-->
+                    <!--<JCur allowBlank_b="true" decimalPrecision_n="4"/>-->
+                <!--</JCurCol>-->
+                <!--<JCurCol text_s="lxlrxz" dataIndex="lxlrxz" width_n="120" align="right">-->
+                    <!--<JCur allowBlank_b="true" decimalPrecision_n="4"/>-->
+                <!--</JCurCol>-->
+                <!--<JCurCol text_s="lxyxexz" dataIndex="lxyxexz" width_n="120" align="right">-->
+                    <!--<JCur allowBlank_b="true" decimalPrecision_n="4"/>-->
+                <!--</JCurCol>-->
+                <!--<JCurCol text_s="bmjslrxz" dataIndex="bmjslrxz" width_n="120" align="right">-->
+                    <!--<JCur allowBlank_b="true" decimalPrecision_n="4"/>-->
+                <!--</JCurCol>-->
+                <!--<JCurCol text_s="bmjssrxz" dataIndex="bmjssrxz" width_n="120" align="right">-->
+                    <!--<JCur allowBlank_b="true" decimalPrecision_n="4"/>-->
+                <!--</JCurCol>-->
+                <!--<JCurCol text_s="bmsrxz" dataIndex="bmsrxz" width_n="120" align="right">-->
+                    <!--<JCur allowBlank_b="true" decimalPrecision_n="4"/>-->
+                <!--</JCurCol>-->
+            </JEGrid>
+        </JFieldSet>
+    </JForm>
+    </JPanel>
+</view>

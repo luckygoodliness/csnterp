@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="fadInterestRateDto" col="0.25*4" row="23*11"  title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JText pos="A1:A1"  cid="rateName" fieldLabel_s="rateName" allowBlank_b="true"/>
+        <JCur pos="B1:B1"  cid="rate" fieldLabel_s="rate" allowBlank_b="false" decimalPrecision="4"  minValue_n="0.00"/>
+        <JCur pos="C1:C1"  cid="depositRate" fieldLabel_s="depositRate" allowBlank_b="false" decimalPrecision="4"  minValue_n="0.00"/>
+        <JDate pos="A2:A2"  cid="validityDateFrom" fieldLabel_s="validityDateFrom" allowBlank_b="false"/>
+        <JDate pos="B2:B2"  cid="validityDateTo" fieldLabel_s="validityDateTo" allowBlank_b="false"/>
+    </JForm>
+</view>

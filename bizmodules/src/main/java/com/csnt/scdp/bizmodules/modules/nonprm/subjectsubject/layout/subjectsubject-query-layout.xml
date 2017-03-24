@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>subjectsubject-dao</daotype>
+        <daokey>common_query_single</daokey>
+    </querysql>
+    <defaultSort>office_id asc,seq_no asc </defaultSort>
+    <conditions columns="3">
+        <JHidden cid="officeIdDesc"/>
+        <JErpDepartMent pos="A1:A1" fieldLabel_s="officeId" cid="officeId"
+                        field="office_id" labelWidth_n="100"/>
+        <JText pos="B1:B1" fieldLabel_s="financialSubjectCode" cid="financialSubjectCode"
+               field="financial_subject_code"/>
+        <JCombo pos="C1:C1" fieldLabel_s="isActive" cid="isActive" field="is_active"
+                comboType="scdp_fmcode" codeType="NONPRM_FINANCIAL_IS_ENABLED" allowBlank_b="true"
+                displayDesc_b="true" fullInfo_b="false"/>
+        <JText pos="A2:A2" fieldLabel_s="financialSubject" cid="financialSubject" field="financial_subject"/>
+    </conditions>
+    <results>
+        <!--<JTextCol text_s="id" dataIndex="id" width_n="100"/>-->
+        <JTextCol text_s="orgName" dataIndex="orgName" width_n="100"/>
+        <!--<JHidden cid="officeId" fieldLablel_s="officeId" allowBlank_b="true"/>-->
+        <JTextCol text_s="financialSubject" dataIndex="financialSubject" width_n="100"/>
+        <JTextCol text_s="financialSubjectCode" dataIndex="financialSubjectCode" width_n="180"/>
+        <JRCheckCol text_s="isActive" dataIndex="isActive" width_n="80"/>
+        <!--<JDatetimeCol text_s="enabledTime" dataIndex="enabledTime" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="disabledTime" dataIndex="disabledTime" width_n="120"/>-->
+        <JTextCol text_s="descp" dataIndex="descp" width_n="300"/>
+        <JTextCol text_s="createByUser" dataIndex="createByUser" width_n="100"/>
+        <!--<JTextCol text_s="createdOffice" dataIndex="createdOffice" width_n="100"/>-->
+    </results>
+</commonquery>

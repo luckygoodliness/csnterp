@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+
+    <JTab pos="A1:A1" row="flex" col="1*1" border_n="1" cid="tab">
+        <JPanel col="0.54*1,0.01,0.45*1" pos="A1:A1" title_s="预算执行与监控" row="80,flex" border_n="1" cid="generalTab">
+            <!--row="60,161,230"-->
+            <JForm pos="A1:C1" cid="nonBudgetMonitorSDto" row="23*4" col="0.1*10" title_s="" border_n="1">
+                <!--字符串显示-->
+                <JText  pos="C3:C3" cid="uuid"/>
+                <JDisplay pos="C1:C1" value=""/>
+                <!--<JText pos="A2:C2" cid="纯收入" fieldLabel_s="纯收入" allowBlank_b="true"/>-->
+                <!--<JDisplay pos="A2:A2" cid="" value="纯收入"/>-->
+                <JDec pos="A2:B2" cid="appliedValue" fieldLabel_s="纯收入" allowBlank_b="true"
+                      allowEdit_b="false" adaptable_b="false"/>
+                <JDec pos="C2:C2" cid="firstInstance" fieldLabel_s="" allowBlank_b="true"
+                      allowEdit_b="false" adaptable_b="false"/>
+                <JDec pos="D2:D2" cid="assignedValue" fieldLabel_s="" allowBlank_b="true"
+                      allowEdit_b="false" adaptable_b="false"/>
+                <JDec pos="E2:E2" cid="occurredValue" fieldLabel_s="" allowBlank_b="true"
+                      allowEdit_b="false" adaptable_b="false"/>
+                <JText pos="A3:B3" cid="year" fieldLabel_s="year" allowBlank_b="true"
+                       allowEdit_b="false" adaptable_b="false"/>
+                <!--<JButton pos="B3:B3" cid="btnFillData" text_s="带出数据"/>-->
+                <!--<JText pos="B3:B3" cid="uuid" fieldLabel_s="uuid" allowBlank_b="true"/>-->
+            </JForm>
+            <JFieldSet  row="flex" col="1*1" pos="A2:A2" title_s="预算收入" border_n="1" cid="">
+                <JEGrid pos="A1:A1" cid="nonBudgetMonitorSDto" store="Monitor.store.NonBudgetMonitorSStore"
+                        title_s="" withToolbar_b="false">
+                    <JTextCol text_s="subject" dataIndex="subject" width_n="110">
+                    </JTextCol>
+                    <JGroupCol text_s="前一年">
+
+                        <JDecCol text_s="lastAppliedValue" dataIndex="lastAppliedValue" width_n="70">
+                            <JDec allowBlank_b="true"/>
+                        </JDecCol>
+                        <JDecCol text_s="occurredValue" dataIndex="occurredValue" width_n="80">
+                            <JDec allowBlank_b="true"/>
+                        </JDecCol>
+                        <JTextCol text_s="completion" dataIndex="completion" width_n="80">
+                            <JDec allowBlank_b="true"/>
+                        </JTextCol>
+                    </JGroupCol>
+
+                    <JGroupCol text_s="当年">
+                        <JDecCol text_s="appliedValue" dataIndex="appliedValue" width_n="80">
+                            <JDec allowBlank_b="true"/>
+                        </JDecCol>
+                        <JDecCol text_s="firstInstance" dataIndex="firstInstance" width_n="80">
+                            <JDec allowBlank_b="true"/>
+                        </JDecCol>
+                        <JDecCol text_s="assignedValue" dataIndex="assignedValue" width_n="80">
+                            <JDec allowBlank_b="true"/>
+                        </JDecCol>
+                    </JGroupCol>
+                </JEGrid>
+            </JFieldSet>
+            <JFieldSet  row="flex" col="1*1" pos="C2:C2" title_s="预算支出" border_n="1" cid="">
+                <JEGrid pos="A1:A1" cid="nonBudgetMonitorSDto" store="Monitor.store.NonBudgetMonitorSStore"
+                        title_s="" withToolbar_b="false">
+                    <JTextCol text_s="subject" dataIndex="subject" width_n="150" />
+                    <JGroupCol text_s="前一年">
+                        <JDecCol text_s="occurredValue" dataIndex="occurredValue" width_n="100">
+                            <JDec allowBlank_b="true"/>
+                        </JDecCol>
+                    </JGroupCol>
+
+                    <JGroupCol text_s="当年">
+                        <JDecCol text_s="appliedValue" dataIndex="appliedValue" width_n="80">
+                            <JDec allowBlank_b="true"/>
+                        </JDecCol>
+                        <JDecCol text_s="firstInstance" dataIndex="firstInstance" width_n="80">
+                            <JDec allowBlank_b="true"/>
+                        </JDecCol>
+                        <JDecCol text_s="assignedValue" dataIndex="assignedValue" width_n="80">
+                            <JDec allowBlank_b="true"/>
+                        </JDecCol>
+                    </JGroupCol>
+                </JEGrid>
+            </JFieldSet>
+        </JPanel>
+    </JTab>
+</view>
+
+

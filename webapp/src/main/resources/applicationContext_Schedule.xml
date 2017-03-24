@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+
+    <bean id="scdpQuartzRAMScheduler" class="com.csnt.scdp.framework.core.schedule.ScdpSchedulerFactoryBean" lazy-init="true">
+        <property name="schedulerName" value="scdpQuartzRAMScheduler"/>
+        <!-- quartz配置 -->
+        <property name="configLocation" value="classpath:quartz-ram.properties"/>
+        <!-- 启动时延期N秒开始任务 -->
+        <property name="startupDelay" value="30"/>
+        <!-- 保存Job数据到数据库所需的数据源 -->
+        <property name="transactionManager" ref="transactionManager"/>
+        <!-- Job接受applicationContext的成员变量名 -->
+        <property name="applicationContextSchedulerContextKey" value="applicationContext"/>
+        <!-- 以集群方式运行 -->
+        <property name="runWithinCluster" value="false"/>
+
+        <!-- Action History Triggers配置，这些配置Trigger以固定模式运行，如果需要更新则修改配置后更新应用部署才能生效 -->
+        <property name="triggers">
+            <list>
+                <bean id="ActionHistoryWriter.Trigger"
+                      class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+                    <property name="jobDetail">
+                        <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+                            <property name="name" value="$STATIC$_ACTIONHISTORY_WRITE"/>
+                            <property name="jobClass"
+                                      value="com.csnt.scdp.framework.core.schedule.job.ActionHistoryWriteJob"/>
+                            <property name="jobDataAsMap">
+                                <map>
+                                    <entry key="JOB_PARAM_COMPANY_CODE" value="SYS"/>
+                                </map>
+                            </property>
+                        </bean>
+                    </property>
+                    <!-- 每分钟执行一次 -->
+                    <property name="cronExpression" value="0 0/1 * * * ? *"/>
+                </bean>
+                <bean id="ActionHistoryPurger.Trigger"
+                      class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+                    <property name="jobDetail">
+                        <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+                            <property name="name" value="$STATIC$_ACTIONHISTORY_PURGE"/>
+                            <property name="jobClass"
+                                      value="com.csnt.scdp.framework.core.schedule.job.ActionHistoryPurgeJob"/>
+                            <property name="jobDataAsMap">
+                                <map>
+                                    <entry key="JOB_PARAM_COMPANY_CODE" value="SYS"/>
+                                </map>
+                            </property>
+                        </bean>
+                    </property>
+                    <!-- 每天凌晨3:24执行清理工作，使用服务器所在时区 -->
+                    <property name="cronExpression" value="0 24 3 1/1 * ? *"/>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="scdpQuartzClusterScheduler" class="com.csnt.scdp.framework.core.schedule.ScdpSchedulerFactoryBean"
+          lazy-init="true">
+         <property name="schedulerName" value="scdpQuartzClusterSchedulerErp"/>
+         <property name="jobFactory">
+             <bean class="com.csnt.scdp.framework.core.schedule.ScdpBeanJobFactory"/>
+         </property>
+        <!-- quartz配置 -->
+         <property name="configLocation" value="classpath:quartz-cluster.properties"/>
+         <property name="autoStartup" value="true"/>
+        <!-- 启动时延期N秒开始任务 -->
+         <property name="startupDelay" value="30"/>
+        <!-- 保存Job数据到数据库所需的数据源 -->
+         <property name="dataSource" ref="dataSource"/>
+         <property name="transactionManager" ref="transactionManager"/>
+        <!-- Job接受applicationContext的成员变量名 -->
+         <property name="applicationContextSchedulerContextKey" value="applicationContext"/>
+        <!-- 用数据库最新配置覆盖已有配置 -->
+         <property name="overwriteExistingJobs" value="true"/>
+        <!-- 以集群方式运行 -->
+         <property name="runWithinCluster" value="true"/>
+    </bean>
+</beans>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<groups xmlns="http://www.isdc.ro/wro">
+    <group name="scdp">
+        <js>/framework/js_source/scdp_const_1.js</js>
+        <js>/framework/js_source/scdp_init_2.js</js>
+        <js>/framework/js_source/scdp_utils_3.js</js>
+        <js>/framework/js_source/scdp_helper_4.js</js>
+        <js>/framework/js_source/scdp_model_stores_5.js</js>
+        <js>/framework/js_source/scdp_comps_1_container.js</js>
+        <js>/framework/js_source/scdp_comps_2_form.js</js>
+        <js>/framework/js_source/scdp_comps_3_grid.js</js>
+        <js>/framework/js_source/scdp_comps_4_tree.js</js>
+        <js>/framework/js_source/scdp_comps_5_toolbar.js</js>
+        <js>/framework/js_source/scdp_comps_mvc.js</js>
+        <js>/framework/js_source/index.js</js>
+        <js>/framework/js_source/mainframe.js</js>
+
+        <css>/framework/css/scdp_common.css</css>
+        <css>/framework/css/scdp_enhance.css</css>
+    </group>
+</groups>

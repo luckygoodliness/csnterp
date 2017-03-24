@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>notesplan-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="A1:A1" fieldLabel_s="issueNumber" cid="issueNumber" field="issue_Number"/>
+        <JCombo pos="B1:B1" cid="islock_query" fieldLabel_s="islock" field="islock" allowBlank_b="true"
+                comboType="scdp_fmcode"
+                codeType="SCM_NOTES_PLAN_ISLOCK" displayDesc_b="true"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="issueNumber" dataIndex="issueNumber" width_n="120"/>
+        <JTextCol text_s="islock" dataIndex="islockName" width_n="120"/>
+        <JTextCol text_s="islock" dataIndex="islock" width_n="120" hidden_b="true"/>
+    </results>
+</commonquery>

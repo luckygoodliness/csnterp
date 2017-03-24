@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>erpoffice-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>seq_no asc</defaultSort>
+    <conditions columns="4">
+        <JHidden cid="orgCodeS" />
+        <JText pos="B1:B1" fieldLabel_s="orgCode" cid="orgCode" field="org_code"/>
+        <JText pos="C1:C1" fieldLabel_s="orgName" cid="orgName" field="org_name"/>
+    </conditions>
+    <results>
+        <JIntCol text_s="seqNo" dataIndex="seqNo" width_n="100"/>
+        <JTextCol text_s="orgCode" dataIndex="orgCode" width_n="130"/>
+        <JTextCol text_s="orgName" dataIndex="orgName" width_n="260"/>
+        <JTextCol text_s="orgType" dataIndex="orgType" hidden_b="true"/>
+    </results>
+</commonquery>

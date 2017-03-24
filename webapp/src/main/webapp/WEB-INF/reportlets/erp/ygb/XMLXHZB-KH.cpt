@@ -1,0 +1,1427 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="T1" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="year"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="month"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="affiliated_institutions"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="build_region"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT O.ORG_NAME,
+       O.ORG_CODE,
+       NVL(MONTH.COUNT, 0) AS MONTH_COUNT,
+       NVL(MONTH.AMOUNT, 0) / 10000 AS MONTH_AMOUNT,
+       NVL(MONTH.N_COUNT, 0) AS MONTH_N_COUNT,
+       NVL(MONTH.N_AMOUNT, 0) / 10000 AS MONTH_N_AMOUNT,
+       NVL(MONTH.Y_COUNT, 0) AS MONTH_Y_COUNT,
+       NVL(MONTH.Y_AMOUNT, 0) / 10000 AS MONTH_Y_AMOUNT,
+       NVL(MONTH.PROFIT, 0) / 10000 AS MONTH_PROFIT,
+       NVL(MONTH.N_PROFIT, 0) / 10000 AS MONTH_N_PROFIT,
+       NVL(MONTH.Y_PROFIT, 0) / 10000 AS MONTH_Y_PROFIT,
+       NVL(YEAR.COUNT, 0) AS YEAR_COUNT,
+       NVL(YEAR.AMOUNT, 0) / 10000 AS YEAR_AMOUNT,
+       NVL(YEAR.N_COUNT, 0) AS YEAR_N_COUNT,
+       NVL(YEAR.N_AMOUNT, 0) / 10000 AS YEAR_N_AMOUNT,
+       NVL(YEAR.Y_COUNT, 0) AS YEAR_Y_COUNT,
+       NVL(YEAR.Y_AMOUNT, 0) / 10000 AS YEAR_Y_AMOUNT,
+       NVL(YEAR.PROFIT, 0) / 10000 AS YEAR_PROFIT,
+       NVL(YEAR.N_PROFIT, 0) / 10000 AS YEAR_N_PROFIT,
+       NVL(YEAR.Y_PROFIT, 0) / 10000 AS YEAR_Y_PROFIT,
+       NVL(PC.JZHTE,0) AS LAST_YEAR_AMOUNT,
+       NVL(PC.JZLR,0) AS LAST_YEAR_PROFIT,
+       NVL(PC.LXYXEXZ,0) AS YEAR_UPDATE_AMOUNT,
+       NVL(PC.Lxlrxz,0) AS YEAR_UPDATE_PROFIT,
+       NVL(PC.JHLXLR,0) AS YEAR_PROFIT_PLAN,
+       NVL(PH.JHLXLR,0) AS COMPANY_PROFIT_PLAN
+  FROM SCDP_ORG O
+--内联事业部门
+ INNER JOIN (SELECT *
+               FROM SCDP_EXPAND_ROW
+              WHERE EXPAND_CODE = 'DEPT_PROP'
+                AND EXPAND_VALUE = '事业部' AND (IS_VOID = 0 OR IS_VOID IS NULL)) OE
+    ON O.UUID = OE.DATA_UUID
+--左联上年结转数据
+ LEFT JOIN (
+    SELECT * FROM OPERATE_COMPANY_PLAN_C 
+            WHERE (IS_VOID = 0 OR IS_VOID IS NULL)
+             AND EXISTS (SELECT 1
+                        FROM OPERATE_COMPANY_PLAN_H H
+                       WHERE H.COMPANY_CODE = 'CSNT'
+                         AND H.START_YEAR = '${year}'
+                         AND (IS_VOID = 0 OR IS_VOID IS NULL)
+                         AND OPERATE_COMPANY_PLAN_H_ID = H.UUID)
+  ) PC
+    ON O.ORG_CODE = PC.OBJECT_ID
+  LEFT JOIN (SELECT *
+               FROM OPERATE_COMPANY_PLAN_H H
+              WHERE H.COMPANY_CODE = 'CSNT'
+                AND H.START_YEAR = '${year}' AND (IS_VOID = 0 OR IS_VOID IS NULL)) PH
+    ON PH.UUID = PC.OPERATE_COMPANY_PLAN_H_ID
+--左联年度数据
+  LEFT JOIN (SELECT N.CONTRACTOR_OFFICE,
+                    COUNT(*) COUNT,                    
+                    SUM(CASE
+                          WHEN NVL(N.IS_PRE_PROJECT,2) <> NVL(L.IS_PRE_PROJECT,2) THEN
+                           NVL(N.PROJECT_MONEY, 0)
+                          ELSE
+                           NVL(N.PROJECT_MONEY, 0) - NVL(L.PROJECT_MONEY, 0)
+                        END) AS AMOUNT,
+                    
+                    SUM(CASE
+                          WHEN NVL(N.IS_PRE_PROJECT,2) <> NVL(L.IS_PRE_PROJECT,2) THEN
+                           NVL(N.PROFIT, 0)
+                          ELSE
+                           NVL(N.PROFIT, 0) - NVL(L.PROFIT, 0)
+                        END) AS PROFIT,
+                    
+                    SUM(CASE
+                          WHEN SUBSTR(N.PROJECT_CODE, 8, 1) = '9' THEN
+                           1
+                          ELSE
+                           0
+                        END) N_COUNT,
+                    SUM(CASE
+                          WHEN SUBSTR(N.PROJECT_CODE, 8, 1) = '9' AND
+                               NVL(N.IS_PRE_PROJECT,2) <> NVL(L.IS_PRE_PROJECT,2) THEN
+                           NVL(N.PROJECT_MONEY, 0)
+                          WHEN SUBSTR(N.PROJECT_CODE, 8, 1) = '9' AND
+                               NVL(N.IS_PRE_PROJECT,2) = NVL(L.IS_PRE_PROJECT,2) THEN
+                           NVL(N.PROJECT_MONEY, 0) - NVL(L.PROJECT_MONEY, 0)
+                          ELSE
+                           0
+                        END) N_AMOUNT,
+                    SUM(CASE
+                          WHEN SUBSTR(N.PROJECT_CODE, 8, 1) = '9' AND
+                               NVL(N.IS_PRE_PROJECT,2) <> NVL(L.IS_PRE_PROJECT,2) THEN
+                           NVL(N.PROFIT, 0)
+                          WHEN SUBSTR(N.PROJECT_CODE, 8, 1) = '9' AND
+                               NVL(N.IS_PRE_PROJECT,2) = NVL(L.IS_PRE_PROJECT,2) THEN
+                           NVL(N.PROFIT, 0) - NVL(L.PROFIT, 0)
+                          ELSE
+                           0
+                        END) N_PROFIT,
+                    SUM(CASE
+                          WHEN SUBSTR(N.PROJECT_CODE, 7, 2) = 'KY' THEN
+                           1
+                          ELSE
+                           0
+                        END) Y_COUNT,
+                    SUM(CASE
+                          WHEN SUBSTR(N.PROJECT_CODE, 7, 2) = 'KY' AND
+                               NVL(N.IS_PRE_PROJECT,2) = NVL(L.IS_PRE_PROJECT,2) THEN
+                           NVL(N.PROJECT_MONEY, 0) - NVL(L.PROJECT_MONEY, 0)
+                          WHEN SUBSTR(N.PROJECT_CODE, 7, 2) = 'KY' AND
+                               NVL(N.IS_PRE_PROJECT,2) <> NVL(L.IS_PRE_PROJECT,2) THEN
+                           NVL(N.PROJECT_MONEY, 0)
+                          ELSE
+                           0
+                        END) Y_AMOUNT,
+                    SUM(CASE
+                          WHEN SUBSTR(N.PROJECT_CODE, 7, 2) = 'KY' AND
+                               NVL(N.IS_PRE_PROJECT,2) = NVL(L.IS_PRE_PROJECT,2) THEN
+                           NVL(N.PROFIT, 0) - NVL(L.PROFIT, 0)
+                          WHEN SUBSTR(N.PROJECT_CODE, 7, 2) = 'KY' AND
+                               NVL(N.IS_PRE_PROJECT,2) <> NVL(L.IS_PRE_PROJECT,2) THEN
+                           NVL(N.PROFIT, 0)
+                          ELSE
+                           0
+                        END) Y_PROFIT             
+               FROM (SELECT PRM.PROJECT_SERIAL_NO,
+                            PRM.CONTRACTOR_OFFICE,
+                            PRM.PROJECT_CODE,
+                            PRM.PROJECT_NAME,
+                            PRM.CUSTOMER_ID,
+                            PRM.PROJECT_MANAGER,
+                            PRM.PROJECT_MONEY,
+                            PRM.PROFIT,
+                            PRM.IS_PRE_PROJECT,
+                            PRM.PRM_PROJECT_MAIN_ID
+                       FROM (SELECT C.PROJECT_SERIAL_NO,
+                                    C.CONTRACTOR_OFFICE,
+                                    C.PROJECT_CODE,
+                                    C.PROJECT_NAME,
+                                    C.CUSTOMER_ID,
+                                    C.PROJECT_MANAGER,
+                                    C.PROJECT_MONEY,
+                                    NVL(C.PROJECT_MONEY,0) -
+                                    NVL(C.COST_CONTROL_MONEY,0) AS PROFIT,
+                                    C.IS_PRE_PROJECT,
+                                    C.PRM_PROJECT_MAIN_ID,
+                                    ROW_NUMBER() OVER(PARTITION BY C.PRM_PROJECT_MAIN_ID ORDER BY C.EXAM_DATE DESC) AS ROW_NUMBER
+                               FROM PRM_PROJECT_MAIN_C C
+                              WHERE C.STATE = 2
+                                AND C.IS_PRE_PROJECT <> 1--不含预立项
+                                AND (SUBSTR(C.PROJECT_CODE, 1, 1)<> '研' OR SUBSTR(C.PROJECT_CODE, 7, 2) = 'KY' )--不含外部研发
+                                AND C.ESTABLISH_DATE>=TO_DATE('2014-06-01','yyyy-MM-dd')--不含老项目
+                                AND C.PRM_CODE_TYPE<>'JI_GAI'--不含技改项目
+                                AND C.EXAM_DATE >=
+                                    TO_DATE('${year}' || '-01-01',
+                                            'yyyy-mm-dd')
+                                AND C.EXAM_DATE <
+                                    ADD_MONTHS(TO_DATE('${year}' || '-' ||
+                                                       '${month}' || '-01',
+                                                       'yyyy-mm-dd'),
+                                               1)
+                                AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+                                AND('${build_region}' IS NULL OR
+                                   (EXISTS (SELECT 1
+                                               FROM PRM_CONTRACT CO
+                                               LEFT JOIN PRM_CONTRACT_DETAIL_C CD
+                                                 ON CO.UUID = CD.PRM_CONTRACT_ID
+                                                WHERE CD.PRM_PROJECT_MAIN_C_ID = C.UUID
+                                                AND CO.BUILD_REGION = '${build_region}')))
+                                AND('${affiliated_institutions}' IS NULL OR
+                                   (EXISTS (SELECT 1
+                                               FROM PRM_CONTRACT CO
+                                               LEFT JOIN PRM_CONTRACT_DETAIL_C CD
+                                                 ON CO.UUID = CD.PRM_CONTRACT_ID
+                                                WHERE CD.PRM_PROJECT_MAIN_C_ID = C.UUID
+                                                AND CO.AFFILIATED_INSTITUTIONS = '${affiliated_institutions}')))
+                                ) PRM
+                      WHERE PRM.ROW_NUMBER = 1) N
+               LEFT JOIN (SELECT PRM.PROJECT_SERIAL_NO,
+                                PRM.CONTRACTOR_OFFICE,
+                                PRM.PROJECT_CODE,
+                                PRM.PROJECT_NAME,
+                                PRM.CUSTOMER_ID,
+                                PRM.PROJECT_MANAGER,
+                                PRM.PROJECT_MONEY,
+                                PRM.PROFIT,
+                                PRM.IS_PRE_PROJECT,
+                                PRM.PRM_PROJECT_MAIN_ID
+                           FROM (SELECT C.PROJECT_SERIAL_NO,
+                                        C.CONTRACTOR_OFFICE,
+                                        C.PROJECT_CODE,
+                                        C.PROJECT_NAME,
+                                        C.CUSTOMER_ID,
+                                        C.PROJECT_MANAGER,
+                                        C.PROJECT_MONEY,
+                                        NVL(C.PROJECT_MONEY, 0) -
+                                        NVL(C.COST_CONTROL_MONEY,0) AS PROFIT,
+                                        C.IS_PRE_PROJECT,
+                                        C.PRM_PROJECT_MAIN_ID,
+                                        ROW_NUMBER() OVER(PARTITION BY C.PRM_PROJECT_MAIN_ID ORDER BY C.EXAM_DATE DESC) AS ROW_NUMBER
+                                   FROM PRM_PROJECT_MAIN_C C
+                                  WHERE C.EXAM_DATE <
+                                                TO_DATE('${year}' || '-01-01',
+                                                        'yyyy-mm-dd')
+                                    AND C.STATE = 2
+                                    AND C.ESTABLISH_DATE>=TO_DATE('2014-06-01','yyyy-MM-dd')
+                                    AND C.PRM_CODE_TYPE<>'JI_GAI'--不含技改项目
+                                    AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)) PRM
+                          WHERE PRM.ROW_NUMBER = 1) L
+                 ON N.PRM_PROJECT_MAIN_ID = L.PRM_PROJECT_MAIN_ID
+               LEFT JOIN (SELECT * FROM SCDP_ORG WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) O
+                 ON N.CONTRACTOR_OFFICE = O.ORG_CODE
+               LEFT JOIN (SELECT * FROM SCDP_USER WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) U
+                 ON N.PROJECT_MANAGER = U.USER_ID
+               LEFT JOIN (SELECT * FROM PRM_CUSTOMER WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) C
+                 ON N.CUSTOMER_ID = C.UUID
+              WHERE (NVL(N.PROJECT_MONEY, 0) <> NVL(L.PROJECT_MONEY, 0)
+               OR NVL(N.PROFIT, 0) <> NVL(L.PROFIT, 0)
+               OR N.IS_PRE_PROJECT <> NVL(L.IS_PRE_PROJECT,2))
+              GROUP BY N.CONTRACTOR_OFFICE) YEAR
+    ON O.ORG_CODE = YEAR.CONTRACTOR_OFFICE
+--左联月度数据
+  LEFT JOIN (SELECT N.CONTRACTOR_OFFICE,
+                    COUNT(*) COUNT,                    
+                    SUM(CASE
+                          WHEN NVL(N.IS_PRE_PROJECT,2) <> NVL(L.IS_PRE_PROJECT,2) THEN
+                           NVL(N.PROJECT_MONEY, 0)
+                          ELSE
+                           NVL(N.PROJECT_MONEY, 0) - NVL(L.PROJECT_MONEY, 0)
+                        END) AS AMOUNT,
+                    
+                    SUM(CASE
+                          WHEN NVL(N.IS_PRE_PROJECT,2) <> NVL(L.IS_PRE_PROJECT,2) THEN
+                           NVL(N.PROFIT, 0)
+                          ELSE
+                           NVL(N.PROFIT, 0) - NVL(L.PROFIT, 0)
+                        END) AS PROFIT,                    
+                    SUM(CASE
+                          WHEN SUBSTR(N.PROJECT_CODE, 8, 1) = '9' THEN
+                           1
+                          ELSE
+                           0
+                        END) N_COUNT,
+                    SUM(CASE
+                          WHEN SUBSTR(N.PROJECT_CODE, 8, 1) = '9' AND
+                               NVL(N.IS_PRE_PROJECT,2) <> NVL(L.IS_PRE_PROJECT,2) THEN
+                           NVL(N.PROJECT_MONEY, 0)
+                          WHEN SUBSTR(N.PROJECT_CODE, 8, 1) = '9' AND
+                               NVL(N.IS_PRE_PROJECT,2) = NVL(L.IS_PRE_PROJECT,2) THEN
+                           NVL(N.PROJECT_MONEY, 0) - NVL(L.PROJECT_MONEY, 0)
+                          ELSE
+                           0
+                        END) N_AMOUNT,
+                    SUM(CASE
+                          WHEN SUBSTR(N.PROJECT_CODE, 8, 1) = '9' AND
+                               NVL(N.IS_PRE_PROJECT,2) <> NVL(L.IS_PRE_PROJECT,2) THEN
+                           NVL(N.PROFIT, 0)
+                          WHEN SUBSTR(N.PROJECT_CODE, 8, 1) = '9' AND
+                               NVL(N.IS_PRE_PROJECT,2) = NVL(L.IS_PRE_PROJECT,2) THEN
+                           NVL(N.PROFIT, 0) - NVL(L.PROFIT, 0)
+                          ELSE
+                           0
+                        END) N_PROFIT,
+                    SUM(CASE
+                          WHEN SUBSTR(N.PROJECT_CODE, 7, 2) = 'KY' THEN
+                           1
+                          ELSE
+                           0
+                        END) Y_COUNT,
+                    SUM(CASE
+                          WHEN SUBSTR(N.PROJECT_CODE, 7, 2) = 'KY' AND
+                               NVL(N.IS_PRE_PROJECT,2) = NVL(L.IS_PRE_PROJECT,2) THEN
+                           NVL(N.PROJECT_MONEY, 0) - NVL(L.PROJECT_MONEY, 0)
+                          WHEN SUBSTR(N.PROJECT_CODE, 7, 2) = 'KY' AND
+                               NVL(N.IS_PRE_PROJECT,2) <> NVL(L.IS_PRE_PROJECT,2) THEN
+                           NVL(N.PROJECT_MONEY, 0)
+                          ELSE
+                           0
+                        END) Y_AMOUNT,
+                    SUM(CASE
+                          WHEN SUBSTR(N.PROJECT_CODE, 7, 2) = 'KY' AND
+                               NVL(N.IS_PRE_PROJECT,2) = NVL(L.IS_PRE_PROJECT,2) THEN
+                           NVL(N.PROFIT, 0) - NVL(L.PROFIT, 0)
+                          WHEN SUBSTR(N.PROJECT_CODE, 7, 2) = 'KY' AND 
+                               NVL(N.IS_PRE_PROJECT,2) <> NVL(L.IS_PRE_PROJECT,2) THEN
+                           NVL(N.PROFIT, 0)
+                          ELSE
+                           0
+                        END) Y_PROFIT
+             
+               FROM (SELECT PRM.PROJECT_SERIAL_NO,
+                            PRM.CONTRACTOR_OFFICE,
+                            PRM.PROJECT_CODE,
+                            PRM.PROJECT_NAME,
+                            PRM.CUSTOMER_ID,
+                            PRM.PROJECT_MANAGER,
+                            PRM.PROJECT_MONEY,
+                            PRM.PROFIT,
+                            PRM.IS_PRE_PROJECT,
+                            PRM.PRM_PROJECT_MAIN_ID
+                       FROM (SELECT C.PROJECT_SERIAL_NO,
+                                    C.CONTRACTOR_OFFICE,
+                                    C.PROJECT_CODE,
+                                    C.PROJECT_NAME,
+                                    C.CUSTOMER_ID,
+                                    C.PROJECT_MANAGER,
+                                    C.PROJECT_MONEY,
+                                    NVL(C.PROJECT_MONEY, 0) -
+                                    NVL(C.COST_CONTROL_MONEY,0) AS PROFIT,
+                                    C.IS_PRE_PROJECT,
+                                    C.PRM_PROJECT_MAIN_ID,
+                                    ROW_NUMBER() OVER(PARTITION BY C.PRM_PROJECT_MAIN_ID ORDER BY C.EXAM_DATE DESC) AS ROW_NUMBER
+                               FROM PRM_PROJECT_MAIN_C C
+                              WHERE  C.STATE = 2
+                                AND C.IS_PRE_PROJECT <> 1--不含预立项
+                                AND (SUBSTR(C.PROJECT_CODE, 1, 1)<> '研' OR SUBSTR(C.PROJECT_CODE, 7, 2) = 'KY' )--不含外部研发
+                                AND C.ESTABLISH_DATE>=TO_DATE('2014-06-01','yyyy-MM-dd')--不含老项目
+                                AND C.PRM_CODE_TYPE<>'JI_GAI'--不含技改项目
+                                AND C.EXAM_DATE >=
+                                    TO_DATE('${year}' || '-' || '${month}' ||
+                                            '-01',
+                                            'yyyy-mm-dd')
+                                AND C.EXAM_DATE <
+                                    ADD_MONTHS(TO_DATE('${year}' || '-' ||
+                                                       '${month}' || '-01',
+                                                       'yyyy-mm-dd'),
+                                               1)
+                               AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)
+                               AND('${build_region}' IS NULL OR
+                                   (EXISTS (SELECT 1
+                                               FROM PRM_CONTRACT CO
+                                               LEFT JOIN PRM_CONTRACT_DETAIL_C CD
+                                                 ON CO.UUID = CD.PRM_CONTRACT_ID
+                                                WHERE CD.PRM_PROJECT_MAIN_C_ID = C.UUID
+                                                AND CO.BUILD_REGION = '${build_region}')))
+                                AND('${affiliated_institutions}' IS NULL OR
+                                   (EXISTS (SELECT 1
+                                               FROM PRM_CONTRACT CO
+                                               LEFT JOIN PRM_CONTRACT_DETAIL_C CD
+                                                 ON CO.UUID = CD.PRM_CONTRACT_ID
+                                                WHERE CD.PRM_PROJECT_MAIN_C_ID = C.UUID
+                                                AND CO.AFFILIATED_INSTITUTIONS = '${affiliated_institutions}')))
+                               ) PRM
+                      WHERE PRM.ROW_NUMBER = 1) N
+               LEFT JOIN (SELECT PRM.PROJECT_SERIAL_NO,
+                                PRM.CONTRACTOR_OFFICE,
+                                PRM.PROJECT_CODE,
+                                PRM.PROJECT_NAME,
+                                PRM.CUSTOMER_ID,
+                                PRM.PROJECT_MANAGER,
+                                PRM.PROJECT_MONEY,
+                                PRM.PROFIT,
+                                PRM.IS_PRE_PROJECT,
+                                PRM.PRM_PROJECT_MAIN_ID
+                           FROM (SELECT C.PROJECT_SERIAL_NO,
+                                        C.CONTRACTOR_OFFICE,
+                                        C.PROJECT_CODE,
+                                        C.PROJECT_NAME,
+                                        C.CUSTOMER_ID,
+                                        C.PROJECT_MANAGER,
+                                        C.PROJECT_MONEY,
+                                        NVL(C.PROJECT_MONEY, 0) -
+                                        NVL(C.COST_CONTROL_MONEY,0) AS PROFIT,
+                                        C.IS_PRE_PROJECT,
+                                        C.PRM_PROJECT_MAIN_ID,
+                                        ROW_NUMBER() OVER(PARTITION BY C.PRM_PROJECT_MAIN_ID ORDER BY C.EXAM_DATE DESC) AS ROW_NUMBER
+                                   FROM PRM_PROJECT_MAIN_C C
+                                  WHERE C.EXAM_DATE <
+                                                TO_DATE('${year}' || '-' ||
+                                                        '${month}' || '-01',
+                                                        'yyyy-mm-dd')
+                                    AND C.STATE = 2
+                                    AND C.ESTABLISH_DATE>=TO_DATE('2014-06-01','yyyy-MM-dd')
+                                    AND C.PRM_CODE_TYPE<>'JI_GAI'--不含技改项目
+                                    AND (C.IS_VOID = 0 OR C.IS_VOID IS NULL)) PRM
+                          WHERE PRM.ROW_NUMBER = 1) L
+                 ON N.PRM_PROJECT_MAIN_ID = L.PRM_PROJECT_MAIN_ID
+               LEFT JOIN (SELECT * FROM SCDP_ORG WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) O
+                 ON N.CONTRACTOR_OFFICE = O.ORG_CODE
+               LEFT JOIN (SELECT * FROM SCDP_USER WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) U
+                 ON N.PROJECT_MANAGER = U.USER_ID
+               LEFT JOIN (SELECT * FROM PRM_CUSTOMER WHERE (IS_VOID = 0 OR IS_VOID IS NULL)) C
+                 ON N.CUSTOMER_ID = C.UUID
+              WHERE (NVL(N.PROJECT_MONEY, 0) <> NVL(L.PROJECT_MONEY, 0) 
+              OR NVL(N.PROFIT, 0) <> NVL(L.PROFIT, 0)
+              OR NVL(N.IS_PRE_PROJECT,2) <> NVL(L.IS_PRE_PROJECT,2))
+              GROUP BY N.CONTRACTOR_OFFICE) MONTH
+    ON O.ORG_CODE = MONTH.CONTRACTOR_OFFICE
+    WHERE ('${officeId}' IS NULL OR O.ORG_CODE = '${officeId}')
+    AND (O.IS_VOID = 0 OR O.IS_VOID IS NULL)
+ ORDER BY O.SEQ_NO]]></Query>
+</TableData>
+</TableDataMap>
+<ReportWebAttr>
+<ServerPrinter/>
+<WebPageContent>
+<ToolBars>
+<ToolBarManager>
+<Location>
+<Embed position="1"/>
+</Location>
+<ToolBar>
+<Widget class="com.fr.report.web.button.page.First">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-First')}]]></Text>
+<IconName>
+<![CDATA[first]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Previous">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-Previous')}]]></Text>
+<IconName>
+<![CDATA[previous]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.PageNavi">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Next">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-Next')}]]></Text>
+<IconName>
+<![CDATA[next]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.page.Last">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('ReportServerP-Last')}]]></Text>
+<IconName>
+<![CDATA[last]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.FlashPrint">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Utils-Print[Client]A')}]]></Text>
+<IconName>
+<![CDATA[flashprint]]></IconName>
+</Widget>
+<Widget class="com.fr.report.web.button.Print">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Print')}]]></Text>
+<IconName>
+<![CDATA[print]]></IconName>
+<PrintButtons/>
+</Widget>
+<Widget class="com.fr.report.web.button.Export">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Export')}]]></Text>
+<IconName>
+<![CDATA[export]]></IconName>
+<Buttons pdf="true" excelP="true" excelO="true" excelS="true" word="true" image="true" html="true"/>
+</Widget>
+<Widget class="com.fr.report.web.button.Email">
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Text>
+<![CDATA[${i18n('Email')}]]></Text>
+<IconName>
+<![CDATA[email]]></IconName>
+</Widget>
+</ToolBar>
+</ToolBarManager>
+</ToolBars>
+<WebPage isPage="true" isShowAsImage="false" isAutoScale="false" isTDHeavy="false"/>
+</WebPageContent>
+</ReportWebAttr>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1440000,723900,720000,723900,1143000,1143000,723900,723900,723900,723900,2628900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[1028700,0,5334000,1104900,2438400,2476500,1104900,2362200,2476500,2552700,4762500,2552700,2171700,2057400,4762500,2400300,1828800,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" cs="17" s="0">
+<O>
+<![CDATA[项目立项汇总表(考核)]]></O>
+<PrivilegeControl/>
+<CellGUIAttr adjustmode="0"/>
+<CellPageAttr repeat="false" breakOnPaginate="false"/>
+<Expand/>
+</C>
+<C c="0" r="1" cs="17" s="1">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=year + "年1月——" + year + "年" + month + "月"]]></Attributes>
+</O>
+<PrivilegeControl/>
+<CellPageAttr repeat="false" breakOnPaginate="false"/>
+<Expand/>
+</C>
+<C c="0" r="2" cs="4">
+<O>
+<![CDATA[表一：按部门统计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="2" cs="11" s="2">
+<O>
+<![CDATA[单位：万元]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="3" cs="3" rs="3" s="3">
+<O>
+<![CDATA[承担部门]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="3" cs="3" s="3">
+<O>
+<![CDATA[本月]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="3" cs="11" s="3">
+<O>
+<![CDATA[本年]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="4" cs="2" s="3">
+<O>
+<![CDATA[立项运行额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="4" rs="2" s="3">
+<O>
+<![CDATA[立项利润]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="4" cs="5" s="3">
+<O>
+<![CDATA[立项运行额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="4" cs="6" s="3">
+<O>
+<![CDATA[立项利润]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="5" s="3">
+<O>
+<![CDATA[项数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="5" s="3">
+<O>
+<![CDATA[金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="5" s="3">
+<O>
+<![CDATA[项数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="5" s="3">
+<O>
+<![CDATA[本年小计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="5" s="3">
+<O>
+<![CDATA[上年结转]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="5" s="3">
+<O>
+<![CDATA[本年修正]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="5" s="3">
+<O>
+<![CDATA[合计（含结转、修正）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="5" s="3">
+<O>
+<![CDATA[本年小计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="5" s="3">
+<O>
+<![CDATA[上年结转]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="5" s="3">
+<O>
+<![CDATA[本年修正]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="14" r="5" s="3">
+<O>
+<![CDATA[合计（含结转、修正）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="5" s="3">
+<O>
+<![CDATA[计划利润]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="16" r="5" s="3">
+<O>
+<![CDATA[完成率]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="6" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SEQ()]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand leftParentDefault="false" left="C7"/>
+</C>
+<C c="1" r="6" s="4">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="ORG_CODE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="6" s="5">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="ORG_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="JavaScript1">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=B7]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="year"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=$year]]></Attributes>
+</O>
+</Parameter>
+</Parameters>
+<Content>
+<![CDATA[parent.postMessage('LxxmmxbFromXmlxhzbkh,'+officeId+','+year,'*');]]></Content>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand dir="0"/>
+</C>
+<C c="3" r="6" s="6">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="MONTH_COUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="6" s="7">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="MONTH_AMOUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="6" s="7">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="MONTH_PROFIT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="6" s="6">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="YEAR_COUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="6" s="7">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="YEAR_AMOUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="6" s="7">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="LAST_YEAR_AMOUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="6" s="7">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="YEAR_UPDATE_AMOUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="10" r="6" s="7">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=T1.select(YEAR_AMOUNT) + T1.select(LAST_YEAR_AMOUNT) + T1.select(YEAR_UPDATE_AMOUNT)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="11" r="6" s="7">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="YEAR_PROFIT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="12" r="6" s="7">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="LAST_YEAR_PROFIT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="13" r="6" s="7">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="YEAR_UPDATE_PROFIT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="14" r="6" s="7">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=T1.select(YEAR_PROFIT) + T1.select(LAST_YEAR_PROFIT) + T1.select(YEAR_UPDATE_PROFIT)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="15" r="6" s="7">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="YEAR_PROFIT_PLAN"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="16" r="6" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=O7 / P7]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="7" cs="3" s="9">
+<O>
+<![CDATA[合计(不含结转，含修正)]]></O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[条件属性1]]></Name>
+<Condition class="com.fr.data.condition.FormulaCondition">
+<Formula>
+<![CDATA[len(officeId) > 0]]></Formula>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.RowHeightHighlightAction"/>
+</Highlight>
+</HighlightList>
+<Expand/>
+</C>
+<C c="3" r="7" s="10">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(D7)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="7" s="11">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(E7)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="7" s="11">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(F7)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="7" s="10">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(G7)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="7" s="11">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(H7)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="7" s="11">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(I7)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="7" s="11">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(J7)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="7" s="11">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(K7) - I8]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="7" s="11">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(L7)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="7" s="11">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(M7)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="7" s="11">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(N7)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="14" r="7" s="11">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(O7) - M8]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="7" s="11">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="COMPANY_PROFIT_PLAN"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="16" r="7" s="12">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=O8 / P8]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="8" rs="2" s="4">
+<O>
+<![CDATA[其中]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="8" cs="2" s="3">
+<O>
+<![CDATA[内研]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="8" s="6">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="MONTH_Y_COUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="8" s="7">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="MONTH_Y_AMOUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="8" s="7">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="MONTH_Y_PROFIT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="8" s="6">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="YEAR_Y_COUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="8" s="7">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="YEAR_Y_AMOUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="8" s="4">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="8" s="4">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="8" s="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="8" s="7">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="YEAR_Y_PROFIT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="8" s="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="8" s="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="14" r="8" s="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="8" s="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="16" r="8" s="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="9" cs="2" s="3">
+<O>
+<![CDATA[内委]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="9" s="6">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="MONTH_N_COUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="9" s="7">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="MONTH_N_AMOUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="9" s="7">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="MONTH_N_PROFIT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="9" s="6">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="YEAR_N_COUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="9" s="7">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="YEAR_N_AMOUNT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="9" s="4">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="9" s="4">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="9" s="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="9" s="7">
+<O t="DSColumn">
+<Attributes dsName="T1" columnName="YEAR_N_PROFIT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.SummaryGrouper">
+<FN>
+<![CDATA[com.fr.data.util.function.SumFunction]]></FN>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="9" s="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="9" s="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="14" r="9" s="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="15" r="9" s="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="16" r="9" s="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="10" cs="15">
+<O t="RichText">
+<RichText>
+<RichChar styleIndex="13">
+<text>
+<![CDATA[说明： 1、本表包含全年新立项数据（含内委、内部研发，不含外部研发，不含技改类项目）。
+    2、本表统计的立项数据中含（从2014年6月1日后立项项目的变更数据）。
+    3、本表含上年度考核后结转的数据。 ]]></text>
+</RichChar>
+</RichText>
+</O>
+<PrivilegeControl/>
+<CellGUIAttr showAsHTML="true"/>
+<Expand/>
+</C>
+<C c="2" r="11" cs="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[="打印日期：" + NOW()]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="13">
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting orientation="1">
+<Margin top="986400" left="720000" bottom="986400" right="720000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="128"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72" foreground="-16776961" underline="1"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.00%]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="6"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="6"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="6"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.00%]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="6"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="宋体" style="0" size="96"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>prmbilling-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JHidden cid="reqOffice_queryDesc"/>
+        <JErpDepartMent pos="A1:A1" fieldLabel_s="reqOffice" cid="reqOffice_query"
+                        field="pb.req_office"/>
+        <JText pos="B1:B1" fieldLabel_s="projectCode" cid="projectCode" field="ppm.project_code"/>
+
+        <JCustomerGrid pos="C1:C1" fieldLabel_s="customerName" cid="customerName_query" refer_j='[{"refField":"customerName","valueField":"uuid"}]'/>
+        <JHidden pos="A1:A1" cid="customerName" field="pb.customer_id"/>
+
+        <JCombo pos="D1:D1" cid="state" fieldLabel_s="state" allowBlank_b="true"
+                comboType="scdp_fmcode" field="pb.state"
+                codeType="CDM_BILL_STATE" displayDesc_b="true" fullInfo_b="false" multiSelect_b="false"/>
+
+        <JProject pos="A2:A2" cid="prmProjectMainId_query" fieldLabel_s="prmProjectMainId"
+                  refer_j='[{"refField":"prmProjectMainId","valueField":"uuid"}]'/>
+        <JHidden pos="B1:B1" cid="prmProjectMainId" field="pb.prm_project_main_Id"/>
+
+
+        <JText pos="B2:B2" fieldLabel_s="customerInvoiceName" cid="customerInvoiceName_query" field="customer_invoice_name"/>
+
+        <JText pos="C2:C2" fieldLabel_s="content" cid="content"/>
+        <JText pos="D2:D2" fieldLabel_s="invoiceNo" cid="invoiceNo" field="pb.invoice_no"/>
+
+        <!--<JText pos="C2:C2" fieldLabel_s="createBy" cid="createBy" field="create_by"/>-->
+        <!--<JText pos="D2:D2" fieldLabel_s="updateBy" cid="updateby" field="update_by"/>-->
+        <!--<JFromTo pos="A3:B3" subXtype="JDatetime" fieldLabel_s="createTime" cid="createTime" field="create_time"/>-->
+        <!--<JFromTo pos="C3:D3" subXtype="JDatetime" fieldLabel_s="updateTime" cid="updateTime" field="update_time"/>-->
+    </conditions>
+    <results resultGridConfig="{'autoResizeColumn':false}">
+        <JHidden dataIndex="prmProjectMainId"/>
+        <JHidden dataIndex="uuid"/>
+        <JHidden dataIndex="customerId"/>
+            <JTextCol text_s="prmProjectMainId" dataIndex="projectName" width_n="120"/>
+            <JTextCol text_s="projectCode" dataIndex="projectCode" width_n="100"/>
+            <JTextCol text_s="reqOffice" dataIndex="orgName" width_n="120"/>
+            <JTextCol text_s="state" dataIndex="cdmBillStateCombo" width_n="100"/>
+            <JTextCol text_s="billingStatus" dataIndex="billingStatus" width_n="100"/>
+        <JTextCol text_s="customerName" dataIndex="customerName" width_n="120"/>
+
+            <!--<JTextCol text_s="customerName" dataIndex="customerName" width_n="120"/>-->
+            <JTextCol text_s="customerInvoiceName" dataIndex="customerInvoiceName" width_n="120"/>
+            <!--<JTextCol text_s="customerLocation" dataIndex="customerLocation" width_n="120"/>-->
+        <!--<JDecCol text_s="exchangeRate" dataIndex="exchangeRate" width_n="150"/>-->
+        <!--<JDecCol text_s="invoiceCurrency" dataIndex="invoiceCurrency" width_n="150"/>-->
+        <!--<JDecCol text_s="originalCurrency" dataIndex="originalCurrency" width_n="150"/>-->
+        <!--<JDecCol text_s="originalMoney" dataIndex="originalMoney" width_n="150"/>-->
+            <!--<JTextCol text_s="phone" dataIndex="phone" width_n="120"/>-->
+            <JTextCol text_s="taxNo" dataIndex="taxNo" width_n="120"/>
+            <JTextCol text_s="bankName" dataIndex="bankName" width_n="120"/>
+            <JTextCol text_s="bankAccount" dataIndex="bankAccount" width_n="120"/>
+        <JDecCol text_s="invoiceMoney" dataIndex="invoiceMoney" width_n="150"/>
+            <!--<JTextCol text_s="reqPerson" dataIndex="reqPerson" width_n="120"/>-->
+
+            <!--<JTextCol text_s="maker" dataIndex="maker" width_n="120"/>-->
+            <!--<JTextCol text_s="invoiceType" dataIndex="fadInvoiceCombo" width_n="120"/>-->
+        <!--<JDecCol text_s="taxRate" dataIndex="fadTaxRateCombo" width_n="150"/>-->
+        <JTextCol text_s="customerInvoiceNameEn" dataIndex="customerInvoiceNameEn" width_n="120"/>
+            <!--<JTextCol text_s="state" dataIndex="cdmBillStateCombo" width_n="120"/>-->
+            <!--<JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120"/>-->
+            <!--<JTextCol text_s="projectId" dataIndex="projectId" width_n="120"/>-->
+            <!--<JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120"/>-->
+            <!--<JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>-->
+            <!--<JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>-->
+            <!--<JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>-->
+            <!--<JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>-->
+    </results>
+</commonquery>

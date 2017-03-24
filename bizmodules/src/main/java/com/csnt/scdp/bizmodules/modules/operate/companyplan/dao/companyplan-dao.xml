@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select t.*,
+                            (select user_name from scdp_user u where u.user_id = t.create_By ) as create_By_name,
+                            (select user_name from scdp_user u where u.user_id = t.update_By ) as update_By_name
+                       from operate_company_plan_h t where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+</DAO>

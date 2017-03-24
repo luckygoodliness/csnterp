@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>scmcontract-dao</daotype>
+        <daokey>common_pay_scmcontract_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JHidden cid="officeIdPlusQDesc"/>
+        <JErpDepartMent pos="A1:B1" fieldLabel_s="officeId" cid="officeIdPlusQ" multiSelect="true"/>
+        <JHidden pos="B1:B1" fieldLabel_s="supplierCode" cid="supplierCode" field="supplier_code" />
+
+        <JHidden cid="supplierCodeS" field="supplier_Code_S"/>
+        <JHidden cid="needContractAmountBiggerThenPaidMoneyS" field="needContractAmountBiggerThenPaidMoney_S"/>
+        <JText pos="C1:D1" fieldLabel_s="课题代号" cid="projectIdPlusQ" field="fad_subject_code"/>
+        <JFromTo pos="A2:B2" subXtype="JDec" fieldLabel_s="应付账款(元)" cid="fadInvoiceMoneyQ" field="scm_need_pay_money"
+                 minValue_n="0.00"/>
+        <JFromTo pos="C2:D2" subXtype="JDec" fieldLabel_s="已付比例(%)" cid="scmPaidRateQ" field="scm_paid_rate"
+                 minValue_n="0.00"/>
+
+        <JSupplierGrid pos="A3:B3" fieldLabel_s="supplierName" cid="supplierName"
+                       refer_j='[{"refField":"supplierCode","valueField":"uuid"}]'  />
+        <!--<JText pos="A3:B3" fieldLabel_s="supplierName" cid="supplierName" field ="supplier_name"  />-->
+
+        <JCombo pos="C3:C3" fieldLabel_s="往期支付信息" cid="fadPayreqQ"
+                comboType="fm_fad_payreq" displayDesc_b="true"/>
+        <JText pos="D3:D3" fieldLabel_s="合同编号" cid="scmContractCode" field ="scm_contract_code"  />
+
+    </conditions>
+    <results>
+        <JTextCol text_s="所属部门" dataIndex="orgName"/>
+        <JTextCol text_s="supplierName" dataIndex="supplierName" width_n="120"/>
+        <JTextCol text_s="课题代号" dataIndex="fadSubjectCode" width_n="120"/>
+        <JTextCol text_s="所属项目" dataIndex="projectName" width_n="120"/>
+        <JTextCol text_s="合同代码" dataIndex="scmContractCode" width_n="100"/>
+        <JCurCol text_s="项目运行额(元)" dataIndex="projectMoney" format="0,0.00" width_n="90"/>
+        <JCurCol text_s="项目收款金额(元)" dataIndex="actualMoney" format="0,0.00" width_n="120"/>
+        <JCurCol text_s="项目收款比例(%)" dataIndex="prmReceiptRate" format="0,0.00" width_n="150"/>
+        <JCurCol text_s="合同金额(元)" dataIndex="amount" width_n="150"/>
+        <JCurCol text_s="合同已付金额(元)" dataIndex="scmPaidMoney" width_n="150"/>
+        <JCurCol text_s="合同未付金额(元)" dataIndex="scmUnpaidMoney" width_n="150"/>
+        <JCurCol text_s="合同入账发票金额(元)" dataIndex="fadInvoiceMoney" width_n="150"/>
+        <JCurCol text_s="合同应付金额(元)" dataIndex="scmNeedPayMoney" width_n="152"/>
+
+        <JCurCol text_s="已付比例(%)" dataIndex="scmPaidRate" format="0,0.00" width_n="90"/>
+        <JCurCol text_s="供应商总应付账款(元)" dataIndex="scmSupplierUnPaidMoney" format="0,0.00" width_n="120"/>
+
+        <JDecCol text_s="quantity" dataIndex="quantity" width_n="150"/>
+        <JTextCol dataIndex="supplierCode" hidden_b="true"/>
+        <JTextCol dataIndex="projectId" hidden_b="true"/>
+        <JTextCol dataIndex="officeId" hidden_b="true"/>
+        <JTextCol dataIndex="supplierBlack" hidden_b="true"/>
+        <JDecCol text_s="checkedMoney" dataIndex="checkedMoney" width_n="150"/>
+        <JDecCol text_s="该期申请支付(元)" dataIndex="reqcMoney" width_n="150"/>
+        <JDecCol text_s="该期批准支付(元)" dataIndex="reqcAuditMoney" width_n="150"/>
+        <JDecCol text_s="该期未支付(元)" dataIndex="reqcUnpaidMoney" width_n="150"/>
+
+    </results>
+</commonquery>

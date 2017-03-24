@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+    <!-- 开启注解 -->
+    <mvc:annotation-driven/>
+    <!-- 注解扫描包 -->
+    <context:component-scan base-package="com.csnt.scdp.framework.core.actionfacade"/>
+
+    <!-- 静态资源访问 -->
+    <!--<mvc:resources location="/business" mapping="/business/**"/>-->
+    <!--<mvc:resources location="/framework" mapping="/framework/**"/>-->
+    <!--<mvc:resources location="/thirdparty" mapping="/thirdparty/**"/>-->
+
+    <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/"></property>
+        <property name="suffix" value=".jsp"></property>
+    </bean>
+
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="defaultEncoding" value="UTF-8"/>
+        <property name="maxUploadSize" value="1024000000"/>
+        <property name="resolveLazily" value="true"/>
+        <property name="maxInMemorySize" value="4096"/>
+    </bean>
+</beans>

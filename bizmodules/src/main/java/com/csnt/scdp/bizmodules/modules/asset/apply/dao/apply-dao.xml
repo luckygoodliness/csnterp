@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select distinct a.uuid,
+                                     b.asset_code,
+                                     a.apply_code,
+                                     a.residual_handle,
+                                     (select code_desc from scdp_code c where c.code_type='CDM_BILL_STATE' and c.sys_code=a.state) as state,
+                                     a.discard_reason,
+                                     a.create_by,
+                                     a.create_time,
+                                     b.asset_name,
+                                     b.model,
+                                     b.specification,
+                                     b.local_value,
+                                     b.factory_name,
+                                     b.identification_number,
+                                     b.purchase_time,
+                                     b.device_type,
+                                     (select code_desc from scdp_code c where c.code_type='ASSET_CARD_DEVICETYPE' and c.sys_code=b.device_type) device_type_name,
+                                     o.org_name as apply_office_id,
+                                     a.apply_user_code,
+                                     a.apply_user_name,
+                                     a.apply_date,
+                                     a.net_value,
+                                     a.depreciation
+                              from asset_discard_apply a
+                                   left join asset_card b on a.card_uuid = b.uuid
+                                   left join scdp_org o on a.apply_office_id = o.org_code where ${conditions}]]>
+        </common>
+    </common_query>
+    <validate_card_add>
+        <common>
+            <![CDATA[select * from asset_discard_apply a where a.state in ('0','1','2') and a.card_uuid=? ]]>
+        </common>
+    </validate_card_add>
+    <validate_card_modify>
+        <common>
+            <![CDATA[select * from asset_discard_apply a where a.state in ('0','1','2') and a.card_uuid=? and a.uuid<>?]]>
+        </common>
+    </validate_card_modify>
+</DAO>

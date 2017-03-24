@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>projectmain-dao</daotype>
+        <daokey>inner_project_query</daokey>
+    </querysql>
+    <defaultSort></defaultSort>
+    <conditions columns="4">
+        <JHidden cid="uuid" field="t1.uuid"/>
+        <JText pos="A1:B1" fieldLabel_s="projectName" cid="projectName" field="t1.project_name"/>
+        <JText pos="C1:D1" fieldLabel_s="projectCode" cid="projectCode" field="t1.project_code"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="projectCode" dataIndex="projectCode" width_n="120"/>
+        <JTextCol text_s="projectName" dataIndex="projectName" width_n="200"/>
+        <!--<JTextCol text_s="customerId" dataIndex="customerName" width_n="200"/>-->
+        <JTextCol text_s="purchaseReqNo" dataIndex="purchaseReqNo" width_n="120"/>
+        <!--<JTextCol text_s="innerSupplier" dataIndex="innerSupplier" width_n="120"/>-->
+        <JTextCol text_s="orgName" dataIndex="orgName" width_n="200"/>
+        <JTextCol dataIndex="innerPurchaseReqId" hidden_b="true"/>
+        <!--<JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>-->
+        <!--<JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>-->
+    </results>
+</commonquery>

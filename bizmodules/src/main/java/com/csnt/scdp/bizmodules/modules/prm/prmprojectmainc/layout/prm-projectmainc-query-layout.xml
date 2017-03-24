@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>prmprojectmainc-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>t1.create_time desc</defaultSort>
+    <conditions columns="4">
+        <JHidden cid="detailType" value="NEW" field="t1.detail_type"/>
+        <JHidden cid="customerIdDesc"/>
+        <JHidden cid="contractorOfficeDesc"/>
+        <JHidden cid="projectManagerDesc"/>
+        <!--<JText pos="A1:A1" fieldLabel_s="prmContractId" cid="contractName" field="t2.contract_name"/>-->
+        <JText pos="A1:A1" cid="projectCode" fieldLabel_s="projectCode" field="t1.project_code"/>
+        <JText pos="B1:B1" fieldLabel_s="projectName" cid="projectName" field="t1.project_name"/>
+        <JCustomerGrid pos="C1:C1" fieldLabel_s="customerId" cid="customerId" valueField="uuid"
+                       descField="customerName" displayDesc="true"/>
+        <JErpDepartMent pos="D1:D1" fieldLabel_s="contractorOffice" cid="contractorOffice"
+                      field="t1.contractor_office" allowBlank_b="true" editable_b="true"/>
+        <JFromTo pos="A2:B2" subXtype="JCur" fieldLabel_s="projectMoney" cid="projectMoney" field="t1.project_money"/>
+        <JBolCombo pos="C2:C2" fieldLabel_s="isPreProject" cid="isPreProject" field="t1.is_pre_project"/>
+        <JCombo pos="D2:D2" cid="state" fieldLabel_s="state" allowBlank_b="true"
+                comboType="scdp_fmcode" field="t1.state"
+                codeType="CDM_BILL_STATE" displayDesc_b="true" fullInfo_b="false" multiSelect_b="false"/>
+        <JUserGrid pos="A3:A3" cid="projectManager" fieldLabel_s="projectManager" valueField_s="userId"
+                   descField_s="userName" allowBlank_b="true" displayDesc_b="true" field="t1.project_manager"/>
+        <!--<JUserGrid pos="A3:A3" fieldLabel_s="createBy" cid="createBy" field="t1.create_by" valueField_s="userId"-->
+        <!--descField_s="userName" displayDesc_b="true"/>-->
+        <!--<JUserGrid pos="C3:C3" fieldLabel_s="updateBy" cid="updateby" field="t1.update_by" valueField_s="userId"-->
+        <!--descField_s="userName" displayDesc_b="true"/>-->
+        <!--<JFromTo pos="A4:B4" subXtype="JDatetime" fieldLabel_s="createTime" cid="createTime" field="t1.create_time"/>-->
+        <!--<JFromTo pos="C4:D4" subXtype="JDatetime" fieldLabel_s="updateTime" cid="updateTime" field="t1.update_time"/>-->
+    </conditions>
+    <results>
+        <!--<JTextCol text_s="prmContractId" dataIndex="prmContractName" width_n="120"/>-->
+        <JTextCol text_s="projectCode" dataIndex="projectCode" width_n="120"/>
+        <JTextCol text_s="projectName" dataIndex="projectName" width_n="120"/>
+        <JTextCol text_s="state" dataIndex="stateDesc" width_n="120"/>
+        <JTextCol text_s="contractorOffice" dataIndex="contractorOfficeName" width_n="120"/>
+        <JTextCol text_s="projectManager" dataIndex="projectManagerName" width_n="120"/>
+        <!--<JTextCol text_s="customerId" dataIndex="customerName" width_n="120"/>-->
+        <JBolCol text_s="isPreProject" dataIndex="isPreProject" width_n="80"/>
+        <JCurCol text_s="projectMoney" dataIndex="projectMoney" width_n="150"/>
+        <JTextCol text_s="projectSerialNo" dataIndex="projectSerialNo" width_n="120"/>
+        <JDateCol text_s="scheduledBeginDate" dataIndex="scheduledBeginDate" width_n="120"/>
+        <JDateCol text_s="scheduledEndDate" dataIndex="scheduledEndDate" width_n="120"/>
+        <JDatetimeCol text_s="examDate" dataIndex="examDate" width_n="120"/>
+        <JTextCol text_s="remark" dataIndex="remark" width_n="200"/>
+        <!--<JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>-->
+        <!--<JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>-->
+        <JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>
+    </results>
+</commonquery>

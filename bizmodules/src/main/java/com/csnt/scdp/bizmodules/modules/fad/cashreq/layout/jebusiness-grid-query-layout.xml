@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>cashreq-dao</daotype>
+        <daokey>query_ebusiness_name_grid</daokey>
+    </querysql>
+    <defaultSort>t1.create_time</defaultSort>
+    <conditions columns="4">
+        <!--<JText pos="A1:A1" cid="officeId" field="t1.office_id"/>-->
+        <JText pos="A1:A1" cid="ebusinessName" field="t1.ebusiness_name"/>
+        <JText pos="B1:B1" cid="scmSupplierId" field="t1.scm_supplier_id"/>
+    </conditions>
+    <quickquery>
+        <QueryCids>ebusinessName</QueryCids>
+        <ForceQueryCids></ForceQueryCids>
+    </quickquery>
+    <results>
+        <JTextCol text_s="电商名称" dataIndex="ebusinessName" width_n="120" />
+        <JTextCol text_s="用户名" dataIndex="userCode" width_n="120"/>
+        <JTextCol text_s="密码" dataIndex="password" hidden_b="true"/>
+        <JTextCol text_s="scmSupplierId" dataIndex="scmSupplierId" hidden_b="true"/>
+        <JTextCol text_s="供应商" dataIndex="supplierName" width_n="120"/>
+    </results>
+</commonquery>

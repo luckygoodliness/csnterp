@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>workflowdelete-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="A1:A1" fieldLabel_s="businessKey" cid="businessKey" field="business_Key"/>
+        <JText pos="B1:B1" fieldLabel_s="newBusinessKey" cid="newBusinessKey" field="new_Business_Key"/>
+        <JFromTo pos="A2:B2" subXtype="JDatetime" fieldLabel_s="createTime" cid="createTime" field="create_time"/>
+        <JFromTo pos="C2:D2" subXtype="JDatetime" fieldLabel_s="updateTime" cid="updateTime" field="update_time"/>
+    </conditions>
+    <results>
+            <JTextCol text_s="businessKey" dataIndex="businessKey" width_n="120"/>
+            <JTextCol text_s="newBusinessKey" dataIndex="newBusinessKey" width_n="120"/>
+            <JTextCol text_s="ruAssignee" dataIndex="ruAssignee" width_n="120"/>
+            <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+            <JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>
+        <JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>
+    </results>
+</commonquery>

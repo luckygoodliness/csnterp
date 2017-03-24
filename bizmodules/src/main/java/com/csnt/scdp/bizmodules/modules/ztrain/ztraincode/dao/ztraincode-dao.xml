@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <!--<![CDATA[select * from test_table where ${conditions} and ${voidfilter}]]>-->
+            <![CDATA[
+        select *
+        from test_table t
+        left join (select c.sys_code, c.code_desc as bill_state
+        from scdp_code c
+        where c.code_type = 'FAD_BILL_STATE') s
+        on t.state = s.sys_code
+        where ${conditions}
+        and ${voidfilter}]]>
+        </common>
+    </common_query>
+</DAO>
+

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>companyplan-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="A2:A2" fieldLabel_s="planName" cid="planName" field="plan_Name"/>
+        <JCombo pos="B2:B2" cid="startYear" fieldLabel_s="year" displayDesc_b="true" comboType="scdp_fmcode"
+                codeType="CDM_YEAR" allowBlank_b="true" field="start_Year"/>
+        <JHidden   pos="C2:C2" fieldLabel_s="createBy" cid="createBy_Q" field="create_by"/>
+        <JUserGrid pos="C2:C2" fieldLabel_s="createBy" cid="createByName"
+                   refer_j='[{"refField":"createBy_Q","valueField":"userId"}]'/>
+        <JHidden  pos="D2:D2" fieldLabel_s="updateBy" cid="updateby_Q" field="update_by"/>
+        <JUserGrid pos="D2:D2" fieldLabel_s="updateBy" cid="updatebyName"
+                   refer_j='[{"refField":"updateby_Q","valueField":"userId"}]'/>
+        <!--<JText pos="C2:C2" fieldLabel_s="createBy" cid="createBy" field="create_by"/>-->
+        <!--<JText pos="D2:D2" fieldLabel_s="updateBy" cid="updateby" field="update_by"/>-->
+        <JFromTo pos="A3:B3" subXtype="JDatetime" fieldLabel_s="createTime" cid="createTime" field="create_time"/>
+        <JFromTo pos="C3:D3" subXtype="JDatetime" fieldLabel_s="updateTime" cid="updateTime" field="update_time"/>
+    </conditions>
+    <results>
+        <!--<JTextCol text_s="executionCycle" dataIndex="executionCycle" width_n="120"/>-->
+        <JIntCol text_s="year" dataIndex="startYear" width_n="100"/>
+        <JTextCol text_s="planName" dataIndex="planName" width_n="120"/>
+        <JCurCol text_s="jhhte" dataIndex="jhhte" width_n="150"/>
+        <JCurCol text_s="jhlxlr" dataIndex="jhlxlr" width_n="150"/>
+        <JCurCol text_s="jhsr" dataIndex="jhsr" width_n="150"/>
+        <JCurCol text_s="jhjssr" dataIndex="jhjssr" width_n="150"/>
+        <JCurCol text_s="jhjslr" dataIndex="jhjslr" width_n="150"/>
+        <JTextCol text_s="createBy" dataIndex="createByName" width_n="120"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+        <!--<JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>-->
+        <JTextCol text_s="updateBy" dataIndex="updateByName" width_n="120"/>
+        <JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>
+    </results>
+</commonquery>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>cashreq-dao</daotype>
+        <daokey>common_query_revolving</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+
+        <JText pos="A1:A1" cid="runningNoQ" fieldLabel_s="runningNo" field="running_no"/>
+
+        <JUserGrid pos="B1:B1" cid="staffIdPlusQ" fieldLabel_s="staffId"
+                   refer_j='[{"refField":"staffIdQ","valueField":"userId"}]'/>
+        <JHidden cid="staffIdQ" fieldLabel_s="staffId" allowBlank_b="true" field="staff_id"/>
+
+        <JHidden cid="projectIdQ" field="project_id"/>
+        <JHidden cid="officeIdQDesc"/>
+        <JText pos="C1:C1" cid="projectCode" fieldLabel_s="projectCode" field="project_code"/>
+        <JText pos="D1:D1" cid="projectName" fieldLabel_s="projectName" field="project_name"/>
+
+        <JErpDepartMent pos="A2:A2" fieldLabel_s="officeId" cid="officeIdQ" field="office_id"
+                        labelWidth_n="100"/>
+
+        <JBolCombo pos="B2:B2" fieldLabel_s="isCleared" cid="isClearedQ" field="is_cleared"/>
+
+        <JCombo pos="C2:C2" cid="stateQ" fieldLabel_s="state" comboType="scdp_fmcode" codeType="FAD_BILL_STATE"
+                displayDesc_b="true" field="state"/>
+        <!--<JText pos="D2:D2" cid="operateBusinessBidInfoId" fieldLabel_s="operateBusinessBidInfoId" field="business_bid_info_id_desc"/>-->
+
+    </conditions>
+    <results resultGridConfig="{'autoResizeColumn':false}">
+        <JTextCol text_s="runningNo" dataIndex="runningNo"/>
+        <JTextCol text_s="state" dataIndex="billState"/>
+        <JTextCol dataIndex="isCleared" hidden_b="true"/>
+        <JTextCol text_s="projectCode" dataIndex="projectCode" width_n="100"/>
+        <JTextCol text_s="projectName" dataIndex="projectName" width_n="150"/>
+        <!--<JTextCol text_s="operateBusinessBidInfoId" dataIndex="businessBidInfoIdDesc" width_n="150"/>-->
+        <JTextCol text_s="subjectName" dataIndex="subjectName"/>
+        <JTextCol text_s="orgName" dataIndex="orgName"/>
+        <!--<JTextCol text_s="depositType" dataIndex="depositType"/>-->
+        <JTextCol text_s="staffId" dataIndex="userName"/>
+        <!--<JCurCol text_s="money" dataIndex="money"/>-->
+        <!--<JCurCol text_s="clearanceMoney" dataIndex="clearanceMoney" width_n="120"/>-->
+        <!--<JDateCol text_s="applyDate" dataIndex="applyDate"/>-->
+        <!--<JDateCol text_s="squareDate" dataIndex="squareDate"/>-->
+        <!--<JDateCol text_s="preclearDate" dataIndex="preclearDate" width_n="120"/>-->
+        <JTextCol text_s="isClearedState" dataIndex="isClearedState"/>
+        <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+        <!--<JTextCol text_s="certificateNo" dataIndex="certificateNo" width_n="120"/>-->
+        <!--M7_C5_F3_批量打印-->
+        <JHidden text_s="reqType" dataIndex="reqType" />
+    </results>
+</commonquery>

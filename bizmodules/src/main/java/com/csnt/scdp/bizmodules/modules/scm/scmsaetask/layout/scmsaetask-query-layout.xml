@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>scmsaetask-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>sst.create_time desc</defaultSort>
+    <conditions columns="4">
+        <JCombo pos="A1:A1" cid="curYear" fieldLabel_s="curYear" displayDesc_b="true" comboType="scdp_fmcode"
+                codeType="CDM_YEAR" allowBlank_b="true" field="SST.cur_Year"/>
+        <JText pos="B1:B1" cid="title" fieldLabel_s="title" allowBlank_b="true" field="SST.title"/>
+        <JCombo pos="C1:C1" cid="materialType" fieldLabel_s="materialType" displayDesc_b="true" comboType="scdp_fmcode"
+                codeType="SCM_SAE_CASE_TYPE" allowBlank_b="true" field="SST.material_type"/>
+        <JCombo pos="D1:D1" cid="state" fieldLabel_s="state" displayDesc_b="true" comboType="scdp_fmcode"
+                codeType="SCM_SAE_CASE_STATE" allowBlank_b="true" field="SST.state"/>
+        <JDate pos="A2:A2" cid="beginTime" fieldLabel_s="beginTime" allowBlank_b="true" field="begin_Time"/>
+        <JDate pos="B2:B2" cid="endTime" fieldLabel_s="endTime" allowBlank_b="true" field="end_Time"/>
+        <JHidden cid="staffIdQ" field="SST.user_Code"/>
+        <JUserGrid pos="C2:C2" cid="staffIdPlusQ" fieldLabel_s="userCode"
+                   refer_j='[{"refField":"staffIdQ","valueField":"userId"}]'/>
+    </conditions>
+    <results resultGridConfig="{'autoResizeColumn':false}">
+        <JIntCol text_s="curYear" dataIndex="curYear" width_n="100"/>
+        <JTextCol text_s="title" dataIndex="title" width_n="120"/>
+        <JTextCol text_s="materialType" dataIndex="materialTypeName" width_n="80"/>
+        <JDateCol text_s="beginTime" dataIndex="beginTime" width_n="150"/>
+        <JDateCol text_s="endTime" dataIndex="endTime" width_n="150"/>
+        <JTextCol text_s="state" dataIndex="stateName" width_n="120"/>
+        <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+        <JTextCol text_s="userCode" dataIndex="userCodeName" width_n="120"/>
+        <JTextCol text_s="userDepartment" dataIndex="userDepartment" width_n="120"/>
+        <JDateCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+    </results>
+</commonquery>

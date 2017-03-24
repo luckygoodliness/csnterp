@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="nonProjectSubjectSubjectDto" row="23*1,flex" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JHidden cid="officeIdDesc"/>
+        <JErpDepartMent pos="A1:A1" fieldLabel_s="officeId" cid="officeId" allowBlank_b="false"
+                        labelWidth_n="100"/>
+        <!--<JCombo pos="B13:B13" cid="jcombo" fieldLabel_s="常量下拉框(JCombo)" allowBlank_b="true"-->
+        <!--comboType="scdp_fmcode"-->
+        <!--codeType="SYSMENU_TYPE" displayDesc_b="false" fullInfo_b="true" multiSelect_b="false"-->
+        <!--pickerMaxHeight_n="60" pickerMinWidth_n="300" target="jcomboDesc,jtext|field1"/>-->
+        <!--<JFSubject pos="B1:B1" cid="financialSubject" fieldLabel_s="financialSubject" allowBlank_b="true"/>-->
+        <!--refer_j='[{"refField":"financialSubject","valueField":"uuid"}]'/>-->
+        <!--<JHidden cid="financialSubject" fieldLabel_s="financialSubject" allowBlank_b="true"/>-->
+        <!--<JCombo pos="C1:C1" cid="financialSubjectCode" fieldLabel_s="financialSubjectCode" allowBlank_b="false"-->
+        <!--comboType="scdp_fmcode"-->
+        <!--codeType="NONPRM_FINANCIAL_SUBJECT_CODE" displayDesc_b="true" />-->
+        <JFSubjectGrid pos="B1:B1" cid="financialSubject" fieldLabel_s="financialSubject" allowBlank_b="false"/>
+        <JText pos="C1:C1" cid="financialSubjectCode" fieldLabel_s="financialSubjectCode"
+               allowEdit_b="false" adaptable_b="false"/>
+        <JCheck pos="D1:D1" cid="isActive" fieldLabel_s="isActive" field="isActive" active="true"/>
+        <JTextArea pos="A2:D2" cid="descp" fieldLabel_s="descp"/>
+    </JForm>
+</view>

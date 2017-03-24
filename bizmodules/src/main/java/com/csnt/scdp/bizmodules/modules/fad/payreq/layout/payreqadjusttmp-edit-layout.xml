@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JPanel pos="A1:A1" row="50,flex" col="1*1" title_s="" border_n="1">
+        <JForm pos="A1:A1" cid="fadPayReqHDto" row="23*5" col="0.125*8" title_s="" border_n="1">
+            <JHidden cid="uuid"/>
+            <JHidden cid="tblVersion"/>
+            <JHidden cid="reqType"/>
+            <JText pos="A1:B1" cid="reqno" fieldLabel_s="reqno" allowBlank_b="true" readOnly_b="true"
+                   adaptable_b="false"/>
+
+            <JDate pos="C1:D1" fieldLabel_s="createTime" cid="createTime" readOnly_b="true" adaptable_b="false"/>
+            <JCombo pos="E1:F1" cid="state" fieldLabel_s="state" comboType="scdp_fmcode" codeType="CDM_BILL_STATE"
+                    displayDesc_b="true" readOnly_b="true" adaptable_b="false"/>
+            <JButton text_s="检索" cid="searchBtn" pos="H2:H2" iconCls="query_btn"></JButton>
+        </JForm>
+        <JEGrid pos="A2:A2" store="Payreq.store.FadPayReqCStore" cid="fadPayReqCDto" withSelMode_b="true"
+                sortableColumns="true" features_j="[{'ftype':'summary','dock':'bottom'}]" enableColumnMove="true"
+                withSearchBar_b="true" searchFieldTips="部门,供应商,项目名称,合同编号,项目代号"
+                searchFilterCids="orgName,supplierName,projectMainName,scmContractCode,projectCode"
+                needFilter_b="true">
+
+            <JIntCol text_s="seqNo" width_n="60" dataIndex="seqNo">
+                <JInt allowBlank_b="true"/>
+            </JIntCol>
+
+            <JComboCol text_s="state" width_n="100" dataIndex="state">
+                <JCombo comboType="scdp_fmcode" codeType="FAD_BILL_STATE" displayDesc_b="true" readOnly_b="true"/>
+            </JComboCol>
+            <JTextCol text_s="orgName" dataIndex="orgName" width_n="100"/>
+
+            <JTextCol dataIndex="supplierId" hidden_b="true"/>
+            <JTextCol text_s="supplierId" dataIndex="supplierName" width_n="140"/>
+
+            <JTextCol dataIndex="projectMainId" hidden_b="true"/>
+            <JTextCol text_s="projectMainId" dataIndex="projectMainName" width_n="140"/>
+            <JTextCol text_s="projectCode" dataIndex="projectCode" width_n="100"/>
+
+            <JTextCol text_s="payReason" dataIndex="payReason" width_n="140">
+                <JText allowBlank_b="true"/>
+            </JTextCol>
+
+            <JCurCol text_s="auditMoney" dataIndex="auditMoney" width_n="120" cls="erp-grid-column-editable"
+                     summaryType="sum" hidden_b="true">
+                <JCur allowBlank_b="true" adaptable_b="true"/>
+            </JCurCol>
+            <JCurCol text_s="accountsPayable" dataIndex="accountsPayable" format="0,0.00" width_n="120"
+                     cls="erp-grid-column-editable" summaryType="sum">
+                <JCur allowBlank_b="false"/>
+            </JCurCol>
+            <JCurCol text_s="auditMoneyRate" dataIndex="auditMoneyRate" hidden_b="true" format="0,0.00" width_n="120"/>
+
+            <JCurCol text_s="prmReceiptRate" dataIndex="prmReceiptRate" format="0,0.00" width_n="115"/>
+
+            <JTextCol dataIndex="scmContractId" hidden_b="true"/>
+            <JTextCol dataIndex="contractNature" hidden_b="true"/>
+            <JTextCol text_s="scmContractId" dataIndex="scmContractCode" width_n="120"
+                      tdCls="erp-grid-column-link"/>
+            <JCurCol text_s="scmContractAmount" dataIndex="scmContractAmount" width_n="100"/>
+            <JCurCol text_s="scmContractPaidMoney" dataIndex="scmContractPaidMoney" width_n="120"/>
+            <JCurCol text_s="scmContractUnPaidMoney" dataIndex="scmContractUnPaidMoney" width_n="120"/>
+            <JCurCol text_s="scmPaidRate" dataIndex="scmPaidRate" format="0,0.00" width_n="90"/>
+            <JCurCol text_s="scmContractSupplierUnPaidMoney" dataIndex="scmContractSupplierUnPaidMoney" width_n="150"/>
+
+            <JCurCol text_s="scmContractFadInvoiceMoney" dataIndex="scmContractFadInvoiceMoney" width_n="120"/>
+            <JCurCol text_s="invoiceScmNeedCheck" dataIndex="invoiceScmNeedCheck" width_n="120"/>
+            <JCurCol text_s="scmContractNeedToPay" dataIndex="scmContractNeedToPay" width_n="120"/>
+            <JCurCol text_s="scmContractCheckedAmount" dataIndex="scmContractCheckedAmount" width_n="120"/>
+
+            <JCurCol text_s="reqMoney" dataIndex="reqMoney" width_n="140" hidden_b="true">
+                <JCur allowBlank_b="true"/>
+            </JCurCol>
+
+            <JCurCol text_s="scmContractExpectPaid" dataIndex="scmContractExpectPaid" width_n="140" hidden_b="true"/>
+
+            <JCurCol text_s="reqMoneyRate" dataIndex="reqMoneyRate" hidden_b="true" format="0,0.00" width_n="120"/>
+
+            <JCurCol text_s="approveMoney" dataIndex="approveMoney" hidden_b="true" width_n="120">
+                <JCur allowBlank_b="true"/>
+            </JCurCol>
+            <JCurCol text_s="approveMoneyRate" dataIndex="approveMoneyRate" hidden_b="true" format="0,0.00"
+                     width_n="90"/>
+            <JDateCol text_s="certificateCreateTime" dataIndex="certificateCreateTime" width_n="120"/>
+            <JDateCol text_s="expectDate" dataIndex="expectDate" hidden_b="true" width_n="100">
+                <JDate allowBlank_b="true"/>
+            </JDateCol>
+            <JCurCol text_s="purchaseManagerMoney" dataIndex="purchaseManagerMoney" hidden_b="true" width_n="150">
+                <JCur allowBlank_b="true"/>
+            </JCurCol>
+            <JCurCol text_s="purchaseManagerMoneyRate" dataIndex="purchaseManagerMoneyRate" format="0,0.00"
+                     hidden_b="true" width_n="90"/>
+
+            <JCurCol text_s="purchaseChiefMoney" dataIndex="purchaseChiefMoney" width_n="140"
+                     cls="erp-grid-column-editable" summaryType="sum" hidden_b="true">
+                <JCur allowBlank_b="true"/>
+            </JCurCol>
+            <JCurCol text_s="purchaseChiefMoneyRate" dataIndex="purchaseChiefMoneyRate" hidden_b="true" format="0,0.00"
+                     width_n="90"/>
+
+
+            <JCurCol text_s="cashReqValue" dataIndex="cashReqValue" hidden_b="true" format="0,0.00" width_n="120"/>
+
+            <JTextCol text_s="remark" dataIndex="remark" width_n="120">
+                <JText allowBlank_b="true"/>
+            </JTextCol>
+            <JTextCol text_s="certificateNo" dataIndex="certificateNo" hidden_b="true" width_n="200"/>
+
+        </JEGrid>
+    </JPanel>
+</view>

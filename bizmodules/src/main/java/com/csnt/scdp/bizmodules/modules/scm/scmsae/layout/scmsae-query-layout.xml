@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>scmsae-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JCombo pos="A1:A1" cid="curYear" fieldLabel_s="curYear" displayDesc_b="true" comboType="scdp_fmcode"
+                codeType="CDM_YEAR" allowBlank_b="true" field="cur_year"/>
+        <JText pos="B1:B1" fieldLabel_s="title" cid="title" field="title"/>
+    </conditions>
+    <results resultGridConfig="{'autoResizeColumn':false}">
+        <JIntCol text_s="curYear" dataIndex="curYear" width_n="100" />
+        <JTextCol text_s="title" dataIndex="title" width_n="120"/>
+        <JTextCol text_s="saiCase" dataIndex="saiCaseName" width_n="150"/>
+        <JTextCol text_s="waiCase" dataIndex="waiCaseName" width_n="150"/>
+        <JTextCol text_s="appraiserCase" dataIndex="appraiserCaseName" width_n="150"/>
+        <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+        <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+    </results>
+</commonquery>

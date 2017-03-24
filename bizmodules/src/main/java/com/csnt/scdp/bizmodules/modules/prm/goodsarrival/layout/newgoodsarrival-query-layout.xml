@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>goodsarrival-dao</daotype>
+        <daokey>newgoodsarrival_query</daokey>
+    </querysql>
+    <defaultSort>SUBSTR(SCM_CONTRACT_CODE,2) desc</defaultSort>
+    <conditions columns="4">
+        <!--<JText pos="C2:C2" fieldLabel_s="createBy" cid="createBy" field="create_by"/>-->
+        <JText pos="A1:A1" fieldLabel_s="合同编号" cid="scmContractCode" field="scm_Contract_Code"/>
+        <!--<JFromTo pos="A3:B3" subXtype="JDatetime" fieldLabel_s="createTime" cid="createTime" field="create_time"/>-->
+        <!--<JFromTo pos="C3:D3" subXtype="JDatetime" fieldLabel_s="updateTime" cid="updateTime" field="update_time"/>-->
+        <!--<JSContractGrid pos="A1:A1" fieldLabel_s="合同编号" cid="scmContractId_query"-->
+                        <!--refer_j='[{"refField":"scmContractId","valueField":"uuid"}]'/>-->
+        <!--<JHidden pos="B1:B1" cid="scmContractId" field="c.scm_contract_id"/>-->
+        <JProject pos="B1:B1" cid="projectId_query" fieldLabel_s="项目名称"
+                  refer_j='[{"refField":"projectId","valueField":"uuid"}]'/>
+        <JHidden pos="B1:B1" cid="projectId" field="s.project_Id"/>
+        <JSupplierGrid pos="C1:C1" fieldLabel_s="supplierName" cid="supplierName_query"
+                       refer_j='[{"refField":"supplierCode","valueField":"uuid"}]'/>
+        <JHidden cid="supplierCode" field="c.supplier_code"/>
+        <JCombo pos="D1:D1" cid="confirmState" fieldLabel_s="confirmState" allowBlank_b="true"
+                comboType="scdp_fmcode" field="c.confirm_state"
+                codeType="PRM_GOODS_ARRIVAL_CONFIRM_STATE" displayDesc_b="true" fullInfo_b="false"
+                multiSelect_b="false"/>
+        <!--<JText pos="B1:B1" fieldLabel_s="materialName" cid="materialName" field="material_name"/>-->
+
+    </conditions>
+    <!--M3_C17_F3_过滤查询条件-->
+    <results resultGridConfig="{'autoResizeColumn':false ,'withSearchBar':true,
+    'searchFieldTips':'物料名称,规格型号,供应商,合同编号',
+    'searchFilterCids':'materialName,model,supplierName,scmContractCode','needFilter':true}">
+        <JHidden text_s="scmContractId" dataIndex="scmContractId" width_n="120"/>
+        <JTextCol text_s="scmContractCode" dataIndex="scmContractCode" width_n="100"/>
+        <JTextCol text_s="confirmState" dataIndex="confirmState" width_n="80"/>
+        <!--<JTextCol text_s="项目" dataIndex="prmProjectId" width_n="120"/>-->
+        <JTextCol text_s="projectName" dataIndex="projectName" width_n="150"/>
+        <JTextCol text_s="supplierName" dataIndex="supplierName" width_n="150"/>
+        <JHidden  dataIndex="supplierCode" />
+        <JTextCol text_s="materialName" dataIndex="materialName" width_n="150"/>
+        <JTextCol text_s="model" dataIndex="model" width_n="150"/>
+        <JTextCol text_s="units" dataIndex="units" width_n="50"/>
+        <JDecCol text_s="amount" dataIndex="amount" width_n="100"/>
+        <!--<JDecCol text_s="unitPriceTalk" dataIndex="unitPriceTalk" width_n="150"/>-->
+        <!--<JDecCol text_s="unitPriceTrue" dataIndex="unitPriceTrue" width_n="150"/>-->
+        <!--<JDecCol text_s="totalValue" dataIndex="totalValue" width_n="150"/>-->
+        <!--<JDecCol text_s="storageAmount" dataIndex="storageAmount" width_n="150"/>-->
+        <!--<JDecCol text_s="storageValue" dataIndex="storageValue" width_n="150"/>-->
+        <!--<JDecCol text_s="registeredNumber" dataIndex="registeredNumber" width_n="150"/>-->
+
+        <!--<JTextCol text_s="factory" dataIndex="factory" width_n="120"/>-->
+
+        <JTextCol text_s="actualAmount" dataIndex="actualAmount" width_n="100"/>
+        <JTextCol text_s="remark" dataIndex="remark" width_n="200"/>
+
+        <!--<JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120"/>-->
+        <!--<JTextCol text_s="projectId" dataIndex="projectId" width_n="120"/>-->
+        <!--<JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120"/>-->
+        <!--<JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>-->
+        <!--<JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>-->
+        <!--<JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>-->
+        <!--<JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>-->
+    </results>
+</commonquery>

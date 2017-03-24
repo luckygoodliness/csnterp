@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>erpuser-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <conditions>
+        <JHidden cid="orgUuid" field="org_uuid"/>
+        <JText pos="A1:A1" fieldLabel_s="userId" cid="userId" field="user_id" upperCase_b="true" maxLength_n="32"/>
+        <JText pos="B1:B1" fieldLabel_s="userName" cid="userName" field="user_name" upperCase_b="true" maxLength_n="85"/>
+        <JText pos="C1:C1" fieldLabel_s="nickname" cid="nickname" field="nickname" upperCase_b="true" maxLength_n="85"/>
+        <JTreeCombox pos="A2:B2" fieldLabel_s="organization" loadAll_b="true" descField_s="orgName" codeField_s="orgCode"
+                     refer_j='[{"refField":"orgUuid","valueField":"uuid"}]'
+                     showCodeColumn_b="true"/>
+        <JBolCombo pos="C2:C2" fieldLabel_s="isAdmin" cid="isAdmin" field="is_admin"/>
+        <JBolCombo pos="D2:D2" fieldLabel_s="isActive" cid="isActive" field="is_active"/>
+    </conditions>
+    <quickquery>
+        <QueryCids>userId,userName,nickname</QueryCids>
+        <ForceQueryCids></ForceQueryCids>
+    </quickquery>
+    <results>
+        <JHidden dataIndex="Uuid"/>
+        <JHidden dataIndex="userTel"/>
+        <JHidden dataIndex="userFax"/>
+        <JHidden dataIndex="userMobile"/>
+        <JHidden dataIndex="address1"/>
+        <JHidden dataIndex="address2"/>
+        <JHidden dataIndex="address3"/>
+        <JHidden dataIndex="address4"/>
+        <JHidden dataIndex="userQq"/>
+        <JHidden dataIndex="userWeixin"/>
+        <JTextCol text_s="userName" dataIndex="userName" width_n="150"/>
+        <JTextCol text_s="officeName" dataIndex="orgName" width_n="150"/>
+        <JHidden text_s="userId" dataIndex="userId"/>
+        <JRCheckCol text_s="isAdmin" dataIndex="isAdmin" width_n="80"/>
+        <JHidden text_s="userSex" dataIndex="userSexDesc" width_n="80"/>
+        <JHidden text_s="userMail" dataIndex="userMail" flex_n="1"/>
+        <JHidden text_s="organization" dataIndex="orgName" flex_n="1"/>
+    </results>
+</commonquery>

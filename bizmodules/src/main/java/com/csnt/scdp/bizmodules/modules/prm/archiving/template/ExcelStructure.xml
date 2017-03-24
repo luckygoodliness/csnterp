@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<excel>
+    <!--PRM_ARCHIVING_DETAIL-->
+    <entity name="项目归档明细导入模板" code="PrmArchivingDetail">
+        <column name="卷名" code="volumeName" type="String"/>
+        <column name="份数" code="amount" type="BigDecimal"/>
+        <column name="页数" code="pageNumber" type="BigDecimal"/>
+        <column name="类型" code="type" type="String"/>
+    </entity>
+</excel>

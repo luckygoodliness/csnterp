@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>operatekeyprojectsinfo-dao</daotype>
+        <daokey>fm_operate_business_bid_info</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JCombo pos="A1:A1" cid="operationState_query" fieldLabel_s="operationState"  allowBlank_b="true" comboType="scdp_fmcode"
+                codeType="OPERATE_STATE" displayDesc_b="true"   />
+        <JHidden pos="A1:A1" cid="decisionMaker" fieldLabel_s="decisionMaker" field="decision_Maker" />
+        <JHidden pos="A1:A1" cid="plannedCa" fieldLabel_s="plannedCa" field="planned_Ca" />
+        <JHidden pos="A1:A1" cid="isWin" fieldLabel_s="isWin" field="is_Win" />
+        <JHidden pos="A1:A1" cid="projectName" fieldLabel_s="projectName" field="project_Name" />
+    </conditions>
+    <quickquery>
+        <ExpandConditions>true</ExpandConditions>
+        <QueryCids>decisionMaker,plannedCa,isWin,projectName</QueryCids>
+        <ForceQueryCids>createBy</ForceQueryCids>
+    </quickquery>
+    <results>
+        <JTextCol text_s="projectName" dataIndex="projectName" width_n="120"/>
+        <JDatetimeCol text_s="recordDate" dataIndex="recordDate" width_n="150"/>
+        <JTextCol text_s="proprietorUnit" dataIndex="proprietorUnitDesc" width_n="120"/>
+        <JTextCol text_s="decisionMaker" dataIndex="decisionMaker" width_n="120"/>
+        <JDatetimeCol text_s="bidTime" dataIndex="bidTime" width_n="150"/>
+        <JDatetimeCol text_s="signedTime" dataIndex="signedTime" width_n="150"/>
+        <JDecCol text_s="plannedCa" dataIndex="plannedCa" width_n="150"/>
+        <JTextCol text_s="isWin" dataIndex="isWin" width_n="120"/>
+        <!--<JDateCol dataIndex="bidingDocStart"  hidden_b="true"/>-->
+        <!--<JDateCol dataIndex="bidingDocEnd"  hidden_b="true"/>-->
+        <JDateCol text_s="start" dataIndex="bidingDocStart" width="120"/>
+        <JDateCol text_s="end" dataIndex="bidingDocEnd" width="120"/>
+    </results>
+</commonquery>

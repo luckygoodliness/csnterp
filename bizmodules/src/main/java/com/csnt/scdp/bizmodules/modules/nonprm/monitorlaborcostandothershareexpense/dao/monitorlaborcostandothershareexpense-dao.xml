@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <query_monitor_labor_cost>
+        <common>
+            <![CDATA[select * from monitor_labor_cost where ${conditions} and ${voidfilter}]]>
+        </common>
+    </query_monitor_labor_cost>
+    <query_monitor_other_share>
+        <common>
+            <![CDATA[select * from monitor_other_share where ${conditions} and ${voidfilter}]]>
+        </common>
+    </query_monitor_other_share>
+</DAO>

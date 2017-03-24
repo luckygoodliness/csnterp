@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonreport version="1.0">
+    <report>
+        <reporttype>L</reporttype>
+        <reporttemplate>erp/scm/ScmPackageSchedule.cpt</reporttemplate>
+        <reportcache>false</reportcache>
+    </report>
+    <conditions columns="4">
+        <JHidden cid="officeDesc"/>
+        <JHidden cid="projectId" field="projectId"/>
+        <JHidden cid="manager"  field="manager"/>
+        <JErpDepartMent pos="A1:A1" fieldLabel_s="office" cid="office" field="office"/>
+        <!--<JText pos="B1:B1" cid="fadSubjectCode" fieldLabel_s="fadSubjectCode" field="fadSubjectCode"/>-->
+        <!--<JDate pos="C1:C1" cid="nowBegin" fieldLabel_s="nowBegin" field="nowBegin"/>-->
+        <!--<JDate pos="D1:D1" cid="nowEnd" fieldLabel_s="nowEnd" field="nowEnd"/>-->
+        <JProject  pos="B1:B1" fieldLabel_s="项目" cid="prmProjectName" valueField="projectName"
+                   allowBlank_b="true" refer_j='[{"refField":"projectId","valueField":"uuid"}]'/>
+        <JUserGrid pos="C1:C1" fieldLabel_s="项目经理" cid="managerName"
+                   refer_j='[{"refField":"manager","valueField":"userId"}]'/>
+        <JCombo pos="D1:D1" cid="isMajorProject" fieldLabel_s="是否重大项目"
+                comboType="scdp_fmcode"
+                codeType="CDM_YES_OR_NO" displayDesc_b="true" field="isMajorProject"/>
+        <JDate pos="A2:A2" cid="beginDate" fieldLabel_s="立项时间从" field="beginDate"/>
+        <JDate pos="B2:B2" cid="endDate" fieldLabel_s="到" field="endDate"/>
+        <JCur pos="C2:C2" cid="wcblfFrom" fieldLabel_s="分包完成比例从" field="wcblfFrom"/>
+        <JCur pos="D2:D2" cid="wcblfTo" fieldLabel_s="到" field="wcblfTo"/>
+    </conditions>
+</commonreport>

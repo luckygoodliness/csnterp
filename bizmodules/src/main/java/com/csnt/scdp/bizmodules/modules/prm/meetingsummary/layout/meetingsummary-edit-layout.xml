@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="prmMeetingSummaryDto" row="23*6" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JHidden cid="prmWeeklyId"/>
+        <JNoneFinishedProject pos="A1:A1" cid="projectName" fieldLabel_s="prmProjectMainId" allowBlank_b="false"
+                      refer_j='[{"refField":"prmProjectMainId","valueField":"uuid"},
+                               {"refField":"departmentCode","valueField":"contractorOffice"}]'/>
+        <JHidden pos="A1:A1" cid="prmProjectMainId"/>
+        <JHidden cid="departmentCodeDesc"/>
+        <JErpDepartMent pos="B1:B1" fieldLabel_s="departmentCode" cid="departmentCode"
+                      field="org_uuid" labelWidth_n="100" allowBlank_b="false"
+                      readOnly_b="true" adaptable_b="false"/>
+        <JDatetime pos="C1:C1" cid="beginDate" fieldLabel_s="beginDate" allowBlank_b="false"/>
+        <JDatetime pos="D1:D1" cid="endDate" fieldLabel_s="endDate" allowBlank_b="false"/>
+        <JText pos="A2:B2" cid="meetingLocation" fieldLabel_s="meetingLocation" allowBlank_b="false"/>
+        <JInt pos="C2:C2" cid="meetingPersons" fieldLabel_s="meetingPersons" allowBlank_b="false" minValue_n="0"/>
+        <JText pos="D2:D2" cid="customerId" fieldLabel_s="customerId" allowBlank_b="false"/>
+        <JTextArea pos="A3:B7" cid="content" fieldLabel_s="content" allowBlank_b="false" labelAlign="top"/>
+        <JTextArea pos="C3:D7" cid="workPlan" fieldLabel_s="workPlan" allowBlank_b="false" labelAlign="top"/>
+        <!--<JText pos="D2:D2" cid="state" fieldLabel_s="state" allowBlank_b="true"/>-->
+        <!--<JText pos="E2:E2" cid="companyCode" fieldLabel_s="companyCode" allowBlank_b="true"/>-->
+
+
+    </JForm>
+</view>

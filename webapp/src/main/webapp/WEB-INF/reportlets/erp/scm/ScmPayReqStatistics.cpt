@@ -1,0 +1,599 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="main" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="office"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="fadSubjectCode"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="supplierName"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="isProject"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="beginDate"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="endDate"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--main
+SELECT
+T.*,
+MOD(ROWNUM, 2) AS FOR_COLOUR
+FROM
+(
+  SELECT SUBSTR(R.CUR_YEAR, 3) || '年' || R.CUR_MONTH || '月' AS YEAS_DATE,
+  NVL(MONEY_M, 0) AS MONEY_M,
+  NVL(MONEY_L, 0) AS MONEY_L,
+  NVL(MONEY_YF, 0) AS MONEY_YF,
+  NVL(MONEY_QT, 0) AS MONEY_QT,
+  NVL(MONEY_BX, 0) AS MONEY_BX
+  FROM
+  (
+    SELECT
+    R.CUR_YEAR,
+    R.CUR_MONTH,
+    SUM(DECODE(NVL(R.IS_ADVANCE_PAYMENT, 0), 1, R.MONEY, 0)) AS MONEY_YF,
+    SUM(DECODE(NVL(R.IS_ADVANCE_PAYMENT, 0), 0, R.MONEY, 0)) AS MONEY_QT
+    FROM
+    (
+      SELECT
+      TO_CHAR(FR.CREATE_TIME, 'yyyy') AS CUR_YEAR,
+      TO_CHAR(FR.CREATE_TIME, 'mm') AS CUR_MONTH,
+      FR.MONEY,
+      FR.IS_ADVANCE_PAYMENT,
+      FR.CREATE_TIME,
+      FR.OFFICE_ID,
+      FR.FAD_SUBJECT_CODE,
+      FR.IS_PROJECT
+      FROM
+      FAD_CASH_REQ FR
+      LEFT JOIN SCM_SUPPLIER SR ON FR.SUPPLIER_ID = SR.UUID
+      WHERE
+      FR.STATE IN ('1', '2', '4', '8')
+      AND
+      FR.REQ_TYPE = '0'
+      AND
+      (SR.COMPLETE_NAME LIKE '%${supplierName}%' OR FR.PAYEE_NAME LIKE '%${supplierName}%')
+      
+      --起始、截止；部门；项目代号；项目/非项目
+      AND
+      (
+        '${beginDate}' IS NULL
+        OR
+        FR.CREATE_TIME >= TO_DATE('${beginDate}', 'yyyy-mm-dd')
+      )
+      AND
+      (
+        '${endDate}' IS NULL
+        OR
+        FR.CREATE_TIME <= TO_DATE('${endDate}', 'yyyy-mm-dd')
+      )
+      AND
+      ('${office}' IS NULL OR FR.OFFICE_ID = '${office}')
+      AND
+      ('${isProject}' IS NULL OR NVL(FR.IS_PROJECT, 0) = '${isProject}')
+      AND
+      FR.FAD_SUBJECT_CODE LIKE '${fadSubjectCode}%'
+    ) R
+    GROUP BY R.CUR_YEAR, R.CUR_MONTH
+  ) R
+    
+  LEFT JOIN
+  (
+    SELECT
+    P.CUR_YEAR,
+    P.CUR_MONTH,
+    SUM(DECODE(P.REQ_TYPE, 1, AUDIT_MONEY, 0)) AS MONEY_M, --月度
+    SUM(DECODE(P.REQ_TYPE, 0, DECODE(P.STATE,2,AUDIT_MONEY,0), 0)) AS MONEY_L -- 临时
+    FROM
+    (
+      SELECT
+      NVL(PH.YEAR, TO_CHAR(PH.CREATE_TIME, 'yyyy')) AS CUR_YEAR,
+      NVL(PH.MONTH, TO_CHAR(PH.CREATE_TIME, 'mm')) AS CUR_MONTH,
+      PH.REQ_TYPE,
+      PH.STATE,
+      PC.AUDIT_MONEY,
+      DECODE(NVL(S.IS_PROJECT, 0),0,S.SUBJECT_CODE,PPM.PROJECT_CODE) AS FAD_SUBJECT_CODE
+      FROM
+      FAD_PAY_REQ_H PH
+      LEFT JOIN FAD_PAY_REQ_C PC ON PH.UUID = PC.PUUID
+      LEFT JOIN SCM_CONTRACT S ON S.UUID = PC.SCM_CONTRACT_ID
+      LEFT JOIN
+      (
+        SELECT
+        PROJECT_CODE,
+        PROJECT_NAME, UUID
+        FROM
+        PRM_PROJECT_MAIN PM
+      ) PPM
+      ON S.PROJECT_ID = PPM.UUID
+      WHERE
+      PH.STATE IN ('1', '2',  '4','9')
+      AND
+      PC.STATE IN ('1', '2', '4', '8')
+      AND
+      PH.CREATE_BY != 'CSNTADMIN'
+                 
+      --起始、截止；部门；项目/非项目
+      AND
+      ('${beginDate}' IS NULL OR DECODE(PH.REQ_TYPE,0,PH.CREATE_TIME,TO_DATE(PH.YEAR || '-' || PH.MONTH ||'-01','yyyy-mm-dd')) >= TO_DATE('${beginDate}', 'yyyy-mm-dd'))
+      AND
+      ('${endDate}' IS NULL OR DECODE(PH.REQ_TYPE,0,PH.CREATE_TIME,TO_DATE(PH.YEAR || '-' || PH.MONTH || '-01','yyyy-mm-dd')) <= TO_DATE('${endDate}', 'yyyy-mm-dd'))
+      AND
+      ('${office}' IS NULL OR S.OFFICE_ID = '${office}')
+      AND
+      ('${isProject}' IS NULL OR NVL(S.IS_PROJECT, 0) = '${isProject}')
+    ) P
+    WHERE P.FAD_SUBJECT_CODE LIKE '${fadSubjectCode}%'
+    GROUP BY P.CUR_YEAR, P.CUR_MONTH
+  ) P
+  ON
+  R.CUR_YEAR = P.CUR_YEAR
+  AND
+  R.CUR_MONTH = P.CUR_MONTH
+  
+  LEFT JOIN
+  (
+    SELECT
+    R.CUR_YEAR,
+    R.CUR_MONTH,
+    SUM(R.MONEY_BX) AS MONEY_BX
+    FROM
+    (
+      SELECT
+      TO_CHAR(FI.CREATE_TIME, 'yyyy') AS CUR_YEAR,
+      TO_CHAR(FI.CREATE_TIME, 'mm') AS CUR_MONTH,
+      NVL(FI.AMOUNT, 0) AS AMOUNT,
+      NVL(CL.CLEARANCE_MONEY, 0) AS CLEARANCE_MONEY,
+      NVL(FI.AMOUNT, 0) - NVL(CL.CLEARANCE_MONEY, 0) AS MONEY_BX
+      FROM
+      (
+        SELECT
+        FI.UUID,
+        FI.CREATE_TIME,
+        SCI.AMOUNT,
+        SCI.SCM_CONTRACT_ID
+        FROM FAD_INVOICE FI
+        LEFT JOIN
+        (
+          SELECT
+          SCI.FAD_INVOICE_ID,
+          SCI.SCM_CONTRACT_ID,
+          SUM(SCI.AMOUNT) AS AMOUNT
+          FROM SCM_CONTRACT_INVOICE SCI
+          GROUP BY SCI.FAD_INVOICE_ID,
+          SCI.SCM_CONTRACT_ID
+        ) SCI ON FI.UUID = SCI.FAD_INVOICE_ID
+        LEFT JOIN
+        (
+          SELECT
+          SC.UUID,
+          DECODE(NVL(SC.IS_PROJECT, 0),0,SC.SUBJECT_CODE,PPM.PROJECT_CODE) AS FAD_SUBJECT_CODE,
+          SC.IS_PROJECT,
+          SC.OFFICE_ID
+          FROM SCM_CONTRACT SC
+          LEFT JOIN
+          (
+            SELECT
+            PROJECT_CODE,
+            PROJECT_NAME,
+            UUID
+            FROM
+            PRM_PROJECT_MAIN PM
+          ) PPM
+          ON SC.PROJECT_ID = PPM.UUID
+        ) SC ON SC.UUID = SCI.SCM_CONTRACT_ID
+        WHERE
+        FI.STATE IN ('1', '2', '4', '8')
+        AND
+        FI.EXPENSES_TYPE = '0'
+        AND
+        (
+          '${beginDate}' IS NULL
+          OR
+          FI.CREATE_TIME >= TO_DATE('${beginDate}', 'yyyy-mm-dd')
+        )
+        AND
+        (
+          '${endDate}' IS NULL
+          OR
+          FI.CREATE_TIME <= TO_DATE('${endDate}', 'yyyy-mm-dd')
+        )
+        AND
+        (
+          '${office}' IS NULL
+          OR
+          SC.OFFICE_ID = '${office}'
+        )
+        AND
+        (
+          '${isProject}' IS NULL
+          OR
+          NVL(SC.IS_PROJECT, 0) = '${isProject}'
+        )
+        AND
+        SC.FAD_SUBJECT_CODE LIKE '${fadSubjectCode}%'
+      ) FI
+      LEFT JOIN
+      (
+        SELECT
+        FI.UUID,
+        FCR.PURCHASE_CONTRACT_ID AS SCM_CONTRACT_ID,
+        FCRI.CLEARANCE_MONEY
+        FROM
+        FAD_INVOICE FI
+        LEFT JOIN
+        (
+          SELECT
+          FCRI.FAD_INVOICE_ID,
+          FCRI.FAD_CASH_REQ_ID,
+          SUM(FCRI.CLEARANCE_MONEY) AS CLEARANCE_MONEY
+          FROM
+          FAD_CASH_REQ_INVOICE FCRI
+          GROUP BY
+          FCRI.FAD_INVOICE_ID,
+          FCRI.FAD_CASH_REQ_ID
+        ) FCRI
+        ON FI.UUID = FCRI.FAD_INVOICE_ID
+        
+        LEFT JOIN FAD_CASH_REQ FCR
+        ON FCRI.FAD_CASH_REQ_ID = FCR.UUID
+        WHERE
+        FI.STATE IN ('1', '2', '4', '8')
+        AND FI.EXPENSES_TYPE = '0'
+        AND ('${beginDate}' IS NULL OR FI.CREATE_TIME >= TO_DATE('${beginDate}', 'yyyy-mm-dd'))
+        AND ('${endDate}' IS NULL OR FI.CREATE_TIME <= TO_DATE('${endDate}', 'yyyy-mm-dd'))
+        AND ('${office}' IS NULL OR FCR.OFFICE_ID = '${office}')
+        AND ('${isProject}' IS NULL OR NVL(FCR.IS_PROJECT, 0) = '${isProject}')
+        AND FCR.FAD_SUBJECT_CODE LIKE '%${fadSubjectCode}%'
+      ) CL
+      ON
+      FI.UUID = CL.UUID
+      AND
+      FI.SCM_CONTRACT_ID = CL.SCM_CONTRACT_ID
+    ) R
+    WHERE
+    R.MONEY_BX > 0
+    AND
+    R.MONEY_BX < 20000
+    GROUP BY
+    R.CUR_YEAR,
+    R.CUR_MONTH
+  ) I
+  ON
+  R.CUR_YEAR = I.CUR_YEAR
+  AND
+  R.CUR_MONTH = I.CUR_MONTH
+ ORDER BY
+ R.CUR_YEAR DESC,
+ R.CUR_MONTH DESC
+) T]]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR F="0" T="1"/>
+<FR/>
+<HC/>
+<FC/>
+<UPFCR COLUMN="false" ROW="true"/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1371600,1218240,1152000,1152000,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[4320000,5760000,5760000,5760000,5760000,5760000,5760000,0,2743200,2743200,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" cs="7" s="0">
+<O>
+<![CDATA[支付申请统计数据]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" s="1">
+<O t="BiasTextPainter">
+<IsBackSlash value="false"/>
+<![CDATA[分类|时间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" s="1">
+<O>
+<![CDATA[支付讨论会（元）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="1" s="1">
+<O>
+<![CDATA[临时支付（元）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="1" s="1">
+<O>
+<![CDATA[预付款请款（元）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="1" s="1">
+<O>
+<![CDATA[其他请款（元）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="1" s="1">
+<O>
+<![CDATA[采购报销（元）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="1" s="1">
+<O>
+<![CDATA[月度合计（元）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="1" s="2">
+<PrivilegeControl/>
+</C>
+<C c="0" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="YEAS_DATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="MONEY_M"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="MONEY_L"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="MONEY_YF"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="MONEY_QT"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="MONEY_BX"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="2" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=B3+C3+D3+E3+F3]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="2">
+<O t="DSColumn">
+<Attributes dsName="main" columnName="FOR_COLOUR"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[backgroundColour]]></Name>
+<Condition class="com.fr.data.condition.ObjectCondition">
+<Compare op="0">
+<O>
+<![CDATA[1]]></O>
+</Compare>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Scope val="1"/>
+<Background name="ColorBackground" color="-4144960"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="0" r="3" s="3">
+<O>
+<![CDATA[累计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="3" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(B3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="3" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(C3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="3" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(D3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="3" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(E3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="3" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(F3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="3" s="5">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(G3)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting orientation="1">
+<PaperSize width="302400000" height="42768000"/>
+<Margin top="986400" left="1440000" bottom="986400" right="1440000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="144"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="104"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="104"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="96"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="1" size="96"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

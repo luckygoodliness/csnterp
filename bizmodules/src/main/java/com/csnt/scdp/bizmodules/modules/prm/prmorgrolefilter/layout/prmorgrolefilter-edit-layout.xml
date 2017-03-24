@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="1,flex" col="1*1">
+    <JForm pos="A1:A1" cid="scdpOrgDto" row="1" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+    </JForm>
+    <JFieldSet pos="A2:D2" row="flex" col="1" title_s="角色过滤表设定" border_n="1">
+        <JEGrid pos="A1:A1" cid="prmOrgRoleFilterDto" store="Prmorgrolefilter.store.PrmOrgRoleFilterStore">
+            <JTextCol text_s="tableName" dataIndex="tableName" width_n="200"/>
+        </JEGrid>
+    </JFieldSet>
+</view>

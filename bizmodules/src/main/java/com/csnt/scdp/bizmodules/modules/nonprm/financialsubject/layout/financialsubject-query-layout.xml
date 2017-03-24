@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>financialsubject-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="A1:B1" fieldLabel_s="subjectName" cid="subjectNameQ" field="bs.subject_name"/>
+        <JCombo pos="C1:C1" fieldLabel_s="isenabled" cid="isenabledQ" field="bs.isenabled"
+                comboType="scdp_fmcode" codeType="NONPRM_FINANCIAL_IS_ENABLED" allowBlank_b="true"
+                displayDesc_b="true" fullInfo_b="false"/>
+
+        <JCombo pos="D1:D1" fieldLabel_s="subjectType" cid="subjectTypeQ" field="bs.subject_type"
+                comboType="scdp_fmcode" codeType="NONPRM_FINANCIAL_SUBJECT_TYPE"
+                displayDesc_b="true" fullInfo_b="false"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="subjectNo" dataIndex="subjectNo" width_n="100"/>
+        <JTextCol text_s="subjectName" dataIndex="subjectName" width_n="180"/>
+        <JRCheckCol text_s="isenabled" dataIndex="isenabled" width_n="80"/>
+        <JTextCol text_s="subjectCategory" dataIndex="subjectCategoryDesc" width_n="80"/>
+        <JTextCol text_s="subjectType" dataIndex="financialCombo" width_n="80"/>
+        <JRCheckCol text_s="needPurchase" dataIndex="needPurchase" width_n="100"/>
+        <JTextCol text_s="descp" dataIndex="descp" width_n="230"/>
+        <JTextCol text_s="createBy" dataIndex="createBy" width_n="100"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="200"/>
+        <JIntCol text_s="seqNo" dataIndex="seqNo" width_n="100"/>
+    </results>
+</commonquery>

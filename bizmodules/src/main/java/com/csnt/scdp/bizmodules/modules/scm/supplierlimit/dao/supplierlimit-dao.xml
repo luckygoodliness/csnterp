@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[SELECT ssl.*,
+       (SELECT CODE_DESC
+          FROM SCDP_CODE SC
+         WHERE SC.CODE_TYPE = 'FAD_BILL_STATE'
+           AND SC.SYS_CODE = ssl.STATE) AS STATE_NAME
+  FROM scm_supplier_limit ssl where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+</DAO>

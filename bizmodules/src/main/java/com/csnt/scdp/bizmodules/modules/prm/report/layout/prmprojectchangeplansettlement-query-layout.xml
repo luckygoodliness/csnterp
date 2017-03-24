@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonreport version="1.0">
+    <report>
+        <reporttype>L</reporttype>
+        <reporttemplate>erp/prm/LXBGJSMXB.cpt&amp;op=view</reporttemplate>
+        <reportcache>false</reportcache>
+    </report>
+    <conditions columns="4">
+        <JHidden cid="officeId" field="officeId"/>
+        <JScdpOrgGrid pos="A1:A1" cid="officeIdDesc" field="officeIdDesc"
+                      fieldLabel_s="office"
+                      allowBlank_b="true"
+                      refer_j='[{"refField":"officeId","valueField":"orgCode"}]'
+                      upperCase_b="true"/>
+
+        <JText pos="B1:B1" cid="projectCode" fieldLabel_s="projectCode" field="projectCode"/>
+        <JText pos="C1:C1" cid="projectName" fieldLabel_s="projectName" field="projectName"/>
+    </conditions>
+</commonreport>

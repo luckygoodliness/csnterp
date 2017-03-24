@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JPanel pos="A1:A1" row="180,flex" col="1*1" border_n="0">
+        <JFieldSet pos="A1:A1" row="flex" col="1*1" title_s="basicInfo" border_n="1">
+            <JForm pos="A1:A1" cid="operateBusinessBidInfoDto" row="23*6" col="0.25*4" title_s="" border_n="0"
+                   labelWidth_n="110">
+                <JHidden cid="uuid"/>
+                <JHidden cid="tblVersion"/>
+                <JHidden cid="operateBusinessBidInfoIdDesc"/>
+                <JHidden cid="projectManagerDesc"/>
+                <JHidden cid="generalEngineerDesc"/>
+                <JHidden cid="projectSourceType"/>
+                <JHidden cid="prmProjectMainIdDesc"/>
+                <JHidden cid="innerPurchaseReqId"/>
+                <JHidden cid="canBeDeleted"/>
+                <JHidden cid="canBeModified"/>
+                <JHidden cid="projectType"/>
+                <JHidden cid="operateKeyProjectsInfoId"/>
+                <JText pos="A1:B1" cid="contractName" fieldLabel_s="contractName" allowBlank_b="false"/>
+
+                <JHidden cid="customerIdDesc"/>
+                <JCustomerGrid pos="C1:D1" cid="customerId" fieldLabel_s="customerId"
+                               valueField="uuid" descField="customerName" displayDesc_b="true"
+                               allowBlank_b="false" forceValidate_b="false"/>
+
+                <JText pos="A2:B2" cid="designerId" fieldLabel_s="designerId" allowBlank_b="true"/>
+
+                <JText pos="C2:D2" cid="managementId" fieldLabel_s="managementId" allowBlank_b="true"/>
+                <JHidden cid="contractorOfficeDesc"/>
+                <JErpDepartMent pos="A3:A3" fieldLabel_s="contractorOffice" cid="contractorOffice"
+                                allowBlank_b="false"/>
+
+                <JHidden cid="countryCode"/>
+                <JCombo pos="B3:B3" cid="buildRegion" fieldLabel_s="buildRegion" allowBlank_b="true"
+                        comboType="fm_gis_state"
+                        displayDesc_b="true" fullInfo_b="true" filterFields="countryCode|countryCode"/>
+
+                <JDate pos="C3:C3" cid="contractSignDate" fieldLabel_s="contractSignDate" allowBlank_b="false"/>
+
+                <JCur pos="D3:D3" cid="contractSignMoney" fieldLabel_s="contractSignMoney" allowBlank_b="false"
+                      minValue_n="0"/>
+                <JTextArea pos="A4:B6" cid="contractDuration" fieldLabel_s="contractDuration" allowBlank_b="false"/>
+
+                <JTextArea pos="C4:D6" cid="projectScale" fieldLabel_s="projectScale" allowBlank_b="true"/>
+            </JForm>
+        </JFieldSet>
+        <JFieldSet pos="A2:A2" row="flex,70" col="1*1" title_s="attachment" border_n="1">
+            <JEGrid pos="A1:A1" cid="cdmFileRelationDto" store="Cdmfile.store.CdmFileRelationStore"
+                    toolbarAtBottom_b="false" hideCopyAdd_b="true" withSelMode_b="true"
+                    cdmFileType="OPERATE_BUSINESS">
+                <!--<JTextCol text_s="fileType" dataIndex="fileType" width_n="80"/>-->
+                <JTextCol text_s="fileName" dataIndex="fileName" width_n="200"/>
+                <JTextCol text_s="fileSize" dataIndex="convertedFileSize" width_n="80"/>
+                <JTextCol text_s="remark" dataIndex="remark" width_n="200"/>
+                <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+                <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+                <JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>
+                <JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>
+            </JEGrid>
+            <JForm pos="A2:A2" bcid="cdmFileRelationDto.bind" isBind_b="true" row="flex" col="0.25*4" border_n="0">
+                <JTextArea pos="A1:D1" cid="remark" labelWidth_n="120" fieldLabel_s="remark"/>
+            </JForm>
+        </JFieldSet>
+    </JPanel>
+</view>

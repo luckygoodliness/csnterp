@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="Dto" row="23*1" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JText pos="A1:A1" cid="userId" fieldLabel_s="userId" allowBlank_b="true"/>
+        <JText pos="A1:A1" cid="userName" fieldLabel_s="userName" allowBlank_b="true"/>
+        <JText pos="A1:A1" cid="userPassword" fieldLabel_s="userPassword" allowBlank_b="true"/>
+        <JCheck pos="A1:A1" fieldLabel_s="needModifyPass" cid="needModifyPass"/>
+        <JText pos="A1:A1" cid="orgUuid" fieldLabel_s="orgUuid" allowBlank_b="true"/>
+        <JText pos="A1:A1" cid="companyUuid" fieldLabel_s="companyUuid" allowBlank_b="true"/>
+        <JText pos="A1:A1" cid="companyCode" fieldLabel_s="companyCode" allowBlank_b="true"/>
+        <JCheck pos="A1:A1" fieldLabel_s="isAdmin" cid="isAdmin"/>
+        <JCheck pos="A1:A1" fieldLabel_s="isLoginUser" cid="isLoginUser"/>
+        <JCheck pos="A1:A1" fieldLabel_s="isActive" cid="isActive"/>
+        <JText pos="A1:A1" cid="userSex" fieldLabel_s="userSex" allowBlank_b="true"/>
+        <JText pos="A1:A1" cid="address1" fieldLabel_s="address1" allowBlank_b="true"/>
+        <JText pos="A1:A1" cid="address2" fieldLabel_s="address2" allowBlank_b="true"/>
+        <JText pos="A1:A1" cid="address3" fieldLabel_s="address3" allowBlank_b="true"/>
+        <JText pos="A1:A1" cid="address4" fieldLabel_s="address4" allowBlank_b="true"/>
+        <JText pos="A1:A1" cid="userTel" fieldLabel_s="userTel" allowBlank_b="true"/>
+        <JText pos="A1:A1" cid="userFax" fieldLabel_s="userFax" allowBlank_b="true"/>
+        <JText pos="A1:A1" cid="userMobile" fieldLabel_s="userMobile" allowBlank_b="true"/>
+        <JText pos="A1:A1" cid="userMail" fieldLabel_s="userMail" allowBlank_b="true"/>
+        <JText pos="A1:A1" cid="userQq" fieldLabel_s="userQq" allowBlank_b="true"/>
+        <JText pos="A1:A1" cid="userWeixin" fieldLabel_s="userWeixin" allowBlank_b="true"/>
+        <JText pos="A1:A1" cid="idCard" fieldLabel_s="idCard" allowBlank_b="true"/>
+        <JText pos="A1:A1" cid="jobTitle" fieldLabel_s="jobTitle" allowBlank_b="true"/>
+        <JText pos="A1:A1" cid="nickname" fieldLabel_s="nickname" allowBlank_b="true"/>
+        <JCheck pos="A1:A1" fieldLabel_s="userMailVerified" cid="userMailVerified"/>
+        <JCheck pos="A1:A1" fieldLabel_s="userMobileVerified" cid="userMobileVerified"/>
+    </JForm>
+</view>
+<refers>
+</refers>

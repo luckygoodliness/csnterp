@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonreport version="1.0">
+    <report>
+        <reporttype>L</reporttype>
+        <reporttemplate>erp/scm/ScmAccountsPayableCheckT.cpt</reporttemplate>
+        <reportcache>false</reportcache>
+    </report>
+    <conditions columns="3">
+        <JText pos="A1:A1" cid="supplierName" fieldLabel_s="供应商名称" field="supplierName"/>
+        <JCombo pos="B1:B1" cid="whetherconsistent" fieldLabel_s="是否一致" displayDesc_b="true" comboType="scdp_fmcode"
+                codeType="WHETHER_CONSISTENT"  labelWidth_n="100" field="whetherconsistent" />
+    </conditions>
+</commonreport>

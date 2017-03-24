@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JTab pos="A1:A1" row="flex" col="1*1">
+        <JPanel pos="A1:A1" row="148,flex" col="1*1" title_s="基本信息">
+            <JForm pos="A1:A1" cid="scmContractChangeDto" row="23*6" col="0.25*4" title_s="" border_n="1">
+                <JHidden cid="uuid"/>
+                <JHidden cid="tblVersion"/>
+                <JHidden cid="officeId"/>
+                <JHidden cid="scmContractId"/>
+                <JText pos="A1:A1" cid="runningNo" fieldLabel_s="runningNo" adaptable_b="false" readOnly_b="true" allowBlank_b="true"/>
+                <JSContractGrid pos="B1:B1" fieldLabel_s="scmContractId" cid="contractname"
+                                refer_j='[{"refField":"scmContractId","valueField":"uuid"},
+                                {"refField":"originalValue","valueField":"amount"},
+                                {"refField":"officeId","valueField":"officeId"},
+                                {"refField":"fadSubjectCode","valueField":"fadSubjectCode"},
+                                {"refField":"fadSubjectName","valueField":"fadSubjectName"},
+                                {"refField":"supplierName","valueField":"supplierName"},
+                                {"refField":"contractNature","valueField":"contractNature"}]'/>
+                <!--<JText pos="A5:A5" cid ="contractNature" allowBlank_b="true" />-->
+                <JText pos="C1:C1" cid="fadSubjectCode" fieldLabel_s="fadSubjectCode" readOnly_b="true"
+                       adaptable_b="false"/>
+                <JText pos="D1:D1" cid="fadSubjectName" fieldLabel_s="fadSubjectName" readOnly_b="true"
+                       adaptable_b="false"/>
+                <JText pos="A2:A2" cid="supplierName" fieldLabel_s="supplierName" readOnly_b="true"
+                       adaptable_b="false"/>
+                <JCur pos="B2:B2" cid="originalValue" fieldLabel_s="originalValue" allowBlank_b="true"
+                      allowEdit_b="false" readOnly_b="true" adaptable_b="false"/>
+                <JCur pos="C2:C2" cid="newValue" fieldLabel_s="newValue" allowBlank_b="false" minValue_n="0"/>
+                <JCombo pos="D2:D2" allowBlank_b="true" comboType="scdp_fmcode" cid="closeChange"
+                        fieldLabel_s="closeChange"
+                        codeType="CDM_YES_OR_NO" displayDesc_b="true"/>
+                <!--<JCombo pos="D1:D1" cid="state" fieldLabel_s="state" field="state" allowBlank_b="false"-->
+                <!--comboType="scdp_fmcode"-->
+                <!--codeType="SCM_CONTRACT_CHANGE_STATE" displayDesc_b="true"/>-->
+                <JHidden cid="createByDesc"/>
+                <JUserGrid pos="A3:A3" cid="createBy" fieldLabel_s="createBy" adaptable_b="false" readOnly_b="true"  valueField="userId" descField="userName" allowBlank_b="true"/>
+                <JDatetime pos="B3:B3" cid="createTime" fieldLabel_s="createTime" adaptable_b="false" readOnly_b="true" allowBlank_b="true"/>
+                <JCombo pos="C3:C3" fieldLabel_s="state" cid="state" readOnly_b="true" adaptable_b="false"
+                        comboType="scdp_fmcode" codeType="CDM_BILL_STATE" displayDesc_b="true"/>
+                <JTextArea pos="A4:D6" cid="changeReason" fieldLabel_s="changeReason" allowBlank_b="true"
+                           wrap_b="true"/>
+                <!--<JText pos="B2:B2" cid="companyCode" fieldLabel_s="companyCode" allowBlank_b="true"/>-->
+                <!--<JText pos="C2:C2" cid="projectId" fieldLabel_s="projectId" allowBlank_b="true"/>-->
+                <!--<JText pos="D2:D2" cid="departmentCode" fieldLabel_s="departmentCode" allowBlank_b="true"/>-->
+                <!--<JText pos="A3:A3" cid="createOffice" fieldLabel_s="createOffice" allowBlank_b="true"/>-->
+                <!--<JText pos="B3:B3" cid="updateOffice" fieldLabel_s="updateOffice" allowBlank_b="true"/>-->
+            </JForm>
+            <JFieldSet pos="A2:A2" row="flex" col="1" border_n="1" title_s="">
+                <JPanel pos="A1:A1" row="flex" col="1" border_n="0" cid ="scmContractReport">
+                </JPanel>
+            </JFieldSet>
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex,25" col="0.1*10" title_s="附件信息" border_n="1">
+            <JEGrid pos="A1:J1" cid="cdmFileRelationDto" store="Cdmfile.store.CdmFileRelationStore"
+                    withToolbar_b="false" cdmFileType="SCM_CONTRACT">
+                <JTextCol text_s="fileType" dataIndex="fileType" width_n="100"/>
+                <JTextCol text_s="fileName" dataIndex="fileName" width_n="200"/>
+                <JTextCol text_s="fileSize" dataIndex="convertedFileSize" width_n="120"/>
+                <JTextCol text_s="remark" dataIndex="remark" width_n="300"/>
+                <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+                <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+            </JEGrid>
+            <JButton pos="A2:A2" cid="fileUpload" text_s="附件上传" iconCls="file_upload_icon"/>
+            <JButton pos="B2:B2" cid="fileDownload" text_s="附件下载" iconCls="file_download_icon"/>
+            <JButton pos="C2:C2" cid="filePreview" text_s="附件预览" iconCls="file_preview_icon"/>
+            <JButton pos="D2:D2" cid="fileDelete" text_s="附件删除" iconCls="delete_btn"/>
+        </JPanel>
+    </JTab>
+</view>

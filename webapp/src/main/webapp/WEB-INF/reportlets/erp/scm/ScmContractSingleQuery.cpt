@@ -1,0 +1,583 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="ContractDs" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="scmContractId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT T.*, MOD(ROWNUM, 2) AS FOR_COLOUR
+FROM(SELECT SC.SCM_CONTRACT_CODE AS 合同编号,
+       SC.CONTRACT_STATE_NAME AS 合同状态,
+       SC.PROJECT_CODE AS 项目代号,
+       SC.PROJECT_NAME AS 项目名称,
+       SC.SUPPLIER_NAME AS 供应商,
+       SC.ORG_NAME AS 部门,
+       NVL(OL.ORIGINAL_VALUE,SC.AMOUNT) AS 合同初额,
+       SC.AMOUNT AS 合同终额,
+       NVL(SC.FAD_INVOICE_MONEY_L,0) AS 发票录入金额,
+       NVL(SC.FAD_INVOICE_MONEY,0) AS 发票核准金额,
+       NVL(SC.AMOUNT,0) - NVL(SC.FAD_INVOICE_MONEY_L,0) AS 未报账金额,
+       NVL(SC.CHECKED_MONEY,0) AS 到货确认金额,
+       NVL(FAD_REQ_MONEY,0) AS 请款入账金额,
+       NVL(REQ_CLEARANCE_MONEY,0) AS 请款核销金额,
+       NVL(SC.SCM_PAID_MONEY,0) AS 支付金额,
+       NVL(SC.SCM_UNPAID_MONEY,0) AS 合同未付金额,
+       NVL(SCM_NEED_PAY_MONEY_FAD,0) AS 合同应付账款,
+       NVL(SC.SCM_NEED_PAY_MONEY,0) - NVL(SC.SCM_PAID_MONEY,0) AS 发票未付额,
+       /*       SC.XMSK AS 项目收款,
+                                                        SC.XMJS AS 项目结算,
+                                                        SC.XMYXR AS 项目运行额, */
+       DECODE(NVL(SC.XMYXR, 0), 0, 0, NVL(SC.XMSK, 0) / SC.XMYXR) AS 收款比例,
+       DECODE(NVL(SC.XMYXR, 0), 0, 0, NVL(SC.XMJS, 0) / SC.XMYXR) AS 结题比例,
+       DECODE(SC.IS_CLOSED, '1', '是', '否') AS 是否结算
+  FROM (SELECT T."UUID",
+               T."SCM_CONTRACT_CODE",
+               T."CONTRACT_NATURE",
+               T."SUPPLIER_NAME",
+               O.ORG_NAME,
+               T."AMOUNT",
+               --T.ORIGINAL_VALUE,
+               T."STATE",
+               T."CONTRACT_STATE",
+               T."PROJECT_ID",
+               T."CREATE_BY",
+               T."CREATE_TIME",
+               T."SUBJECT_CODE",
+               T.IS_CLOSED,
+               (SELECT C.CODE_DESC
+                  FROM SCDP_CODE C
+                 WHERE C.SYS_CODE = T.CONTRACT_STATE
+                   AND C.CODE_TYPE = 'SCM_CONTRACT_STATE') AS CONTRACT_STATE_NAME,
+               M.PROJECT_CODE, --项目代号
+               M.PROJECT_NAME, --合同所属项目
+               M.XMSK, --项目收款,
+               M.XMJS, --项目结算,
+               M.XMYXR, --项目运行额
+               NVL(M.PROJECT_CODE, T.SUBJECT_CODE) AS FAD_SUBJECT_CODE, --课题代号
+               NVL(FAD.FAD_INVOICE_MONEY, 0) AS FAD_INVOICE_MONEY, --发票入账金额
+               NVL(FAD.FAD_INVOICE_MONEY_I, 0) AS FAD_INVOICE_MONEY_L, --发票录入金额
+               NVL(FAD_CASH.FAD_REQ_MONEY, 0) +
+               NVL(FAD.INVOICE_SCM_VALUE_REAL_PAID, 0) +
+               NVL(FAD_PAY.FAD_PAY_REQ_PAYABLE_MONEY, 0) -
+               NVL(CASH_CLEARANCE.CLEARANCE_MONEY, 0) AS SCM_PAID_MONEY, --实际支付金额
+               DECODE(SIGN(NVL(T.AMOUNT, 0) -
+                           (NVL(FAD_CASH.FAD_REQ_MONEY, 0) +
+                            NVL(FAD.INVOICE_SCM_VALUE_REAL_PAID, 0) +
+                            NVL(FAD_PAY.FAD_PAY_REQ_PAYABLE_MONEY, 0) -
+                            NVL(CASH_CLEARANCE.CLEARANCE_MONEY, 0))),
+                      1,
+                      NVL(T.AMOUNT, 0) -
+                      (NVL(FAD_CASH.FAD_REQ_MONEY, 0) +
+                       NVL(FAD.INVOICE_SCM_VALUE_REAL_PAID, 0) +
+                       NVL(FAD_PAY.FAD_PAY_REQ_PAYABLE_MONEY, 0) -
+                       NVL(CASH_CLEARANCE.CLEARANCE_MONEY, 0)),
+                      0) AS SCM_UNPAID_MONEY, --合同未付金额
+               SUB_NEGATIVE_TO_0(FAD.INVOICE_NEED_TO_PAY,
+                                 FAD_PAY.FAD_PAY_REQ_PAYABLE_MONEY) AS SCM_NEED_PAY_MONEY_FAD, --应付账款
+               
+               SUB_NEGATIVE_TO_0(FAD.FAD_INVOICE_MONEY,
+                                 (NVL(FAD_CASH.FAD_REQ_MONEY, 0) +
+                                 NVL(FAD.INVOICE_SCM_VALUE_REAL_PAID, 0) +
+                                 NVL(FAD_PAY.FAD_PAY_REQ_PAYABLE_MONEY, 0) -
+                                 NVL(CASH_CLEARANCE.CLEARANCE_MONEY, 0))) AS SCM_NEED_PAY_MONEY, --应付账款
+               
+               DECODE(T.CONTRACT_NATURE,
+                      '1',
+                      0,
+                      NVL(RECEIPT.CHECKED_MONEY, 0)) AS CHECKED_MONEY, --合同到货确认金额
+               NVL2(BLACK.SCM_SUPPLIER_ID, 1, 0) AS SUPPLIER_BLACK, -- 该供应商是否在黑名单中
+               FAD_CASH.FAD_REQ_MONEY, --请款入账金额
+               REQ_CLEARANCE_MONEY, --请款核销金额
+               -- FAD_CASH.FAD_REQ_MONEY_L, --请款占用金额
+               CLEARANCE_MONEY, --现金核销金额
+               FAD.INVOICE_SCM_VALUE_REAL_PAID, --发票直接支付金额（减去核销）
+               FAD.FAD_INVOICE_MONEY_LOCKED
+        ------------------------------------------------------------------------------------------------------------------------------------
+        --------------------------------------------------------------------以上返回字段----------------------------------------------------
+          FROM (SELECT *
+                  FROM SCM_CONTRACT SC
+                 WHERE SC.STATE <> '3'
+                 AND ('${scmContractId}' IS NULL OR
+                                       SC.UUID = '${scmContractId}')
+                ) T
+        ----------------------------------------------------------------------左联供应商账户表，为取最新的有效账户
+          LEFT JOIN (SELECT M.UUID,
+                           M.PROJECT_CODE, --项目代号
+                           M.PROJECT_NAME, --合同所属项目 
+                           (SELECT SUM(R.ACTUAL_MONEY)
+                              FROM PRM_RECEIPTS R
+                             WHERE R.STATE IN ('2','4','8')
+                               AND R.PRM_PROJECT_MAIN_ID = M.UUID) AS XMSK, --项目收款,
+                           (SELECT SUM(E.SQUARE_PROJECT_MONEY)
+                              FROM PRM_FINAL_ESTIMATE E
+                             WHERE E.STATE = '2'
+                               AND E.PRM_PROJECT_MAIN_ID = M.UUID) AS XMJS, --项目结算,
+                           M.PROJECT_MONEY AS XMYXR --项目运行额
+                      FROM PRM_PROJECT_MAIN M
+                    ) M ON T.PROJECT_ID = M.UUID
+        ----------------------------------------------------------------------左联项目信息表，为取项目代号和项目名称
+          LEFT JOIN SCDP_ORG O ON T.OFFICE_ID = O.ORG_CODE
+        ----------------------------------------------------------------------左联组织表，为取组织名称
+          LEFT JOIN (SELECT SCM_CONTRACT_ID,
+                           SUM(INVOICE_SCM_VALUE) AS FAD_INVOICE_MONEY, --采购发票入账金额
+                           SUM(INVOICE_SCM_VALUE_I) AS FAD_INVOICE_MONEY_I, --采购发票录入金额
+                           SUM(INVOICE_SCM_VALUE_PAID) AS FAD_INVOICE_MONEY_PAID, --采购发票直接金额
+                           SUM(INVOICE_SCM_VALUE_REAL_PAID) AS INVOICE_SCM_VALUE_REAL_PAID, --采购发票实际支付金额
+                           SUM(INVOICE_SCM_VALUE_LOCKED) AS FAD_INVOICE_MONEY_LOCKED, --发票占用金额
+                           SUM(INVOICE_NEED_TO_PAY) AS INVOICE_NEED_TO_PAY --发票应付账款
+                      FROM VW_FAD_INVOICE_PUR
+                     GROUP BY SCM_CONTRACT_ID) FAD ON T.UUID =
+                                                      FAD.SCM_CONTRACT_ID
+        ----------------------------------------------------------------------以上左联采购合同发票数据视图，为取采购发票相关数据
+          LEFT JOIN (SELECT PURCHASE_CONTRACT_ID,
+                           SUM(DECODE(R.STATE, '4', R.MONEY, 0)) AS FAD_REQ_MONEY, --请款入账金额
+                           SUM(REQ_CLEARANCE_MONEY) AS REQ_CLEARANCE_MONEY --请款核销金额
+                    /*SUM(CASE
+                                                                                             WHEN R.STATE IN ('1', '2', '4', '8', '9') THEN
+                                                                                              R.MONEY
+                                                                                             ELSE
+                                                                                              0
+                                                                                           END) AS FAD_REQ_MONEY_L --请款占用金额*/
+                      FROM (SELECT R.*,
+                                   (SELECT SUM(FCRI.CLEARANCE_MONEY)
+                                      FROM FAD_CASH_REQ_INVOICE FCRI
+                                     WHERE FCRI.FAD_CASH_REQ_ID = R.UUID
+                                       AND ((FCRI.CLEARANCE_TYPE = 1 AND
+                                           EXISTS
+                                            (SELECT 1
+                                                FROM FAD_CASH_CLEARANCE FCC
+                                               WHERE FCC.UUID =
+                                                     FCRI.FAD_INVOICE_ID
+                                                 AND FCC.STATE = '4')) OR
+                                           (FCRI.CLEARANCE_TYPE = 0 AND
+                                           EXISTS
+                                            (SELECT 1
+                                                FROM FAD_INVOICE FI
+                                               WHERE FI.UUID =
+                                                     FCRI.FAD_INVOICE_ID
+                                                 AND FI.STATE = '4')))) AS REQ_CLEARANCE_MONEY
+                              FROM FAD_CASH_REQ R) R
+                     WHERE R.REQ_TYPE = '0'
+                       AND R.PURCHASE_CONTRACT_ID IS NOT NULL
+                       AND (R.IS_VOID = 0 OR R.IS_VOID IS NULL)
+                     GROUP BY R.PURCHASE_CONTRACT_ID) FAD_CASH ON T.UUID =
+                                                                  FAD_CASH.PURCHASE_CONTRACT_ID
+        ----------------------------------------------------------------------以上左联采购请款表，为取请款支付金额\请款核销金额\请款占用金额
+          LEFT JOIN (SELECT PURCHASE_CONTRACT_ID,
+                           SUM(FCRI.CLEARANCE_MONEY) AS CLEARANCE_MONEY --现金核销金额
+                      FROM FAD_CASH_REQ_INVOICE FCRI,
+                           FAD_CASH_REQ         FCR,
+                           FAD_CASH_CLEARANCE   FCC
+                     WHERE FCR.UUID = FCRI.FAD_CASH_REQ_ID
+                       AND FCC.UUID = FCRI.FAD_INVOICE_ID
+                       AND FCRI.CLEARANCE_TYPE = '1'
+                       AND FCC.STATE = '4'
+                       AND FCR.REQ_TYPE = '0'
+                       AND FCR.PURCHASE_CONTRACT_ID IS NOT NULL
+                       AND (FCR.IS_VOID = 0 OR FCR.IS_VOID IS NULL)
+                     GROUP BY FCR.PURCHASE_CONTRACT_ID) CASH_CLEARANCE ON T.UUID =
+                                                                          CASH_CLEARANCE.PURCHASE_CONTRACT_ID
+        ----------------------------------------------------------------------以上左联现金核销表，为取采购合同相关的请款现金核销数据
+          LEFT JOIN (SELECT FPRC.SCM_CONTRACT_ID,
+                           SUM(DECODE(FPRC.STATE,
+                                      '4',
+                                      FPRC.ACCOUNTS_PAYABLE,
+                                      0)) AS FAD_PAY_REQ_PAYABLE_MONEY, --支付实付金额
+                           SUM(CASE
+                                 WHEN FDRH.STATE IN ('1', '2', '6', '8', '9') AND
+                                      FPRC.STATE IN ('1', '2', '4', '8', '9') THEN
+                                  FPRC.ACCOUNTS_PAYABLE
+                                 ELSE
+                                  0
+                               END) AS FAD_PAY_REQ_PAYABLE_MONEY_L --支付占用金额
+                      FROM FAD_PAY_REQ_C FPRC, FAD_PAY_REQ_H FDRH
+                     WHERE FDRH.UUID = FPRC.PUUID
+                       AND (FPRC.IS_VOID = 0 OR FPRC.IS_VOID IS NULL)
+                       AND (FDRH.IS_VOID = 0 OR FDRH.IS_VOID IS NULL)
+                       AND FPRC.SCM_CONTRACT_ID IS NOT NULL
+                     GROUP BY FPRC.SCM_CONTRACT_ID) FAD_PAY ON T.UUID =
+                                                               FAD_PAY.SCM_CONTRACT_ID
+        ----------------------------------------------------------------------以上左联支付名称表，为取已支付金额和支付占用金额
+          LEFT JOIN (SELECT D.SCM_CONTRACT_ID,
+                           SUM(ROUND(D.UNIT_PRICE_TRUE * R. AMOUNT, 2)) AS CHECKED_MONEY --合同到货确认金额
+                      FROM SCM_CONTRACT_DETAIL D, PRM_GOODS_ARRIVAL R
+                     WHERE R.SCM_CONTRACT_DETAIL_ID = D.UUID
+                       AND (R.IS_VOID = 0 OR R.IS_VOID IS NULL)
+                       AND (D.IS_VOID = 0 OR D.IS_VOID IS NULL)
+                     GROUP BY D.SCM_CONTRACT_ID) RECEIPT ON T.UUID =
+                                                            RECEIPT.SCM_CONTRACT_ID
+        ----------------------------------------------------------------------以上左联到货确认表，为取合同到货确认金
+          LEFT JOIN (SELECT DISTINCT T.SCM_SUPPLIER_ID
+                      FROM PRM_BLACKLIST_MONTH T
+                     WHERE SYSDATE BETWEEN T.MONTH_FROM AND T.MONTH_TO) BLACK ON T.SUPPLIER_CODE =
+                                                                                 BLACK.SCM_SUPPLIER_ID) SC
+-----------                                                                        
+  LEFT JOIN (SELECT *
+               FROM (SELECT SCC.SCM_CONTRACT_ID,
+                            SCC.ORIGINAL_VALUE,
+                            ROW_NUMBER() OVER(PARTITION BY SCM_CONTRACT_ID ORDER BY SCC.CREATE_TIME ASC) AS ROW_NUMBER
+                       FROM SCM_CONTRACT_CHANGE SCC
+                      ORDER BY SCC.CREATE_TIME DESC) T
+              WHERE ROW_NUMBER = 1) OL ON SC.UUID = OL.SCM_CONTRACT_ID 
+              ORDER BY SC.CREATE_TIME DESC )T]]></Query>
+</TableData>
+</TableDataMap>
+<ReportWebAttr>
+<ServerPrinter/>
+<WebPageContent>
+<ToolBars/>
+<WebPage isPage="true" isShowAsImage="false" isAutoScale="false" isTDHeavy="false"/>
+</WebPageContent>
+</ReportWebAttr>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1562100,1028700,1152000,1152000,1152000,1152000,1152000,1152000,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[7200000,7200000,7200000,7200000,6210300,3543300,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,3600000,2016000,2016000,2016000,0,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" cs="4" s="0">
+<O>
+<![CDATA[采购合同总览表]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" cs="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ContractDs" columnName="合同编号"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA["合同编号："+$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="1">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="1" s="2">
+<O>
+<![CDATA[金额单位：元]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="2" s="3">
+<O>
+<![CDATA[合同初始金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="2" s="3">
+<O>
+<![CDATA[发票录入金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="2" s="3">
+<O>
+<![CDATA[发票核准金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="2" s="3">
+<O>
+<![CDATA[未报账金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="3" s="4">
+<O t="DSColumn">
+<Attributes dsName="ContractDs" columnName="合同初额"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="3" s="4">
+<O t="DSColumn">
+<Attributes dsName="ContractDs" columnName="发票录入金额"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="3" s="4">
+<O t="DSColumn">
+<Attributes dsName="ContractDs" columnName="发票核准金额"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="3" s="4">
+<O t="DSColumn">
+<Attributes dsName="ContractDs" columnName="未报账金额"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="4" s="3">
+<O>
+<![CDATA[请款金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="4" s="3">
+<O>
+<![CDATA[请款核销金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="4" s="3">
+<O>
+<![CDATA[收款比例]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="4" s="3">
+<O>
+<![CDATA[结题比例]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="5" s="4">
+<O t="DSColumn">
+<Attributes dsName="ContractDs" columnName="请款入账金额"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="5" s="4">
+<O t="DSColumn">
+<Attributes dsName="ContractDs" columnName="请款核销金额"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="5" s="5">
+<O t="DSColumn">
+<Attributes dsName="ContractDs" columnName="收款比例"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="5" s="5">
+<O t="DSColumn">
+<Attributes dsName="ContractDs" columnName="结题比例"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="0" r="6" s="3">
+<O>
+<![CDATA[到货确认金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="6" s="3">
+<O>
+<![CDATA[支付金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="6" s="3">
+<O>
+<![CDATA[合同未付金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="6" s="3">
+<O>
+<![CDATA[合同应付账款]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="7" s="4">
+<O t="DSColumn">
+<Attributes dsName="ContractDs" columnName="到货确认金额"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="7" s="4">
+<O t="DSColumn">
+<Attributes dsName="ContractDs" columnName="支付金额"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="7" s="4">
+<O t="DSColumn">
+<Attributes dsName="ContractDs" columnName="合同未付金额"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="7" s="4">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=C4 - B8]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting>
+<PaperSize width="30240000" height="11520000"/>
+<Margin top="144000" left="144000" bottom="144000" right="144000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="楷体" style="1" size="144"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="2" imageLayout="1">
+<FRFont name="楷体" style="1" size="104"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<FRFont name="楷体" style="1" size="104"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="楷体" style="1" size="104"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="楷体" style="0" size="104"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.00%]]></Format>
+<FRFont name="楷体" style="0" size="104"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

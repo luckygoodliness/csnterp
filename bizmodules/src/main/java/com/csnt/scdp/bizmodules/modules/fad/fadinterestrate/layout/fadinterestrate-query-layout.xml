@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>fadinterestrate-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JDate pos="A1:A1"  cid="validityDateFrom"  fieldLabel_s="有效起始时间" field="validity_date_from"/>
+        <JDate pos="B1:B1"  cid="validityDateTo" fieldLabel_s="有效结束时间" field="validity_date_to"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="rateName" dataIndex="rateName" width_n="120"/>
+        <JCurCol text_s="rate" dataIndex="rate"  width_n="100"/>
+        <JCurCol text_s="depositRate" dataIndex="depositRate"  width_n="100"/>
+        <JDateCol text_s="validityDateFrom" dataIndex="validityDateFrom" width_n="150"/>
+        <JDateCol text_s="validityDateTo" dataIndex="validityDateTo" width_n="150"/>
+    </results>
+</commonquery>

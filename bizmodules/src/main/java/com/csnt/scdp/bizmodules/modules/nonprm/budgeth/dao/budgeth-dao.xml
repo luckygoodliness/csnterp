@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select * from non_project_budget_h where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+
+    <common_query_single2>
+        <common>
+            <![CDATA[
+                       select bh.uuid,
+                       bh.year,
+                       bh.state,
+                       bh.office_id,
+                       bh.budget_type,
+                       bh.budget_total,
+                       bh.company_code,
+                       bh.company_name,
+                       bh.department_code,
+                       bh.create_time,
+                       bh.update_by,
+                       bh.update_time,
+                       bh.is_void,
+                       bh.loc_timezone,
+                       bh.tbl_version,
+                       o.org_name,
+                       u.user_name,
+                       c.code_desc
+                  from non_project_budget_h bh
+                  left join scdp_org o
+                    on bh.office_id = o.org_code
+                  left join scdp_user u
+                    on u.user_id = bh.create_by
+                  LEFT JOIN scdp_code c
+                    ON c.sys_code=bh.state AND  c.code_type='FAD_BILL_STATE'
+                  where bh.state='2' and ${conditions}]]>
+        </common>
+    </common_query_single2>
+</DAO>

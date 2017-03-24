@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>nonprmpurchasereq-dao</daotype>
+        <daokey>common_query</daokey>
+
+    </querysql>
+    <defaultSort>CREATE_TIME DESC</defaultSort>
+    <conditions columns="4">
+        <JHidden cid="departmentCode1Desc"/>
+        <JText pos="A1:A1" fieldLabel_s="purchaseReqNo" cid="purchaseReqNoQ"/>
+        <JErpDepartMent pos="B1:B1" fieldLabel_s="departmentCode" cid="departmentCode1" allowBlank_b="true"
+                      field="org_uuid" labelWidth_n="100"/>
+
+        <JNonprmbudgetGrid2 pos="C1:C1" cid="subjectCode1" fieldLabel_s="subjectCode"
+                           refer_j='[{"refField":"subjectUuid","valueField":"uuid"},
+                                       ]' filterFields="departmentCode1|officeId"/>
+
+        <JHidden cid="subjectUuid"/>
+        <!--<JHidden cid="hidNeedFlg" value="0"/>-->
+        <JText pos="D1:D1" cid="subjectName" fieldLabel_s="subjectName" allowBlank_b="true" />
+
+        <JCombo pos="A2:A2" cid="state" fieldLabel_s="state" comboType="scdp_fmcode"
+                codeType="CDM_BILL_STATE" displayDesc_b="true" />
+
+        <!--<JText pos="C2:C2" fieldLabel_s="createBy" cid="createBy" field="create_by"/>-->
+        <!--<JText pos="D2:D2" fieldLabel_s="updateBy" cid="updateby" field="update_by"/>-->
+        <!--<JFromTo pos="A3:B3" subXtype="JDatetime" fieldLabel_s="createTime" cid="createTime" field="create_time"/>-->
+        <!--<JFromTo pos="C3:D3" subXtype="JDatetime" fieldLabel_s="updateTime" cid="updateTime" field="update_time"/>-->
+    </conditions>
+    <results resultGridConfig="{'autoResizeColumn':false}">
+        <!--<JTextCol text_s="prmProjectMainId" dataIndex="prmProjectMainId" width_n="120"/>-->
+        <JTextCol text_s="purchaseReqNo" dataIndex="purchaseReqNo" width_n="150"/>
+        <!--<JTextCol text_s="financialSubject" dataIndex="financialSubject" width_n="120"/>-->
+        <!--<JTextCol text_s="financialSubjectCode" dataIndex="financialSubjectCode" width_n="120"/>-->
+        <!--<JTextCol text_s="subjectLevel" dataIndex="subjectLevel" width_n="120"/>-->
+        <!--<JTextCol text_s="state" dataIndex="state" width_n="120"/>-->
+        <JHidden text_s="state" dataIndex="state" />
+        <JTextCol text_s="stateNm" dataIndex="stateNm" width_n="80"/>
+        <!--<JTextCol text_s="remark" dataIndex="remark" width_n="120"/>-->
+        <!--<JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120"/>-->
+        <!--<JTextCol text_s="projectId" dataIndex="projectId" width_n="120"/>-->
+        <!--<JTextCol text_s="projectName" dataIndex="projectName" width_n="120"/>-->
+        <!--<JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120"/>-->
+        <JTextCol text_s="financialSubjectCode" dataIndex="financialSubjectCode" width_n="120"/>
+        <JTextCol text_s="financialSubject" dataIndex="financialSubject" width_n="120"/>
+        <JTextCol text_s="purchaseLevelName" dataIndex="purchaseLevelName" width_n="80" align="center"/>
+        <JTextCol text_s="sname" dataIndex="sname" width_n="200"/>
+        <JCurCol text_s="totalExpectedPrice" dataIndex="totalExpectedPrice" width_n="100" align="right"/>
+        <!--<JComboCol text_s="purchaseLevel" dataIndex="purchaseLevel" width_n="80">-->
+            <!--<JCombo comboType="scdp_fmcode"-->
+                    <!--codeType="PRM_PURCHASE_LEVEL" displayDesc_b="true" fullInfo_b="false"-->
+                    <!--multiSelect_b="false"/>-->
+        <!--</JComboCol>-->
+        <JTextCol text_s="orgName" dataIndex="orgName" width_n="100"/>
+        <JTextCol text_s="createBy" dataIndex="userName" width_n="80"/>
+        <JTextCol text_s="principal" dataIndex="principal" width_n="80"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="130"/>
+    </results>
+</commonquery>

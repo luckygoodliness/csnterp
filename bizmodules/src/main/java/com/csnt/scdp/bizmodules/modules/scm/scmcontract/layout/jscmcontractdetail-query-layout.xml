@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <commonquery version="1.0">
+        <querysql>
+            <daotype>scmcontract-dao</daotype>
+            <daokey>jscmcontractdetail_query</daokey>
+        </querysql>
+        <defaultSort>create_time desc</defaultSort>
+        <conditions columns="4">
+            <!--<JText pos="C2:C2" fieldLabel_s="createBy" cid="createBy" field="create_by"/>-->
+            <!--<JText pos="D2:D2" fieldLabel_s="updateBy" cid="updateby" field="update_by"/>-->
+            <!--<JFromTo pos="A3:B3" subXtype="JDatetime" fieldLabel_s="createTime" cid="createTime" field="create_time"/>-->
+            <!--<JFromTo pos="C3:D3" subXtype="JDatetime" fieldLabel_s="updateTime" cid="updateTime" field="update_time"/>-->
+            <JText pos="A1:A1" fieldLabel_s="scmContractId" cid="scmContractId" field="scm_contract_id"/>
+            <JText pos="B1:B1" fieldLabel_s="projectId" cid="projectId" field="project_Id"/>
+            <JText pos="C1:C1" fieldLabel_s="departmentCode" cid="departmentCode" field="department_Code"/>
+        </conditions>
+        <results>
+            <JTextCol text_s="scmContractId" dataIndex="scmContractId" width_n="120"/>
+            <JTextCol text_s="materialName" dataIndex="materialName" width_n="120"/>
+            <JTextCol text_s="model" dataIndex="model" width_n="120"/>
+            <JDecCol text_s="units" dataIndex="units" width_n="150"/>
+            <JDecCol text_s="数量" dataIndex="amount" width_n="150"/>
+            <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+            <JTextCol text_s="到货数量" dataIndex="amount" width_n="120">
+                <JText fieldLabel_s="amount"/>
+             </JTextCol>
+            <JDateCol text_s="arriveDate" dataIndex="arriveDate" width_n="150">
+                <JDate cid="arriveDate" fieldLabel_s="arriveDate" allowBlank_b="true" allowEdit_b="true" adaptable_b="true" readOnly_b="false"/>
+            </JDateCol>
+        </results>
+    </commonquery>

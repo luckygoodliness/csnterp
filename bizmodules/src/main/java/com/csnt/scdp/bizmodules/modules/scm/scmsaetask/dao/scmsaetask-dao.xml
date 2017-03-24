@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[SELECT SST.*,
+       (SELECT CODE_DESC
+          FROM SCDP_CODE SC
+         WHERE SC.CODE_TYPE = 'CDM_YEAR'
+           AND SC.SYS_CODE = SST.CUR_YEAR) AS CUR_YEAR_NAME,
+       (SELECT CODE_DESC
+          FROM SCDP_CODE SC
+         WHERE SC.CODE_TYPE = 'SCM_SAE_CASE_TYPE'
+           AND SC.SYS_CODE = SST.MATERIAL_TYPE) AS MATERIAL_TYPE_NAME,
+       (SELECT CODE_DESC
+          FROM SCDP_CODE SC
+         WHERE SC.CODE_TYPE = 'SCM_SAE_CASE_STATE'
+           AND SC.SYS_CODE = SST.STATE) AS STATE_NAME,
+       (SELECT SU.USER_NAME
+          FROM SCDP_USER SU
+         WHERE SU.USER_ID = SST.CREATE_BY) AS CREATE_BY_NAME,
+       SU1.USER_NAME AS USER_CODE_NAME,
+       SO.ORG_NAME AS USER_DEPARTMENT
+  FROM SCM_SAE_TASK SST
+  LEFT JOIN SCDP_USER SU1 ON SST.USER_CODE = SU1.USER_ID
+  LEFT JOIN SCDP_ORG SO ON SU1.ORG_UUID = SO.UUID
+ where ${conditions} and ${selfconditions}]]>
+        </common>
+    </common_query>
+</DAO>

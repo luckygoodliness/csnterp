@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>budget-dao</daotype>
+        <daokey>common_grid_query_budgetc</daokey>
+    </querysql>
+    <defaultSort>financial_subject_code desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="B2:B2" fieldLabel_s="budgetOfficeId" cid="budgetOfficeId" field="office_id"/>
+        <JText pos="C2:C2" fieldLabel_s="financialSubjectCode" cid="financialSubjectCode" field="financial_subject_code"/>
+        <JText pos="D2:D2" fieldLabel_s="financialSubject" cid="financialSubject" field="financial_subject"/>
+    </conditions>
+    <quickquery>
+        <QueryCids>financialSubjectCode</QueryCids>
+        <ForceQueryCids></ForceQueryCids>
+    </quickquery>
+    <results>
+        <JTextCol text_s="year" dataIndex="year" width_n="120"/>
+        <JTextCol text_s="费用科目" dataIndex="financialSubjectCode" width_n="120"/>
+        <JTextCol text_s="费用内容" dataIndex="financialSubject" width_n="120"/>
+        <JTextCol text_s="当年下达" dataIndex="thisYearAssigned" width_n="120"/>
+        <JTextCol text_s="当年发生" dataIndex="thisYearOccured" width_n="120"/>
+        <JTextCol text_s="当年调整" dataIndex="thisYearChanged" width_n="150"/>
+    </results>
+</commonquery>

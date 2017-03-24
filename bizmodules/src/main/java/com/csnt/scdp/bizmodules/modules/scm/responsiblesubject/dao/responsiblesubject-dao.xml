@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[
+            SELECT (SELECT A.USER_NAME FROM SCDP_USER A WHERE A.USER_ID = T.PRINCIPAL) AS PRINCIPAL_NAME,
+            (SELECT SUBJECT_NAME
+          FROM FAD_BASE_SUBJECT A
+         WHERE A.UUID = T.SUBJECT_CODE) AS SUBJECT_CODE_NAME,
+                    T.*
+			FROM scm_responsible_subject T where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+</DAO>

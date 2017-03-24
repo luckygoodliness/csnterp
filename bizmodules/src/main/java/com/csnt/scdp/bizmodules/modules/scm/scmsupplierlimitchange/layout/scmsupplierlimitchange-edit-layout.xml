@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+<JForm pos="A1:A1" cid="scmSupplierLimitChangeDto" row="23*2,flex" col="0.25*4" title_s="" border_n="1">
+    <JHidden cid="uuid"/>
+    <JHidden cid="tblVersion"/>
+    <JCombo pos="A1:A1" cid="year" fieldLabel_s="year" displayDesc_b="true" comboType="scdp_fmcode"
+            codeType="CDM_YEAR" allowBlank_b="false" labelWidth_n="100" />
+    <JCombo pos="B1:B1" cid="state" fieldLabel_s="state"
+            comboType="scdp_fmcode" codeType="FAD_BILL_STATE" displayDesc_b="true" allowBlank_b="true"
+            readOnly_b="true" adaptable_b="false"/>
+    <JText pos="A2:B2" cid="title" fieldLabel_s="title" allowBlank_b="true"/>
+    <JTextArea pos="C1:D2" cid="remark" fieldLabel_s="remark" allowBlank_b="true"/>
+    <JFieldSet pos="A3:B3" title_s="额度明细" col="flex" row="flex" border_n="1">
+        <JEGrid pos="A1:A1" cid="scmSupplierLimitChangeDDto" store="Scmsupplierlimitchange.store.ScmSupplierLimitChangeDStore"
+                toolbarAtBottom_b="false" withSelMode_b="true" sortableColumns_b="true"
+                withSearchBar_b="true" searchFieldTips="供应商" searchFilterCids="scmSupplierName" needFilter_b="true">
+            <JHidden text_s="uuid" dataIndex="uuid" width_n="120">
+            </JHidden>
+            <JHidden text_s="scmSupplierId" dataIndex="scmSupplierId" width_n="120">
+            </JHidden>
+            <JTextCol text_s="scmSupplierName" dataIndex="scmSupplierName" width_n="150">
+            </JTextCol>
+            <JTextCol text_s="supplierType" dataIndex="supplierType" width_n="120">
+            </JTextCol>
+            <JIntCol text_s="curVolume" dataIndex="curVolume" width_n="120">
+            </JIntCol>
+            <JCurCol text_s="curAmount" dataIndex="curAmount" width_n="120">
+            </JCurCol>
+            <JIntCol text_s="maxVolume" dataIndex="maxVolume" width_n="120">
+                <JDec allowBlank_b="true"/>
+            </JIntCol>
+            <JCurCol text_s="maxAmount" dataIndex="maxAmount" width_n="120">
+                <JDec allowBlank_b="true"/>
+            </JCurCol>
+            <JTextCol text_s="remark" dataIndex="remark" width_n="150">
+                <JText allowBlank_b="true"/>
+            </JTextCol>
+        </JEGrid>
+    </JFieldSet>
+    <JFieldSet pos="C3:D3" title_s="合同明细" col="flex" row="flex" border_n="1">
+        <JEGrid pos="A1:A1" cid="scmContractDto" store="Scmsupplierlimitchange.store.ScmContractStore"
+                withToolbar_b="false" bcid="scmSupplierLimitChangeDDto.bind">
+            <JHidden text_s="uuid" dataIndex="uuid" width_n="120"/>
+            <JTextCol text_s="scmContractCode" dataIndex="scmContractCode" width_n="100"/>
+            <JTextCol text_s="fadSubjectCode" dataIndex="projectCode" width_n="100"/>
+            <JTextCol text_s="projectName" dataIndex="projectName" width_n="180"/>
+            <JTextCol text_s="supplierName" dataIndex="supplierName" width_n="150"/>
+            <JCurCol text_s="firstAmount" dataIndex="firstAmount" width_n="120"/>
+            <JCurCol text_s="lastAmount" dataIndex="amount" width_n="120"/>
+            <JCurCol text_s="totalValue" dataIndex="totalValue" width_n="100"/>
+            <JTextCol text_s="contractStateCombo" dataIndex="contractStateCombo" width_n="90"/>
+            <JTextCol text_s="operatorName" dataIndex="operatorName" width_n="60"/>
+            <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="130"/>
+            <JDatetimeCol text_s="effectiveDate" dataIndex="effectiveDate" width_n="130"/>
+            <JTextCol text_s="isClosed" dataIndex="isClosedCombo" width_n="80"/>
+            <!--<JTextCol text_s="state" dataIndex="stateCombo" width_n="120"/>-->
+            <JTextCol text_s="allName" dataIndex="allName" width_n="300"/>
+            <JTextCol text_s="officeId" dataIndex="officeIdName" width_n="100"/>
+        </JEGrid>
+    </JFieldSet>
+</JForm>
+</view>

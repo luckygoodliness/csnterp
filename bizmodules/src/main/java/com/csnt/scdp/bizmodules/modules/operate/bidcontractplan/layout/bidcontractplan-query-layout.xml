@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>bidcontractplan-dao</daotype>
+        <daokey>common_jquery</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4" defaultExpand="true">
+        <JHidden cid="projectType" field="project_type"/>
+        <JText pos="A1:A1" fieldLabel_s="contractName" cid="contractName" field="contract_name"/>
+        <JText pos="B1:B1" fieldLabel_s="customerId" cid="customerId" field="contract_name"/>
+
+        <JHidden cid="contractorOfficeDesc"/>
+        <JErpDepartMent pos="C1:C1" fieldLabel_s="contractorOffice" cid="contractorOffice"
+                        field="contractor_office" editable_b="true"
+                        allowBlank_b="true"/>
+        <JHidden cid="countryCode"/>
+        <JCombo pos="D1:D1" cid="buildRegion" fieldLabel_s="buildRegion" allowBlank_b="true" comboType="fm_gis_state"
+                displayDesc_b="true" fullInfo_b="true" filterFields="countryCode|countryCode" field="build_region"/>
+    </conditions>
+    <results resultGridConfig="{'autoResizeColumn':false}">
+
+        <JTextCol text_s="contractName" dataIndex="contractName" width_n="180"/>
+        <JTextCol text_s="designerId" dataIndex="designerId" width_n="180"/>
+        <JTextCol text_s="managementId" dataIndex="managementId" width_n="180"/>
+
+        <JTextCol text_s="contractorOffice" dataIndex="contractorOfficeName" width_n="120"/>
+        <JCurCol text_s="contractSignMoney" dataIndex="contractSignMoney" width_n="120"/>
+        <JDateCol text_s="contractSignDate" dataIndex="contractSignDate" width_n="100"/>
+
+        <JTextCol text_s="buildRegion" dataIndex="stateDesc" width_n="80"/>
+        <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="120"/>
+        <JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>
+        <JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="120"/>
+    </results>
+</commonquery>

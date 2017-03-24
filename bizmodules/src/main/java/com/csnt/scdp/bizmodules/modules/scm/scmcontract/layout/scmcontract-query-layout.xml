@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>scmcontract-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>nvl(effective_date,create_time+1/3) desc,scm_contract_code desc</defaultSort>
+    <conditions columns="4">
+        <JHidden cid="officeId_queryDesc"/>
+        <JHidden cid="operatorIdDesc"/>
+        <JText pos="A1:A1" fieldLabel_s="scmContractCode" cid="scmContractCode" field="scm_Contract_Code"/>
+        <JText pos="B1:B1" fieldLabel_s="fadSubjectCode" cid="fadSubjectCode"/>
+        <JErpDepartMent pos="C1:C1" fieldLabel_s="officeId" cid="officeId_query"
+                        multiSelect="true" field="office_id"/>
+        <JProject pos="D1:D1" fieldLabel_s="projectId" cid="projectId_query"
+                  refer_j='[{"refField":"projectId","valueField":"uuid"}]'/>
+        <JHidden cid="projectId" field="project_id"/>
+        <JCombo pos="A2:A2" fieldLabel_s="contractState" allowBlank_b="true" cid="contractType_query"
+                comboType="scdp_fmcode"
+                codeType="SCM_CONTRACT_STATE" displayDesc_b="true" multiSelect_b="true" field="contract_state"/>
+        <JCombo pos="B2:B2" fieldLabel_s="contractNature" allowBlank_b="true" cid="contract_nature_query"
+                comboType="scdp_fmcode"
+                codeType="SCM_CONTRACT_NATURE" displayDesc_b="true" multiSelect_b="true" field="contract_nature"/>
+        <JCombo pos="C2:C2" cid="isVirtual" fieldLabel_s="isVirtual" allowBlank_b="true"
+                comboType="scdp_fmcode"
+                codeType="CDM_YES_OR_NO" displayDesc_b="true" field="is_virtual"/>
+        <JCombo pos="D2:D2" cid="isClosed" fieldLabel_s="isClosed" allowBlank_b="true"
+                comboType="scdp_fmcode"
+                codeType="SCM_CONTRACT_CLOSE_STATE" displayDesc_b="true" field="is_closed"/>
+        <JUserGrid pos="A3:A3" fieldLabel_s="operatorName" cid="operatorId" field="operator_Id" descField_s="userName" valueField_s="userId"
+                   refer_j='[{"refField":"operatorIdDesc","valueField":"userName"}]'/>
+        <JSupplierGrid pos="B3:B3" fieldLabel_s="supplierName" cid="supplierName_query"
+                       refer_j='[{"refField":"supplierCode","valueField":"uuid"}]'/>
+        <JHidden cid="supplierCode" field="supplier_code"/>
+        <JCombo pos="C3:C3" cid="purchaseTypes" fieldLabel_s="purchaseTypes" allowBlank_b="true"
+                comboType="scdp_fmcode"
+                codeType="SCM_PURCHASE_TYPE" displayDesc_b="true" field="purchase_Types"/>
+        <JCombo pos="D3:D3" cid="contractPayType" fieldLabel_s="contractPayType" allowBlank_b="true"
+                comboType="scdp_fmcode"
+                codeType="SCM_CONTRACT_PAY_TYPE" displayDesc_b="true" field="contract_Pay_Type"/>
+        <JCombo pos="A4:A4" cid="supplierGenre" fieldLabel_s="supplierGenre" allowBlank_b="true"
+                comboType="scdp_fmcode"
+                codeType="SCM_SUPPLIER_GENRE" displayDesc_b="true" field="SS.supplier_Genre"/>
+        <JText pos="B4:B4" fieldLabel_s="purchaseReqNo" cid="purchaseReqNo" field="purchase_req_no"/>
+        <JFromTo pos="C4:D4" subXtype="JDate" fieldLabel_s="effectiveDate" cid="effectiveDate"
+                 field="effective_date"/>
+    </conditions>
+    <results resultGridConfig="{'autoResizeColumn':false,'withSearchBar':true,
+    'searchFieldTips':'合同编号,项目,供应商,内容',
+    'searchFilterCids':'scmContractCode,projectCode,projectName,supplierName,allName','needFilter':true}">
+        <JTextCol text_s="scmContractCode" dataIndex="scmContractCode" width_n="100"/>
+        <JTextCol text_s="fadSubjectCode" dataIndex="projectCode" width_n="100"/>
+        <JTextCol text_s="projectName" dataIndex="projectName" width_n="180"/>
+        <JTextCol text_s="supplierName" dataIndex="supplierName" width_n="150"/>
+        <JCurCol text_s="firstAmount" dataIndex="firstAmount" width_n="120"/>
+        <JCurCol text_s="lastAmount" dataIndex="amount" width_n="120"/>
+        <!--<JCurCol text_s="totalValue" dataIndex="totalValue" width_n="100"/>-->
+        <JCurCol text_s="totalValue" dataIndex="nvlTotalValue" width_n="100"/>
+        <JTextCol text_s="contractState" dataIndex="contractStateCombo" width_n="90"/>
+        <JTextCol text_s="operatorName" dataIndex="operatorName" width_n="60"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="130"/>
+        <JDatetimeCol text_s="effectiveDate" dataIndex="effectiveDate" width_n="130"/>
+        <JTextCol text_s="isClosed" dataIndex="isClosedCombo" width_n="80"/>
+        <!--<JTextCol text_s="state" dataIndex="stateCombo" width_n="120"/>-->
+        <!--<JTextCol text_s="contractNature" dataIndex="contractNatureCombo" width_n="120"/>-->
+        <JTextCol text_s="purchaseTypes" dataIndex="purchaseTypesCombo" width_n="80"/>
+        <JTextCol text_s="contractPayType" dataIndex="contractPayTypeCombo" width_n="100"/>
+        <JTextCol text_s="supplierGenre" dataIndex="supplierGenreName" width_n="80"/>
+        <JTextCol text_s="purchaseReqNo" dataIndex="purchaseReqNo" width_n="150"/>
+        <JTextCol text_s="allName" dataIndex="allName" width_n="300"/>
+        <JTextCol text_s="officeId" dataIndex="officeIdName" width_n="100"/>
+
+        <!--<JTextCol text_s="contractState" dataIndex="contractStateCombo" width_n="120"/>-->
+        <!--<JHidden dataIndex="contractState"/>-->
+        <!--<JIntCol text_s="quantity" dataIndex="quantity" width_n="150"/>-->
+        <!--<JTextCol text_s="otherDes" dataIndex="otherDes" width_n="300"/>-->
+        <!--<JTextCol text_s="debter" dataIndex="debterName" width_n="120"/>-->
+        <!--<JTextCol text_s="debterDepartment" dataIndex="debterDepartmentName" width_n="120"/>-->
+        <!--<JTextCol text_s="bank" dataIndex="bank" width_n="120"/>-->
+        <!--<JTextCol text_s="bankId" dataIndex="bankId" width_n="120"/>-->
+        <!--<JDecCol text_s="totalValue" dataIndex="totalValue" width_n="150"/>-->
+        <!--<JTextCol text_s="payType" dataIndex="payTypeCombo" width_n="120"/>-->
+        <!--<JTextCol text_s="isUrgent" dataIndex="isUrgentCombo" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="debtDate" dataIndex="debtDate" width_n="150"/>-->
+        <!--<JDatetimeCol text_s="stampDate" dataIndex="stampDate" width_n="150"/>-->
+        <!--<JTextCol text_s="isVirtual" dataIndex="isVirtualCombo" width_n="120"/>-->
+        <!--<JDecCol text_s="paid" dataIndex="paid" width_n="150"/>-->
+        <!--<JDecCol text_s="invoiceAmount" dataIndex="invoiceAmount" width_n="150"/>-->
+        <!--<JTextCol text_s="remark" dataIndex="remark" width_n="300"/>-->
+        <!--<JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120"/>-->
+        <!--<JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>-->
+        <!--<JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>-->
+    </results>
+</commonquery>

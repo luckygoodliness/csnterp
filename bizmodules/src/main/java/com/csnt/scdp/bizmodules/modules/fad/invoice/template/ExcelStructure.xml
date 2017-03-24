@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<excel>
+    <entity name="日常报销发票内容导入模板" code="FadInvoiceMaterial">
+        <column name="材料名称" code="materialName" type="String"/>
+        <column name="规格" code="model" type="String"/>
+        <column name="单位" code="units" type="String"/>
+        <column name="应收数量" code="receivableNum" type="BigDecimal"/>
+        <column name="实收数量" code="actualNum" type="BigDecimal"/>
+        <column name="单价" code="unitPrice" type="BigDecimal"/>
+        <column name="金额" code="amount" type="BigDecimal"/>
+    </entity>
+</excel>

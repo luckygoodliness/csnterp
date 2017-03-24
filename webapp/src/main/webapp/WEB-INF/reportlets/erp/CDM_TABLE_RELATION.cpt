@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20141222" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="ds1" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="table_name"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT DISTINCT L.COLUMN_UUID_L,
+                L.TABLE_COMMENTS,
+                L.COLUMN_UUID,
+                L.COLUMN_COMMENTS,
+                R.COLUMN_UUID_R
+  FROM (SELECT DECODE(MAX(RL.PUUID),
+                      NULL,
+                      NULL,
+                      REPLACE(REPLACE(TO_CHAR(WM_CONCAT(RL.PUUID || '(' ||
+                                                        TDL.COLUMN_COMMENTS || ')@')),
+                                      '@,',
+                                      chr(13) || chr(10)),
+                              '@'))
+               AS COLUMN_UUID_L,
+               TD.TABLE_COMMENTS AS TABLE_COMMENTS,
+               TD.UUID AS COLUMN_UUID,
+               TD.COLUMN_COMMENTS AS COLUMN_COMMENTS
+          FROM VW_CDM_TABLE_DICT TD
+          LEFT JOIN CDM_TABLE_RELATION RL
+            ON TD.TABLE_NAME || '.' || TD.COLUMN_NAME = RL.UUID
+          LEFT JOIN VW_CDM_TABLE_DICT TDL
+            ON RL.PUUID = TDL.TABLE_NAME || '.' || TDL.COLUMN_NAME
+         WHERE TD.TABLE_NAME = '${table_name}'
+         GROUP BY TD.TABLE_COMMENTS, TD.UUID, TD.COLUMN_COMMENTS) L
+  JOIN (SELECT TD.TABLE_COMMENTS AS TABLE_COMMENTS,
+               TD.UUID AS COLUMN_UUID,
+               TD.COLUMN_COMMENTS AS COLUMN_COMMENTS,
+               DECODE(MAX(RR.UUID),
+                      NULL,
+                      NULL,
+                      REPLACE(REPLACE(TO_CHAR(WM_CONCAT(RR.UUID || '(' ||
+                                                        TDR.COLUMN_COMMENTS || ')@')),
+                                      '@,',
+                                      chr(13) || chr(10)),
+                              '@'))
+               AS COLUMN_UUID_R
+          FROM VW_CDM_TABLE_DICT TD
+          LEFT JOIN CDM_TABLE_RELATION RR
+            ON TD.TABLE_NAME || '.' || TD.COLUMN_NAME = RR.PUUID
+          LEFT JOIN VW_CDM_TABLE_DICT TDR
+            ON RR.UUID = TDR.TABLE_NAME || '.' || TDR.COLUMN_NAME
+         WHERE TD.TABLE_NAME = '${table_name}'
+         GROUP BY TD.TABLE_COMMENTS, TD.UUID, TD.COLUMN_COMMENTS) R
+    ON L.COLUMN_UUID = R.COLUMN_UUID
+ ORDER BY L.COLUMN_UUID, L.COLUMN_UUID_L, R.COLUMN_UUID_R
+]]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[12877800,5257800,9296400,5372100,14400000,2743200,2743200,2743200,2743200,2743200,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" s="0">
+<O>
+<![CDATA[来源]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" s="1">
+<O>
+<![CDATA[表名]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="1" s="1">
+<O>
+<![CDATA[字段名]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="1" s="1">
+<O>
+<![CDATA[字段描述]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="1" s="0">
+<O>
+<![CDATA[去向]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="COLUMN_UUID_L"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="2" s="1">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="TABLE_COMMENTS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="COLUMN_UUID"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<NameJavaScriptGroup>
+<NameJavaScript name="JavaScript2">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters>
+<Parameter>
+<Attributes name="column_uuid"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=C3]]></Attributes>
+</O>
+</Parameter>
+</Parameters>
+<Content>
+<![CDATA[parent.postMessage('CdmColRelation,'+column_uuid,'*');]]></Content>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<Expand/>
+</C>
+<C c="3" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="COLUMN_COMMENTS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="4" r="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="ds1" columnName="COLUMN_UUID_R"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings isHorizontalCenterOnPage="true" headerHeight="0" footerHeight="0">
+<PaperSetting>
+<PaperSize width="51840000" height="50400000"/>
+<Margin top="986400" left="288000" bottom="986400" right="288000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72" foreground="-16776961"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72" foreground="-16776961" underline="1"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72" foreground="-16776961"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="2"/>
+</WorkBook>

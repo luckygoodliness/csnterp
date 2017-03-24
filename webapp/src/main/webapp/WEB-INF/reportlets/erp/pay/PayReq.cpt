@@ -1,0 +1,650 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20141222" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="fad_pay_req_h" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="uuid"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT H.*,
+       DECODE(H.REQ_TYPE,
+              0,
+              '临时支付计划表',
+              H.YEAR || '年' || H.MONTH || '月支付计划表') AS TITLE
+  FROM FAD_PAY_REQ_H H
+where uuid='${uuid}']]></Query>
+</TableData>
+<TableData name="fad_pay_req_c" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="uuid"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT C.*,
+       SL.COMPLETE_NAME,
+       O.SHORT_CODE AS ORG_NAME,
+       P.PROJECT_CODE
+  FROM FAD_PAY_REQ_C C
+  LEFT JOIN SCM_CONTRACT S
+    ON C.SCM_CONTRACT_ID = S.UUID
+  LEFT JOIN SCDP_ORG O
+    ON S.OFFICE_ID = O.ORG_CODE
+  LEFT JOIN PRM_PROJECT_MAIN P
+    ON S.PROJECT_ID = P.UUID
+  LEFT JOIN SCM_SUPPLIER SL
+    ON S.Supplier_Code = SL.UUID
+ WHERE  s.state='2' and  C.PUUID='${uuid}'  and  c.state in ('1','2','7','4','8','9') and c.audit_money>0
+ order by SL.COMPLETE_NAME asc,p.project_code asc]]></Query>
+</TableData>
+<TableData name="approveInfo" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="uuid"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[ SELECT *
+  FROM (SELECT N'经办人' AS 节点名称,
+               (SELECT U.USER_NAME
+                  FROM SCDP_USER U
+                 WHERE U.USER_ID = AHP.START_USER_ID_) AS 操作人,
+               TO_CHAR(AHP.START_TIME_, 'yyyy-mm-dd hh24:mi:ss') AS 审批日期,
+                '提交' AS 操作
+          FROM ACT_HI_PROCINST AHP
+         WHERE AHP.PROC_INST_ID_ =
+		           (SELECT PROC_INST_ID_
+				  FROM (SELECT ROW_NUMBER() OVER(ORDER BY T.START_TIME_ DESC) RN, T.*
+				          FROM ACT_HI_PROCINST T
+				         WHERE T.BUSINESS_KEY_ = '${uuid}')
+				 WHERE RN = 1)
+        UNION ALL
+      SELECT AHT.NAME_ || '审核' AS 节点名称,
+       (SELECT U.USER_NAME
+          FROM SCDP_USER U
+         WHERE U.USER_ID = AHT.ASSIGNEE_) AS 审批人,
+       TO_CHAR(AHT.END_TIME_, 'yyyy-mm-dd hh24:mi:ss') AS 审批日期,
+       DECODE(AHT.DELETE_REASON_,
+              'completed',
+              '提交',
+              'rollback',
+              '撤回',
+              'rejected',
+              '退回') AS 操作
+  FROM ACT_HI_TASKINST AHT
+         WHERE AHT.PROC_INST_ID_ =
+				(SELECT PROC_INST_ID_
+				  FROM (SELECT ROW_NUMBER() OVER(ORDER BY T.START_TIME_ DESC) RN, T.*
+				          FROM ACT_HI_PROCINST T
+				         WHERE T.BUSINESS_KEY_ = '${uuid}')
+				 WHERE RN = 1)
+                       ) TASK
+ ORDER BY TASK.审批日期 ASC]]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR F="0" T="2"/>
+<FR F="5" T="9"/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1714500,723900,1143000,723900,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[266700,1790700,4838700,2438400,2438400,2743200,3771900,4191000,5029200,4305300,8877300,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="0" cs="10" s="0">
+<O t="DSColumn">
+<Attributes dsName="fad_pay_req_h" columnName="TITLE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="1" cs="2">
+<O>
+<![CDATA[支付申请编号：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="1" cs="6">
+<O t="DSColumn">
+<Attributes dsName="fad_pay_req_h" columnName="REQNO"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="1">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="1" s="1">
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="2" s="2">
+<O>
+<![CDATA[序号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="2" s="2">
+<O>
+<![CDATA[部门]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="2" cs="3" s="2">
+<O>
+<![CDATA[供应商]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="2" s="2">
+<O>
+<![CDATA[项目代号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="2" s="2">
+<O>
+<![CDATA[核定金额(元)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="2" s="2">
+<O>
+<![CDATA[本次支付金额(元)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="2" s="2">
+<O>
+<![CDATA[本次请款金额(元)]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="2" s="2">
+<O>
+<![CDATA[备注]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="3" s="3">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=seq()]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand leftParentDefault="false" left="C4"/>
+</C>
+<C c="2" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="fad_pay_req_c" columnName="ORG_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="3" cs="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="fad_pay_req_c" columnName="COMPLETE_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="fad_pay_req_c" columnName="PROJECT_CODE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="3" s="4">
+<O t="DSColumn">
+<Attributes dsName="fad_pay_req_c" columnName="AUDIT_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="3" s="4">
+<O t="DSColumn">
+<Attributes dsName="fad_pay_req_c" columnName="ACCOUNTS_PAYABLE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="3" s="4">
+<O t="DSColumn">
+<Attributes dsName="fad_pay_req_c" columnName="CASH_REQ_VALUE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="10" r="3" s="3">
+<O t="DSColumn">
+<Attributes dsName="fad_pay_req_c" columnName="REMARK"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="4" s="3">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="4" s="3">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="4" cs="3" s="3">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="4" s="3">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="4" s="3">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="4" s="3">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="4" s="3">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="4" s="3">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="5" cs="6" s="5">
+<O>
+<![CDATA[本页合计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="5" s="6">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum({H4})]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="5" s="6">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum({I4})]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="5" s="6">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum({J4})]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="5" s="5">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="6" cs="6" s="7">
+<O>
+<![CDATA[合计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="6" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(H4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="6" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(I4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="6" s="8">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=sum(J4)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="6" s="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="7" cs="3">
+<O>
+<![CDATA[以下为ERP审批记录]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="8" s="3">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="8" s="9">
+<O>
+<![CDATA[节点名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="8" cs="2" s="9">
+<O>
+<![CDATA[操作人]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="8" s="9">
+<O>
+<![CDATA[操作]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="8" cs="2" s="9">
+<O>
+<![CDATA[操作时间]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="8" s="3">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="8" s="3">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="8" s="3">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="9" s="3">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="9" s="10">
+<O t="DSColumn">
+<Attributes dsName="approveInfo" columnName="节点名称"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="9" cs="2" s="10">
+<O t="DSColumn">
+<Attributes dsName="approveInfo" columnName="操作人"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="9" s="10">
+<O t="DSColumn">
+<Attributes dsName="approveInfo" columnName="操作"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="9" cs="2" s="11">
+<O t="DSColumn">
+<Attributes dsName="approveInfo" columnName="审批日期"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="9" s="3">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="9" s="3">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="9" s="3">
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="1728000">
+<PaperSetting orientation="1">
+<Margin top="0" left="0" bottom="0" right="0"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList>
+<HFElement className="com.fr.base.headerfooter.FormulaHFElement">
+<FRFont name="SimSun" style="0" size="72"/>
+<Formula content="$$page_number+&quot;/&quot;+$$totalPage_number" text="1/100"/>
+</HFElement>
+</RightList>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="104"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style imageLayout="1">
+<Format class="java.text.SimpleDateFormat">
+<![CDATA[yyyy年MM月dd日]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="1" size="72"/>
+<Background name="ColorBackground" color="-103"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="1" size="72"/>
+<Background name="ColorBackground" color="-3342337"/>
+<Border>
+<Top style="1" color="-16777216"/>
+<Bottom style="1" color="-16777216"/>
+<Left style="1" color="-16777216"/>
+<Right style="1" color="-16777216"/>
+</Border>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="1" size="72"/>
+<Background name="ColorBackground" color="-3342337"/>
+<Border>
+<Top style="1" color="-16777216"/>
+<Bottom style="1" color="-16777216"/>
+<Left style="1" color="-16777216"/>
+<Right style="1" color="-16777216"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="1" size="72"/>
+<Background name="ColorBackground" color="-3342388"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="1" size="72"/>
+<Background name="ColorBackground" color="-3342388"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<Format class="java.text.SimpleDateFormat">
+<![CDATA[yyyy年MM月dd日 HH:mm:ss]]></Format>
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

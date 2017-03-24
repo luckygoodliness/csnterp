@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <contract_query>
+        <common>
+            <![CDATA[select * from (select t.*,
+                             p.project_Name,
+                             s.user_name as render_person_name,
+                             s1.user_name as create_by_name,
+                            (select s.user_name from scdp_user s where s.user_id = t.render_Person) as render_Person_R,
+                            o.org_name as office_name_R,
+                            (select code_desc from scdp_code sc where sc.code_type = 'FAD_BILL_STATE' and sc.sys_code=t.state) as state_name
+                       from fad_invoice t
+                       left join (select o.org_code,o.org_name from scdp_org o)o
+                         on o.org_code=t.office_Id
+                       left join (select p.uuid,p.project_name,p.project_Code from prm_project_main p) p
+                       on p.uuid=t. prm_project_main_id
+                       left join (select s.user_id,s.user_name from scdp_user s) s
+                       on s.user_id=t.render_person
+                       left join (select s.user_id,s.user_name from scdp_user s) s1
+                       on s1.user_id=t.create_by)r
+                      where ${conditions}
+                        and ${voidfilter}
+                        and ${selfconditions}
+                        and EXPENSES_TYPE=0]]>
+        </common>
+    </contract_query>
+    <non_faily_query>
+        <common>
+            <![CDATA[select t.*,
+                            (select s.user_name from scdp_user s where s.user_id = t.render_Person) as render_Person_R,
+                            (select o.org_name from scdp_org o where o.org_code=t.office_Id) as office_name_R,
+                            (select code_desc from scdp_code sc where sc.code_type = 'FAD_BILL_STATE' and sc.sys_code=t.state) as state_name,
+                            (select code_desc from scdp_code sc where sc.code_type = 'FAD_INVOICE_TYPE' and sc.sys_code=t.invoice_type) as invoice_type_name,
+                            (select code_desc from scdp_code sc where sc.code_type = 'FAD_PAYWAY' and sc.sys_code=t.pay_style) as pay_style_name,
+                            (nvl(t.expenses_money, 0) - nvl((select sum(fcr.clearance_money)
+                                         from fad_cash_req_invoice fcr
+                                        where fcr.fad_invoice_id = t.uuid),
+                                       0)) as pay_cash
+                       from fad_invoice t
+                      where ${conditions}
+                        and ${voidfilter}
+                        and ${selfconditions}
+                        and EXPENSES_TYPE=1
+                        and prm_project_main_id is null]]>
+        </common>
+    </non_faily_query>
+    <non_trip_query>
+        <common>
+            <![CDATA[select t.*,
+                            (select s.user_name from scdp_user s where s.user_id = t.render_Person) as render_Person_R,
+                            (select o.org_name from scdp_org o where o.org_code=t.office_Id) as office_name_R,
+                            (select code_desc from scdp_code sc where sc.code_type = 'FAD_BILL_STATE' and sc.sys_code=t.state) as state_name,
+                            (nvl(t.expenses_money, 0) - nvl((select sum(fcr.clearance_money)
+                                         from fad_cash_req_invoice fcr
+                                        where fcr.fad_invoice_id = t.uuid),
+                                       0)) as pay_cash
+                       from fad_invoice t
+                      where ${conditions}
+                        and ${voidfilter}
+                        and ${selfconditions}
+                        and EXPENSES_TYPE=2
+                        and prm_project_main_id is null]]>
+        </common>
+    </non_trip_query>
+    <prm_faily_query>
+        <common>
+            <![CDATA[select * from (select t.*,
+                            p.project_Name,
+                            (select s.user_name from scdp_user s where s.user_id = t.render_Person) as render_Person_R,
+                            (select o.org_name from scdp_org o where o.org_code=t.office_Id) as office_name_R,
+                            (select code_desc from scdp_code sc where sc.code_type = 'FAD_BILL_STATE' and sc.sys_code=t.state) as state_name,
+                            (select code_desc from scdp_code sc where sc.code_type = 'FAD_INVOICE_TYPE' and sc.sys_code=t.invoice_type) as invoice_type_name,
+                            (select code_desc from scdp_code sc where sc.code_type = 'FAD_PAYWAY' and sc.sys_code=t.pay_style) as pay_style_name,
+                            (nvl(t.expenses_money, 0) - nvl((select sum(fcr.clearance_money)
+                                         from fad_cash_req_invoice fcr
+                                        where fcr.fad_invoice_id = t.uuid),
+                                       0)) as pay_cash
+                       from fad_invoice t
+                       left join (select p.uuid,p.project_name,p.project_Code from prm_project_main p) p
+                       on p.uuid=t. prm_project_main_id) s
+                      where ${conditions}
+                        and ${voidfilter}
+                        and ${selfconditions}
+                        and EXPENSES_TYPE=1
+                        and prm_project_main_id is not null]]>
+        </common>
+    </prm_faily_query>
+    <prm_trip_query>
+        <common>
+            <![CDATA[select * from (select t.*,
+                            p.project_Name,
+                            (select s.user_name from scdp_user s where s.user_id = t.render_Person) as render_Person_R,
+                            (select o.org_name from scdp_org o where o.org_code=t.office_Id) as office_name_R,
+                            (select code_desc from scdp_code sc where sc.code_type = 'FAD_BILL_STATE' and sc.sys_code=t.state) as state_name,
+                            (nvl(t.expenses_money, 0) - nvl((select sum(fcr.clearance_money)
+                                         from fad_cash_req_invoice fcr
+                                        where fcr.fad_invoice_id = t.uuid),
+                                       0)) as pay_cash
+                       from fad_invoice t
+                       left join (select p.uuid,p.project_name,p.project_Code from prm_project_main p) p
+                       on p.uuid=t. prm_project_main_id) s
+                      where ${conditions}
+                        and ${voidfilter}
+                        and ${selfconditions}
+                        and EXPENSES_TYPE=2
+                        and prm_project_main_id is not null]]>
+        </common>
+    </prm_trip_query>
+    <vw_scm_contract_execute_query>
+        <common>
+            <![CDATA[select t.*,
+            (select s.user_name from scdp_user s where s.user_id = t.debter) as debter_Name,
+            (select TAX_REGISTRATION_NO from scm_supplier s where s.uuid = t.SUPPLIER_CODE) as TAX_REGISTRATION_NO,
+            (decode(nvl(IS_PROJECT,0),0,t.subject_code,t.PROJECT_CODE)) as subject_code_Q
+           from vw_scm_contract_execute t]]>
+        </common>
+    </vw_scm_contract_execute_query>
+    <cash_Req_query>
+        <common>
+            <![CDATA[SELECT T.*,
+       (SELECT S.SCM_CONTRACT_CODE
+          FROM SCM_CONTRACT S
+         WHERE S.UUID = T.PURCHASE_CONTRACT_ID) AS CASH_CONTRACT,
+       '待完善' AS CASH_VOUCHER,
+       (SELECT SUM(FCRI.CLEARANCE_MONEY)
+          FROM FAD_CASH_REQ_INVOICE FCRI
+         WHERE T.UUID = FCRI.FAD_CASH_REQ_ID
+           AND (EXISTS
+                (SELECT 1
+                   FROM FAD_INVOICE F
+                  WHERE F.UUID = FCRI.FAD_INVOICE_ID
+                    AND F.STATE <>'3') OR EXISTS
+                (SELECT 1
+                   FROM FAD_CASH_CLEARANCE F
+                  WHERE F.UUID = FCRI.FAD_INVOICE_ID
+                    AND F.STATE <>'3'))) AS CLEARANCED_MONEY
+        FROM FAD_CASH_REQ T]]>
+        </common>
+    </cash_Req_query>
+    <contractInvoiceCheckAdd>
+        <common>
+            <![CDATA[select * from vw_scm_contract_execute v]]>
+        </common>
+    </contractInvoiceCheckAdd>
+    <contractInvoiceCheckModify>
+        <common>
+            <![CDATA[select * from vw_scm_contract_execute v]]>
+        </common>
+    </contractInvoiceCheckModify>
+    <vw_fad_invoice>
+        <common>
+            <![CDATA[SELECT T.*, T.EXPENSES_MONEY - CLEARANCE_MONEY AS PAY_CASH
+                       FROM (SELECT F.*,
+                                   NVL((SELECT SUM(FCRI.CLEARANCE_MONEY)
+                                         FROM FAD_CASH_REQ_INVOICE FCRI
+                                        WHERE FCRI.FAD_INVOICE_ID = F.UUID),
+                                       0) AS CLEARANCE_MONEY
+                              FROM FAD_INVOICE F) T]]>
+        </common>
+    </vw_fad_invoice>
+
+</DAO>

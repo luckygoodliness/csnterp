@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select * from prm_member_trend where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+
+    <common_query_department>
+        <common>
+            <![CDATA[select     m.uuid,
+                                m.prm_project_main_id,
+                                m.prm_weekly_id,
+                                m.staff_id,
+                                m.begin_date,
+                                m.end_date,
+                                m.percent,
+                                m.state,
+                                m.company_code,
+                                m.project_id,
+                                m.department_code,
+                                m.create_by,
+                                m.create_time,
+                                m.update_by,
+                                m.update_time,
+                                m.loc_timezone,
+                                m.tbl_version,
+                                m.is_void,
+                               o.org_name,
+                               (select a.project_name  from (select ppm.*,pc.contract_name
+                                                                from prm_project_main ppm
+                                                                 left join PRM_CONTRACT  pc
+                                                               on ppm.prm_contract_id = pc.uuid ) a
+                                where a.uuid=m.prm_project_main_id) as project_name,
+                                (SELECT A.USER_NAME FROM SCDP_USER A WHERE A.user_id =  m.staff_id) AS staff_name
+                        from   prm_member_trend m
+                        left join scdp_org o
+                        on     m.department_code = o.org_code
+                        where 1=1 and ${conditions}]]>
+        </common>
+    </common_query_department>
+</DAO>

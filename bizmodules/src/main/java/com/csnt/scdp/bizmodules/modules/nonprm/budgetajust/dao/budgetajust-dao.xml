@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select * from non_project_budget_ajust_h where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+
+    <common_query_single>
+        <common>
+            <![CDATA[select
+                   bha.UUID,
+                   bha.YEAR,
+                   bha.OFFICE_ID,
+                   bha.STATE,
+                   bha.BUDGET_TYPE,
+                   bha.BUDGET_AJUST_TOTAL,
+                   bha.COMPANY_CODE,
+                   bha.COMPANY_NAME,
+                   bha.DEPARTMENT_CODE,
+                   bha.CREATE_TIME,
+                   bha.UPDATE_BY,
+                   bha.UPDATE_TIME,
+                   bha.IS_VOID,
+                   bha.LOC_TIMEZONE,
+                   bha.TBL_VERSION,
+                   o.org_name,
+                   u.user_name,
+                   c.code_desc
+                from   NON_PROJECT_BUDGET_AJUST_H bha
+                left join scdp_org o
+                    on     bha.OFFICE_ID = o.org_code
+                left join scdp_user u
+                    on u.user_id = bha.create_by
+                  LEFT JOIN scdp_code c
+                    ON c.sys_code=bha.state AND  c.code_type='FAD_BILL_STATE'
+                where 1=1 and ${conditions}]]>
+        </common>
+    </common_query_single>
+    <simple_query_from_view>
+        <common>
+            SELECT * FROM VW_NON_BUDGET_EXECUTE T WHERE HID=?
+        </common>
+    </simple_query_from_view>
+
+</DAO>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>ncperson-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>seq_no desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="A1:A1" cid="ncPersonCode" fieldLabel_s="ncPersonCode" field="nc_person_code"/>
+        <JText pos="B1:B1" cid="ncPersonName" fieldLabel_s="ncPersonName" field="nc_person_name"/>
+        <JText pos="C1:C1" cid="ncOrgCode" fieldLabel_s="ncOrgCode" field="nc_org_code"/>
+        <JText pos="D1:D1" cid="ncOrgName" fieldLabel_s="ncOrgName" field="nc_org_name"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="ncPersonCode" dataIndex="ncPersonCode" width_n="120"/>
+        <JTextCol text_s="ncPersonName" dataIndex="ncPersonName" width_n="120"/>
+        <JTextCol text_s="ncOrgCode" dataIndex="ncOrgCode" width_n="120"/>
+        <JTextCol text_s="ncOrgName" dataIndex="ncOrgName" width_n="120"/>
+    </results>
+</commonquery>

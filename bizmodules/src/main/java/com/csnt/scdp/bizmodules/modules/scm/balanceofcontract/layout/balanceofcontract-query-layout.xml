@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonreport version="1.0">
+    <report>
+        <reporttype>L</reporttype>
+        <reporttemplate>erp/scm/ScmContractQuery.cpt</reporttemplate>
+        <reportcache>false</reportcache>
+    </report>
+    <conditions columns="4">
+        <JHidden cid="contractorOfficeDesc"/>
+        <JErpDepartMent pos="A1:A1" fieldLabel_s="contractorOffice" cid="contractorOffice"
+                        field="contractorOffice" allowBlank_b="true" editable_b="true"/>
+        <JText pos="B1:B1" cid="projectCode" fieldLabel_s="projectCode" field="projectCode"/>
+        <JText pos="C1:C1" fieldLabel_s="scmContractCode" cid="scmContractCode" field="scmContractCode"/>
+        <JSupplierGrid pos="D1:D1" fieldLabel_s="supplierName" cid="supplierName" field="supplierName"/>
+        <JDate pos="A2:A2" fieldLabel_s="createTimeFrom" cid="createTimeFrom" field="createTimeFrom" format="Y-m-d"/>
+        <JDate pos="B2:B2" fieldLabel_s="createTimeTo" cid="createTimeTo" field="createTimeTo" format="Y-m-d"/>
+    </conditions>
+</commonreport>

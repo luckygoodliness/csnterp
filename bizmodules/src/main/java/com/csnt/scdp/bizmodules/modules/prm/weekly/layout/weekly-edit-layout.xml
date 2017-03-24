@@ -1,0 +1,646 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JTab pos="A1:A1" row="flex" col="1*1" border_n="1">
+        <JPanel pos="A1:A1" row="flex,200" col="1*1" title_s="项目周报" border_n="1">
+            <JForm pos="A1:A1" cid="prmWeeklyDto" row="23*4" col="0.25*4" title_s="" border_n="1">
+                <JHidden cid="uuid"/>
+                <JHidden cid="tblVersion"/>
+                <JNoneFinishedProject pos="A1:A1" cid="projectName" fieldLabel_s="prmProjectMainId" allowBlank_b="false"
+                              refer_j='[{"refField":"prmProjectMainId","valueField":"uuid"},
+                                         {"refField":"departmentCode","valueField":"contractorOffice"}]'/>
+                <JHidden pos="A1:A1" cid="prmProjectMainId"/>
+                <!--<JOrg pos="B1:B1" cid="departmentCode" fieldLabel_s="departmentCode" allowBlank_b="true"/>-->
+                <JDate pos="B1:B1" cid="weekleDate" fieldLabel_s="weekleDate" allowBlank_b="false"/>
+                <!--<JText pos="C1:C1" cid="departmentCode" fieldLabel_s="contractorOffice" allowBlank_b="true" readOnly_b="true" adaptable_b="false"	/>-->
+                <JHidden cid ="departmentCodeDesc"/>
+                <JErpDepartMent pos="C1:C1" fieldLabel_s="contractorOffice" cid="departmentCode"
+                              field="org_uuid" readOnly_b="true" adaptable_b="false"/>
+                <!--<JDatetime pos="A1:A1" cid="weekleDate" fieldLabel_s="weekleDate" allowBlank_b="true"/>-->
+                <!--<JText pos="A1:A1" cid="state" fieldLabel_s="state" allowBlank_b="true"/>-->
+                <!--<JText pos="A1:A1" cid="companyCode" fieldLabel_s="companyCode" allowBlank_b="true"/>-->
+                <!--<JText pos="A1:A1" cid="projectId" fieldLabel_s="projectId" allowBlank_b="true"/>-->
+                <!--<JText pos="B1:B1" cid="departmentCode" fieldLabel_s="departmentCode" allowBlank_b="true"/>-->
+                <!--<JText pos="A1:A1" cid="createOffice" fieldLabel_s="createOffice" allowBlank_b="true"/>-->
+                <!--<JText pos="A1:A1" cid="updateOffice" fieldLabel_s="updateOffice" allowBlank_b="true"/>-->
+            </JForm>
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="项目简报" border_n="1">
+            <!--<JForm pos="A1:A1" cid="prmBriefDto" row="23*1" col="0.25*4" title_s="" border_n="1">-->
+            <!--<JHidden cid="uuid"/>-->
+            <!--<JHidden cid="puuid"/>-->
+            <!--<JText pos="A1:A1" cid="prmProjectMainId" fieldLabel_s="prmProjectMainId"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JDatetime pos="A1:A1" cid="weekleDate" fieldLabel_s="weekleDate" allowBlank_b="true"/>-->
+            <!--<JText pos="A1:A1" cid="state" fieldLabel_s="state"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="companyCode" fieldLabel_s="companyCode"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="projectId" fieldLabel_s="projectId"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="departmentCode" fieldLabel_s="departmentCode"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="createOffice" fieldLabel_s="createOffice"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="updateOffice" fieldLabel_s="updateOffice"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--</JForm>-->
+
+            <JEGrid pos="A1:A1" cid="prmBriefDto" store="Weekly.store.PrmBriefStore">
+                <JTextCol text_s="prmProjectMainId" dataIndex="prmProjectMainId" width_n="120" hidden_b="true" >
+                    <JText allowBlank_b="false" />
+                </JTextCol>
+                <JTextCol text_s="prmWeeklyId" dataIndex="prmWeeklyId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true" />
+                </JTextCol>
+                <JComboCol text_s="type" dataIndex="type" width_n="260">
+                    <!--<JText allowBlank_b="true"/>-->
+                    <JCombo pos="A1:A4" cid="type" comboType="scdp_fmcode"
+                            codeType="PRM_BRIEF_TYPE" displayDesc_b="true" />
+                </JComboCol>
+                <JTextCol text_s="content" dataIndex="content" width_n="900">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="state" dataIndex="state" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true" />
+                </JTextCol>
+                <JTextCol text_s="projectId" dataIndex="projectId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true" />
+                </JTextCol>
+                <JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true" />
+                </JTextCol>
+                <JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true" />
+                </JTextCol>
+                <JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true" />
+                </JTextCol>
+            </JEGrid>
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="人员动向" border_n="1">
+            <!--<JForm pos="A1:A1" cid="prmMemberTrendDto" row="23*1" col="0.25*4" title_s="" border_n="1">-->
+            <!--<JHidden cid="uuid"/>-->
+            <!--<JHidden cid="puuid"/>-->
+            <!--<JText pos="A1:A1" cid="prmProjectMainId" fieldLabel_s="prmProjectMainId"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JDatetime pos="A1:A1" cid="weekleDate" fieldLabel_s="weekleDate" allowBlank_b="true"/>-->
+            <!--<JText pos="A1:A1" cid="state" fieldLabel_s="state"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="companyCode" fieldLabel_s="companyCode"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="projectId" fieldLabel_s="projectId"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="departmentCode" fieldLabel_s="departmentCode"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="createOffice" fieldLabel_s="createOffice"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="updateOffice" fieldLabel_s="updateOffice"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--</JForm>-->
+
+            <JEGrid pos="A1:A1" cid="prmMemberTrendDto" store="Weekly.store.PrmMemberTrendStore">
+
+                <JTextCol text_s="prmProjectMainId" dataIndex="prmProjectMainId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="prmWeeklyId" dataIndex="prmWeeklyId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="staffId" dataIndex="staffName" width_n="250">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JDateCol text_s="beginDate" dataIndex="beginDate" width_n="250">
+                    <JText allowBlank_b="false"/>
+                </JDateCol>
+                <JDateCol text_s="endDate" dataIndex="endDate" width_n="250">
+                    <JDate allowBlank_b="false"/>
+                </JDateCol>
+                <JIntCol text_s="percent" dataIndex="percent" width_n="250">
+                    <JInt allowBlank_b="false"/>
+                </JIntCol>
+                <JTextCol text_s="state" dataIndex="state" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="projectId" dataIndex="projectId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+            </JEGrid>
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="到货确认" border_n="1">
+            <!--<JForm pos="A1:A1" cid="prmGoodsArrivalDto" row="23*1" col="0.25*4" title_s="" border_n="1">-->
+            <!--<JHidden cid="uuid"/>-->
+            <!--<JHidden cid="puuid"/>-->
+            <!--<JText pos="A1:A1" cid="prmProjectMainId" fieldLabel_s="prmProjectMainId"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JDatetime pos="A1:A1" cid="weekleDate" fieldLabel_s="weekleDate" allowBlank_b="true"/>-->
+            <!--<JText pos="A1:A1" cid="state" fieldLabel_s="state"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="companyCode" fieldLabel_s="companyCode"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="projectId" fieldLabel_s="projectId"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="departmentCode" fieldLabel_s="departmentCode"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="createOffice" fieldLabel_s="createOffice"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="updateOffice" fieldLabel_s="updateOffice"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--</JForm>-->
+
+            <JEGrid pos="A1:A1" cid="prmGoodsArrivalDto" store="Weekly.store.PrmGoodsArrivalStore">
+
+                <JTextCol text_s="prmProjectMainId" dataIndex="prmProjectMainId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="scmContractDetailId" dataIndex="scmContractDetailId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="materialName" dataIndex="materialName" width_n="120">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="model" dataIndex="model" width_n="180">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JComboCol text_s="units" dataIndex="units" width_n="120">
+                    <!--<JText allowBlank_b="true"/>-->
+                <JCombo cid="units" comboType="scdp_fmcode"
+                            codeType="PRM_GOODS_ARRIVAL_UNITS" displayDesc_b="true"/>
+                </JComboCol>
+                <JTextCol text_s="prmWeeklyId" dataIndex="prmWeeklyId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JDecCol text_s="amount" dataIndex="amount" width_n="150">
+                    <JDec allowBlank_b="false" minValue_n="0.00"/>
+                </JDecCol>
+                <JTextCol text_s="quality" dataIndex="quality" width_n="120">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JDateCol text_s="arriveDate" dataIndex="arriveDate" width_n="150">
+                    <JDate allowBlank_b="false"/>
+                </JDateCol>
+                <JTextCol text_s="registrant" dataIndex="registrantName" width_n="120">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="remark" dataIndex="remark" width_n="200">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="state" dataIndex="state" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="projectId" dataIndex="projectId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+            </JEGrid>
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="收款计量" border_n="1">
+            <!--<JForm pos="A1:A1" cid="prmCollectionMeasureDto" row="23*1" col="0.25*4" title_s="" border_n="1">-->
+            <!--<JHidden cid="uuid"/>-->
+            <!--<JHidden cid="puuid"/>-->
+            <!--<JText pos="A1:A1" cid="prmProjectMainId" fieldLabel_s="prmProjectMainId"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JDatetime pos="A1:A1" cid="weekleDate" fieldLabel_s="weekleDate" allowBlank_b="true"/>-->
+            <!--<JText pos="A1:A1" cid="state" fieldLabel_s="state"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="companyCode" fieldLabel_s="companyCode"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="projectId" fieldLabel_s="projectId"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="departmentCode" fieldLabel_s="departmentCode"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="createOffice" fieldLabel_s="createOffice"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="updateOffice" fieldLabel_s="updateOffice"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--</JForm>-->
+
+            <JEGrid pos="A1:A1" cid="prmCollectionMeasureDto" store="Weekly.store.PrmCollectionMeasureStore">
+
+                <JTextCol text_s="prmProjectMainId" dataIndex="prmProjectMainId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="prmWeeklyId" dataIndex="prmWeeklyId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="periods" dataIndex="periods" width_n="120">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JComboCol text_s="report" dataIndex="report" width_n="180">
+                    <JCombo cid="report"   comboType="scdp_fmcode"
+                            codeType="PRM_MEASURE_REPORT" displayDesc_b="true" />
+                </JComboCol>
+                <JTextCol text_s="principal" dataIndex="principalName" width_n="120">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JDecCol text_s="measureMoney" dataIndex="measureMoney" width_n="150">
+                    <JDec allowBlank_b="false" minValue_n="0.00"/>
+                </JDecCol>
+                <JComboCol text_s="sign" dataIndex="sign" width_n="120">
+                    <JCombo cid="sign" comboType="scdp_fmcode"
+                            codeType="PRM_MEASURE_SIGN" displayDesc_b="true" />
+                </JComboCol>
+                <JDateCol text_s="actualReceiptsDate" dataIndex="actualReceiptsDate" width_n="150">
+                    <JDate allowBlank_b="false"/>
+                </JDateCol>
+                <JTextCol text_s="remark" dataIndex="remark" width_n="200">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="state" dataIndex="state" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="projectId" dataIndex="projectId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+            </JEGrid>
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="工期进度" border_n="1">
+            <!--<JForm pos="A1:A1" cid="prmProgressDto" row="23*1" col="0.25*4" title_s="" border_n="1">-->
+            <!--<JHidden cid="uuid"/>-->
+            <!--<JHidden cid="puuid"/>-->
+            <!--<JText pos="A1:A1" cid="prmProjectMainId" fieldLabel_s="prmProjectMainId"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JDatetime pos="A1:A1" cid="weekleDate" fieldLabel_s="weekleDate" allowBlank_b="true"/>-->
+            <!--<JText pos="A1:A1" cid="state" fieldLabel_s="state"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="companyCode" fieldLabel_s="companyCode"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="projectId" fieldLabel_s="projectId"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="departmentCode" fieldLabel_s="departmentCode"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="createOffice" fieldLabel_s="createOffice"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="updateOffice" fieldLabel_s="updateOffice"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--</JForm>-->
+
+            <JEGrid pos="A1:A1" cid="prmProgressDto" store="Weekly.store.PrmProgressStore">
+
+                <JTextCol text_s="prmProjectMainId" dataIndex="prmProjectMainId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="prmWeeklyId" dataIndex="prmWeeklyId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JComboCol text_s="projectProgress" dataIndex="projectProgress" width_n="150">
+                    <JCombo  cid="projectProgress"  comboType="scdp_fmcode"
+                            codeType="PRM_PROGRESS" displayDesc_b="true"/>
+                    <JText pos="D1:D1" cid="management" fieldLabel_s="management" allowBlank_b="false"/>
+                </JComboCol>
+                <JTextCol text_s="progressDeviationReason" dataIndex="progressDeviationReason" width_n="400">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="receiptsDeviationReason" dataIndex="receiptsDeviationReason" width_n="400">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="management" dataIndex="management" width_n="150">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="state" dataIndex="state" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="projectId" dataIndex="projectId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+            </JEGrid>
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="问题申报" border_n="1">
+            <!--<JForm pos="A1:A1" cid="prmProblemDto" row="23*1" col="0.25*4" title_s="" border_n="1">-->
+            <!--<JHidden cid="uuid"/>-->
+            <!--<JHidden cid="puuid"/>-->
+            <!--<JText pos="A1:A1" cid="prmProjectMainId" fieldLabel_s="prmProjectMainId"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JDatetime pos="A1:A1" cid="weekleDate" fieldLabel_s="weekleDate" allowBlank_b="true"/>-->
+            <!--<JText pos="A1:A1" cid="state" fieldLabel_s="state"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="companyCode" fieldLabel_s="companyCode"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="projectId" fieldLabel_s="projectId"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="departmentCode" fieldLabel_s="departmentCode"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="createOffice" fieldLabel_s="createOffice"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="updateOffice" fieldLabel_s="updateOffice"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--</JForm>-->
+
+            <JEGrid pos="A1:A1" cid="prmProblemDto" store="Weekly.store.PrmProblemStore">
+
+                <JTextCol text_s="prmWeeklyId" dataIndex="prmWeeklyId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="prmProjectMainId" dataIndex="prmProjectMainId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JDateCol text_s="postDate" dataIndex="postDate" width_n="120">
+                    <JText allowBlank_b="false"/>
+                </JDateCol>
+                <JComboCol text_s="problemType" dataIndex="problemType" width_n="120">
+                    <!--<JText allowBlank_b="false"/>-->
+                    <JCombo  cid="type" comboType="scdp_fmcode"
+                            codeType="PRM_PROBLEM_TYPE" displayDesc_b="true"/>
+                </JComboCol>
+                <JTextCol text_s="description" dataIndex="description" width_n="200">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="postPerson" dataIndex="postPersonName" width_n="120">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="proposalSolution" dataIndex="proposalSolution" width_n="200">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JDateCol text_s="proposalDate" dataIndex="proposalDate" width_n="150">
+                    <JDate allowBlank_b="false"/>
+                </JDateCol>
+                <JTextCol text_s="provider" dataIndex="providerName" width_n="120">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="remark" dataIndex="remark" width_n="120">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="state" dataIndex="state" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="projectId" dataIndex="projectId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+            </JEGrid>
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="会议纪要" border_n="1">
+            <!--<JForm pos="A1:A1" cid="prmMeetingSummaryDto" row="23*1" col="0.25*4" title_s="" border_n="1">-->
+            <!--<JHidden cid="uuid"/>-->
+            <!--<JHidden cid="puuid"/>-->
+            <!--<JText pos="A1:A1" cid="prmProjectMainId" fieldLabel_s="prmProjectMainId"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JDatetime pos="A1:A1" cid="weekleDate" fieldLabel_s="weekleDate" allowBlank_b="true"/>-->
+            <!--<JText pos="A1:A1" cid="state" fieldLabel_s="state"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="companyCode" fieldLabel_s="companyCode"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="projectId" fieldLabel_s="projectId"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="departmentCode" fieldLabel_s="departmentCode"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="createOffice" fieldLabel_s="createOffice"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="updateOffice" fieldLabel_s="updateOffice"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--</JForm>-->
+
+            <JEGrid pos="A1:A1" cid="prmMeetingSummaryDto" store="Weekly.store.PrmMeetingSummaryStore">
+
+                <JTextCol text_s="prmWeeklyId" dataIndex="prmWeeklyId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="prmProjectMainId" dataIndex="prmProjectMainId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JDateCol text_s="beginDate" dataIndex="beginDate" width_n="150">
+                    <JDate allowBlank_b="false"/>
+                </JDateCol>
+                <JDateCol text_s="endDate" dataIndex="endDate" width_n="150">
+                    <JDate allowBlank_b="false"/>
+                </JDateCol>
+                <JTextCol text_s="meetingLocation" dataIndex="meetingLocation" width_n="180">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="meetingPersons" dataIndex="meetingPersons" width_n="120">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="customerId" dataIndex="customerId" width_n="120">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="content" dataIndex="content" width_n="250">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="workPlan" dataIndex="workPlan" width_n="150">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="state" dataIndex="state" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="projectId" dataIndex="projectId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+            </JEGrid>
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="收款情况" border_n="1">
+            <!--<JForm pos="A1:A1" cid="prmWeeklyReceiptDto" row="23*1" col="0.25*4" title_s="" border_n="1">-->
+            <!--<JHidden cid="uuid"/>-->
+            <!--<JHidden cid="puuid"/>-->
+            <!--<JText pos="A1:A1" cid="prmProjectMainId" fieldLabel_s="prmProjectMainId"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JDatetime pos="A1:A1" cid="weekleDate" fieldLabel_s="weekleDate" allowBlank_b="true"/>-->
+            <!--<JText pos="A1:A1" cid="state" fieldLabel_s="state"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="companyCode" fieldLabel_s="companyCode"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="projectId" fieldLabel_s="projectId"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="departmentCode" fieldLabel_s="departmentCode"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="createOffice" fieldLabel_s="createOffice"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="updateOffice" fieldLabel_s="updateOffice"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--</JForm>-->
+            <JEGrid pos="A1:A1" cid="prmWeeklyReceiptDto" store="Weekly.store.PrmWeeklyReceiptStore">
+
+                <JTextCol text_s="prmProjectMainId" dataIndex="prmProjectMainId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="prmWeeklyId" dataIndex="prmWeeklyId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="prmReceiptsId" dataIndex="prmReceiptsId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="payer" dataIndex="payer" width_n="200">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="customerId" dataIndex="customerId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JDecCol text_s="estimateMoney" dataIndex="estimateMoney" width_n="150">
+                    <JDec allowBlank_b="false" minValue_n="0.00"/>
+                </JDecCol>
+                <JDecCol text_s="actualMoney" dataIndex="actualMoney" width_n="150">
+                    <JDec allowBlank_b="false" minValue_n="0.00"/>
+                </JDecCol>
+                <JComboCol text_s="moneyType" dataIndex="moneyType" width_n="200">
+                    <!--<JText allowBlank_b="true"/>-->
+                    <JCombo pos="A1:A4" cid="moneyType" comboType="scdp_fmcode"
+                            codeType="PRM_MONEY_TYPE" displayDesc_b="true"/>
+                </JComboCol>
+                <JDateCol text_s="estimateDate" dataIndex="estimateDate" width_n="150">
+                    <JDate allowBlank_b="false"/>
+                </JDateCol>
+                <JDateCol text_s="actualDate" dataIndex="actualDate" width_n="150">
+                    <JDate allowBlank_b="false"/>
+                </JDateCol>
+                <JTextCol text_s="prmUnknownReceiptsId" dataIndex="prmUnknownReceiptsId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="state" dataIndex="state" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="projectId" dataIndex="projectId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+            </JEGrid>
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="支付情况" border_n="1">
+            <!--<JForm pos="A1:A1" cid="prmWeeklyPayDto" row="23*1" col="0.25*4" title_s="" border_n="1">-->
+            <!--<JHidden cid="uuid"/>-->
+            <!--<JHidden cid="puuid"/>-->
+            <!--<JText pos="A1:A1" cid="prmProjectMainId" fieldLabel_s="prmProjectMainId"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JDatetime pos="A1:A1" cid="weekleDate" fieldLabel_s="weekleDate" allowBlank_b="true"/>-->
+            <!--<JText pos="A1:A1" cid="state" fieldLabel_s="state"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="companyCode" fieldLabel_s="companyCode"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="projectId" fieldLabel_s="projectId"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="departmentCode" fieldLabel_s="departmentCode"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="createOffice" fieldLabel_s="createOffice"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--<JText pos="A1:A1" cid="updateOffice" fieldLabel_s="updateOffice"-->
+            <!--allowBlank_b="true" upperCase_b="false"/>-->
+            <!--</JForm>-->
+            <JEGrid pos="A1:A1" cid="prmWeeklyPayDto" store="Weekly.store.PrmWeeklyPayStore">
+
+                <JTextCol text_s="prmProjectMainId" dataIndex="prmProjectMainId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="prmWeeklyId" dataIndex="prmWeeklyId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="prmPayReqId" dataIndex="prmPayReqId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <JTextCol text_s="scmContractId" dataIndex="scmContractId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+                <!--<JDecCol text_s="accountsPayable" dataIndex="accountsPayable" width_n="200">-->
+                    <!--<JDec allowBlank_b="false"/>-->
+                <!--</JDecCol>-->
+                <!--<JDecCol text_s="paidMoney" dataIndex="paidMoney" width_n="200">-->
+                    <!--<JDec allowBlank_b="false"/>-->
+                <!--</JDecCol>-->
+                <JDecCol text_s="reqMoney" dataIndex="reqMoney" width_n="200">
+                    <JDec allowBlank_b="false" minValue_n="0.00"/>
+                </JDecCol>
+                <JDecCol text_s="approveMoney" dataIndex="approveMoney" width_n="200">
+                    <JDec allowBlank_b="false" minValue_n="0.00"/>
+                </JDecCol>
+                <JTextCol text_s="state" dataIndex="state" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="projectId" dataIndex="projectId" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+                <JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120" hidden_b="true">
+                    <JText allowBlank_b="true"/>
+                </JTextCol>
+            </JEGrid>
+        </JPanel>
+    </JTab>
+</view>

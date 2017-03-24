@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select *  from prm_exam_period t  where 1 = 1  and ${conditions}  and ${voidfilter}
+             ]]>
+        </common>
+    </common_query>
+
+</DAO>

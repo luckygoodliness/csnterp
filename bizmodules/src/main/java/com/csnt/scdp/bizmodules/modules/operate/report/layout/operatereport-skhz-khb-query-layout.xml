@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonreport version="1.0">
+    <report>
+        <reporttype>L</reporttype>
+        <reporttemplate>erp/ygb/收款汇总表(考核).cpt</reporttemplate>
+        <reportcache>false</reportcache>
+    </report>
+    <conditions columns="4">
+        <JHidden cid="contractorOfficeDesc" field="officeIdDesc"/>
+        <JErpDepartMent pos="A1:A1" cid="contractorOffice" fieldLabel_s="contractorOffice" field="officeId"
+                        cascadeField="affiliatedInstitutions" labelWidth_n="100"/>
+
+        <JInt pos="B1:B1" cid="year" fieldLabel_s="year" field="year" minValue_n="1949" maxValue_n="2200"
+              allowBlank_b="false"/>
+        <JInt pos="C1:C1" cid="month" fieldLabel_s="month" field="month" minValue_n="1" maxValue_n="12"
+              allowBlank_b="false"/>
+
+        <JHidden cid="countryCode"/>
+        <JCombo pos="A2:A2" cid="buildRegion" fieldLabel_s="buildRegion" field="build_region" comboType="fm_gis_state"
+                displayDesc_b="true" fullInfo_b="true" filterFields="countryCode|countryCode"/>
+
+        <JCombo pos="B2:B2" cid="affiliatedInstitutions" fieldLabel_s="affiliatedInstitutions"
+                field="affiliated_institutions" comboType="affiliated_institutions" displayDesc_b="true"
+                fullInfo_b="true" filterFields="contractorOffice"/>
+    </conditions>
+</commonreport>

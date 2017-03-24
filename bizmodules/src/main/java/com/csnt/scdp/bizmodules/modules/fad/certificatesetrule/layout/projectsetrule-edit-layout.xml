@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="fadProjectSetRuleDto" row="23*10" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+
+        <JHidden cid="officeDesc"/>
+        <JErpDepartMent pos="A1:A1" cid="office" fieldLabel_s="office" allowBlank_b="false" multiSelect_b="true"/>
+
+        <JHidden cid="subject"/>
+        <JFadBaseSubjectGrid pos="B1:B1" cid="subjectName"
+                             fieldLabel_s="projectSubject"
+                             allowBlank_b="false"
+                             refer_j='[{"refField":"subject","valueField":"subjectNo"}]'
+                             upperCase_b="true"/>
+
+        <JCombo pos="C1:C1" cid="projectCode" fieldLabel_s="projectCode" allowBlank_b="false"
+                comboType="fm_fad_certificatesetrule_project_code" displayDesc_b="true" multiSelect_b="true"/>
+
+        <JHidden cid="prmCodeType"/>
+        <JPrmCodeTypePpGrid pos="D1:D1" cid="prmCodeTypeName"
+                            fieldLabel_s="prmCodeTypeName"
+                            allowBlank_b="false"
+                            refer_j='[{"refField":"prmCodeType","valueField":"prmCodeType"}]'
+                            upperCase_b="true"/>
+
+        <JHidden cid="debtorSubject6a7"/>
+        <JAccsubjGrid pos="A2:A2" cid="debtorSubject6a7Name"
+                      fieldLabel_s="debtorSubject6a7"
+                      allowBlank_b="false"
+                      refer_j='[{"refField":"debtorSubject6a7","valueField":"subjectCode"}]'
+                      upperCase_b="true"/>
+
+        <JHidden cid="creditorSubject6a7"/>
+        <JAccsubjGrid pos="B2:B2" cid="creditorSubject6a7Name"
+                      fieldLabel_s="creditorSubject6a7"
+                      allowBlank_b="false"
+                      refer_j='[{"refField":"creditorSubject6a7","valueField":"subjectCode"}]'
+                      upperCase_b="true"/>
+
+        <JHidden cid="debtorSubject8"/>
+        <JAccsubjGrid pos="C2:C2" cid="debtorSubject8Name"
+                      fieldLabel_s="debtorSubject8"
+                      allowBlank_b="false"
+                      refer_j='[{"refField":"debtorSubject8","valueField":"subjectCode"}]'
+                      upperCase_b="true"/>
+
+        <JHidden cid="creditorSubject8"/>
+        <JAccsubjGrid pos="D2:D2" cid="creditorSubject8Name"
+                      fieldLabel_s="creditorSubject8"
+                      allowBlank_b="false"
+                      refer_j='[{"refField":"creditorSubject8","valueField":"subjectCode"}]'
+                      upperCase_b="true"/>
+
+        <JHidden cid="debtorSubject9a10"/>
+        <JAccsubjGrid pos="A3:A3" cid="debtorSubject9a10Name"
+                      fieldLabel_s="debtorSubject9a10"
+                      allowBlank_b="false"
+                      refer_j='[{"refField":"debtorSubject9a10","valueField":"subjectCode"}]'
+                      upperCase_b="true"/>
+
+        <JHidden cid="creditorSubject9a10"/>
+        <JAccsubjGrid pos="B3:B3" cid="creditorSubject9a10Name"
+                      fieldLabel_s="creditorSubject9a10"
+                      allowBlank_b="false"
+                      refer_j='[{"refField":"creditorSubject9a10","valueField":"subjectCode"}]'
+                      upperCase_b="true"/>
+
+        <JHidden cid="creditorRtfree9a10"/>
+        <JRtfreevalueGrid pos="C3:C3" cid="creditorRtfree9a10Name"
+                          fieldLabel_s="creditorRtfree9a10"
+                          allowBlank_b="false"
+                          refer_j='[{"refField":"creditorRtfree9a10","valueField":"accountInfoCode"}]'
+                          upperCase_b="true"/>
+
+        <JHidden cid="debtorSubject1"/>
+        <JAccsubjGrid pos="A4:A4" cid="debtorSubject1Name"
+                      fieldLabel_s="debtorSubject1"
+                      allowBlank_b="false"
+                      refer_j='[{"refField":"debtorSubject1","valueField":"subjectCode"}]'
+                      upperCase_b="true"/>
+
+        <JHidden cid="debtorSubject2"/>
+        <JAccsubjGrid pos="B4:B4" cid="debtorSubject2Name"
+                      fieldLabel_s="debtorSubject2"
+                      allowBlank_b="false"
+                      refer_j='[{"refField":"debtorSubject2","valueField":"subjectCode"}]'
+                      upperCase_b="true"/>
+    </JForm>
+</view>

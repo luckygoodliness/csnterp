@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>scmebusinessuser-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>t1.create_time desc</defaultSort>
+    <conditions columns="4">
+        <JCombo pos="A1:A1" cid="ebusinessName" fieldLabel_s="ebusinessName" comboType="query_ebusiness_name"
+                fullInfo_b="false" displayDesc_b="false"
+                field="t1.ebusiness_name" pickerMinWidth_n="113" pickerMaxHeight_n="60" />
+        <!--<JText pos="A1:A1" fieldLabel_s="ebusinessName" cid="ebusinessName" field="ebusiness_name"/>-->
+        <JHidden pos="B1:B1" cid="scmSupplierIdDesc"/>
+        <JCombo pos="B1:B1" cid="scmSupplierId" fieldLabel_s="供应商名称" field="t1.scm_supplier_id" allowBlank_b="true"
+                comboType="query_ebusiness_supplier" displayDesc_b="true" pickerMinWidth_n="113" pickerMaxHeight_n="60"/>
+        <JHidden pos="C1:C1" cid="officeIdDesc" />
+        <JErpDepartMent pos="C1:C1" fieldLabel_s="部门" cid="officeId" allowBlank_b="true" displayDesc_b="true"
+                        field="t1.office_id"/>
+
+        <JUserGrid pos="D1:D1" cid="charge" fieldLabel_s="归口人"
+                   field="t1.charge"
+                  />
+        <!--<JText pos="D2:D2" fieldLabel_s="updateBy" cid="updateby" field="update_by"/>-->
+        <!--<JFromTo pos="A3:B3" subXtype="JDatetime" fieldLabel_s="createTime" cid="createTime" field="create_time"/>-->
+        <!--<JFromTo pos="C3:D3" subXtype="JDatetime" fieldLabel_s="updateTime" cid="updateTime" field="update_time"/>-->
+    </conditions>
+    <results resultGridConfig="{'autoResizeColumn':false}">
+            <!--<JTextCol text_s="所属公司编号" dataIndex="companyCode" width_n="120"/>-->
+            <!--<JTextCol text_s="所属公司名称" dataIndex="companyName" width_n="120"/>-->
+            <!--<JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120"/>-->
+            <!--<JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>-->
+            <!--<JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>-->
+        <!--<JIntCol text_s="seqNo" dataIndex="seqNo" width_n="100" />-->
+            <JTextCol text_s="电商名称" dataIndex="ebusinessName" width_n="120"/>
+            <!--<JTextCol text_s="供应商id" dataIndex="scmSupplierId" width_n="120"/>-->
+            <JTextCol text_s="供应商" dataIndex="scmSupplierName" width_n="120"/>
+            <!--<JTextCol text_s="部门" dataIndex="officeId" width_n="120"/>-->
+            <JTextCol text_s="部门" dataIndex="officeName" width_n="120"/>
+            <JTextCol text_s="用户名" dataIndex="userCode" width_n="120"/>
+            <JTextCol text_s="密码" dataIndex="password" width_n="120"/>
+            <JTextCol text_s="归口人" dataIndex="charge" width_n="120"/>
+            <JTextCol text_s="备注" dataIndex="remark" width_n="120"/>
+    </results>
+</commonquery>

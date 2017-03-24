@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select pre.*, prc.customer_name payer_name, fmcode.code_desc money_type_desc,org.org_name,
+             fmcode1.code_desc wf_status from prm_unknown_receipts pre
+             left join prm_customer prc on prc.uuid=pre.payer
+             left join scdp_code fmcode1 on fmcode1.code_type='CDM_BILL_STATE' and fmcode1.sys_code = pre.state
+             left join scdp_code fmcode on fmcode.code_type='MONEY_TYPE' and fmcode.sys_code = pre.money_type
+             left join scdp_org org on org.org_code = pre.department_code
+             where ${conditions} and (pre.is_void is null or pre.is_void = 0)]]>
+        </common>
+    </common_query>
+
+    <popup_query>
+        <common>
+            <![CDATA[select pre.*, prc.customer_name payer_name, fmcode.code_desc money_type_desc,org.org_name,
+             fmcode1.code_desc wf_status from prm_unknown_receipts pre
+             left join prm_customer prc on prc.uuid=pre.payer
+             left join scdp_code fmcode1 on fmcode1.code_type='CDM_BILL_STATE' and fmcode1.sys_code = pre.state
+             left join scdp_code fmcode on fmcode.code_type='MONEY_TYPE' and fmcode.sys_code = pre.money_type
+             left join scdp_org org on org.org_code = pre.department_code
+             where ${conditions} and (pre.is_void is null or pre.is_void = 0)
+             and (not exists (select uuid from prm_receipts pri where pri.prm_unknown_receipts_id = pre.uuid)
+             or pre.money > (select sum(pri.actual_money) from prm_receipts pri  where pri.prm_unknown_receipts_id = pre.uuid)
+             or (select sum(pri.actual_money) from prm_receipts pri where pri.prm_unknown_receipts_id = pre.uuid) is null )
+             ]]>
+        </common>
+    </popup_query>
+</DAO>

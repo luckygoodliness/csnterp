@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <!--<JTab col="1*1" pos="A1:A1" row="flex" border_n="1" cid="tab">-->
+        <!--<JPanel col="1*1" pos="A1:A1" title_s="table1" row="flex" border_n="1" cid="generalTab">-->
+            <!--<JFieldSet pos="A1:A1" title_s="44444" border_n="0"></JFieldSet>-->
+            <JPanel pos="A1:A1" title_s="" row="flex" col="1*1">
+                <JForm pos="A1:A1" title_s="" col="0.25*4" row="23*4,flex" border_n="0"
+                       cid="fadCashClearanceDto">
+                    <JHidden cid="uuid"/>
+                    <JHidden cid="tblVersion"/>
+                    <JHidden cid="officeIdDesc"/>
+                    <JText pos="A1:A1" cid="runningNo" fieldLabel_s="runningNo" allowBlank_b="true"
+                           readOnly_b="true" adaptable_b="false"/>
+                    <JHidden cid="clearancePerson" fieldLabel_s="clearancePerson" allowBlank_b="true"/>
+                    <JUserGrid pos="B1:B1" fieldLabel_s="clearancePerson" cid="clearancePersonName" allowBlank_b="false"
+                               refer_j='[{"refField":"clearancePerson","valueField":"userId"},{"refField":"officeId","valueField":"orgCode"}]'/>
+                    <JErpDepartMent pos="C1:D1" fieldLabel_s="部门" cid="officeId" readOnly_b="true"
+                                     adaptable_b="false" allowBlank_b="false"/>
+                    <!--<JText pos="A2:B2" cid="projectName" fieldLabel_s="prmProjectMainId" allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>-->
+                    <JHidden cid="prmProjectMainId" fieldLabel_s="prmProjectMainId" allowBlank_b="true"/>
+                    <JDec pos="A2:A2" cid="totalMoney" fieldLabel_s="totalMoney" allowBlank_b="false" readOnly_b="true" adaptable_b="false"/>
+                    <JCombo pos="B2:B2" cid="state" fieldLabel_s="state"
+                            comboType="scdp_fmcode" codeType="FAD_BILL_STATE"  readOnly_b="true" adaptable_b="false" displayDesc_b="true" allowBlank_b="true"/>
+                    <JTextArea pos="A3:D4" cid="remark" fieldLabel_s="remark" allowBlank_b="true"/>
+                    <JFieldSet pos="A5:D5" row="flex" col="0.25*4" title_s="clearanceTable" border_n="1">
+                        <JEGrid pos="A1:D1" cid="fadCashReqInvoiceDto" store="Invoice.store.FadCashReqInvoiceStore">
+                            <JHidden dataIndex="uuid"/>
+                            <JHidden dataIndex="fadCashReqId"/>
+                            <JTextCol text_s="对应请款流水号" dataIndex="runningNo" width_n="120"/>
+                            <!--<JTextCol text_s="对应请款凭证" dataIndex="cashVoucher" width_n="120"/>-->
+                            <JTextCol text_s="原请款金额" dataIndex="reqMoney" width_n="120"/>
+                            <JDecCol text_s="核销金额" dataIndex="clearanceMoney" width_n="150">
+                                <JDec allowBlank_b="true"/>
+                            </JDecCol>
+                        </JEGrid>
+                    </JFieldSet>
+                </JForm>
+            </JPanel>
+        <!--</JPanel>-->
+        <!--<JPanel pos="A1:A1" row="flex,150*1" col="1*1" title_s="table2" border_n="1">-->
+        <!--</JPanel>-->
+        <!--<JPanel pos="A1:A1" row="flex,150*1" col="1*1" title_s="table3" border_n="1">-->
+        <!--</JPanel>-->
+    <!--</JTab>-->
+    <!--<JForm pos="A1:A1" cid="Dto" row="23*1" col="0.25*4" title_s="" border_n="1">-->
+        <!--<JHidden cid="uuid"/>-->
+        <!--<JHidden cid="tblVersion"/>-->
+        <!--<JText pos="A1:A1" cid="prmProjectMainId" fieldLabel_s="prmProjectMainId" allowBlank_b="true"/>-->
+        <!--<JDec pos="A1:A1" cid="totalMoney" fieldLabel_s="totalMoney" allowBlank_b="true"/>-->
+        <!--<JText pos="A1:A1" cid="runningNo" fieldLabel_s="runningNo" allowBlank_b="true"/>-->
+        <!--<JText pos="A1:A1" cid="clearancePerson" fieldLabel_s="clearancePerson" allowBlank_b="true"/>-->
+        <!--<JText pos="A1:A1" cid="state" fieldLabel_s="state" allowBlank_b="true"/>-->
+        <!--<JTextArea pos="A5:D6" cid="remark" fieldLabel_s="remark" allowBlank_b="true"/>-->
+        <!--<JFieldSet pos="A7:D7" row="23,flex" col="0.25*4" title_s="clearanceTable" border_n="1">-->
+            <!--<JDec pos="A1:A1" cid="cashReqMoney" fieldLabel_s="原请款金额合计" allowBlank_b="true"-->
+                  <!--readOnly_b="true" adaptable_b="false"/>-->
+            <!--<JDec pos="B1:B1" cid="totalClearanceMoney" fieldLabel_s="核销金额合计" allowBlank_b="true"-->
+                  <!--readOnly_b="true" adaptable_b="false"/>-->
+            <!--<JEGrid pos="A2:D2" cid="fadCashReqInvoiceDto" store="Invoice.store.FadCashReqInvoiceStore">-->
+                <!--<JHidden dataIndex="uuid"/>-->
+                <!--<JHidden dataIndex="fadCashReqId"/>-->
+                <!--<JTextCol text_s="对应请款流水号" dataIndex="runningNo" width_n="120"/>-->
+                <!--<JTextCol text_s="对应请款凭证" dataIndex="cashVoucher" width_n="120"/>-->
+                <!--<JTextCol text_s="原请款金额" dataIndex="reqMoney" width_n="120"/>-->
+                <!--<JDecCol text_s="clearanceMoney" dataIndex="clearanceMoney" width_n="150">-->
+                    <!--<JDec allowBlank_b="true"/>-->
+                <!--</JDecCol>-->
+            <!--</JEGrid>-->
+        <!--</JFieldSet>-->
+    <!--</JForm>-->
+</view>

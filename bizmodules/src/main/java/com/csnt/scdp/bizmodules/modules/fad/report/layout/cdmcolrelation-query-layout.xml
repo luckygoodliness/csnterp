@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonreport version="1.0">
+    <report>
+        <reporttype>L</reporttype>
+        <reporttemplate>erp/CDM_COL_RELATION.cpt</reporttemplate>
+        <reportcache>false</reportcache>
+    </report>
+    <conditions columns="4">
+        <JText pos="A1:A2" cid="columnUuid" fieldLabel_s="columnUuid" field="column_uuid" labelWidth_n="100"
+               allowBlank_b="true"/>
+    </conditions>
+</commonreport>

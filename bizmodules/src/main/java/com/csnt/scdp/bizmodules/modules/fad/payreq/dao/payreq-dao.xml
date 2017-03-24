@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <!--月度支付申请-->
+    <common_query>
+        <common>
+            <![CDATA[select * from fad_pay_req_h where req_type='1' and ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+
+    <!--临时支付申请-->
+    <common_tmp_query>
+        <common>
+            <![CDATA[
+                                   SELECT P.*
+                  FROM (SELECT T.*,
+                               S.BILL_STATE,
+                               DECODE(T.STATE, '4', 0, RC.TO_PROCESS) AS TO_PROCESS,
+                               RC.PROCESSING,
+                               RC.PROCESSED,
+                               U.USER_NAME AS CREATE_BY_NAME,
+                               (SELECT DISTINCT U.USER_NAME
+                                  FROM SCDP_USER U
+                                 WHERE U.USER_ID = T.UPDATE_BY) AS UPDATE_BY_NAME
+                          FROM FAD_PAY_REQ_H T
+                          LEFT JOIN (SELECT C.SYS_CODE, C.CODE_DESC AS BILL_STATE
+                                      FROM SCDP_CODE C
+                                     WHERE C.CODE_TYPE = 'CDM_BILL_STATE') S
+                            ON T.STATE = S.SYS_CODE
+                          LEFT JOIN (SELECT PUUID,
+                                           SUM(DECODE(C.STATE, '2', 1, 0)) AS TO_PROCESS,
+                                           SUM(DECODE(C.STATE, '8', 1, 0)) AS PROCESSING,
+                                           SUM(DECODE(C.STATE, '4', 1, 0)) AS PROCESSED
+                                      FROM FAD_PAY_REQ_C C
+                                     WHERE C.AUDIT_MONEY > 0
+                                     GROUP BY C.PUUID) RC
+                            ON T.UUID = RC.PUUID
+                          LEFT JOIN SCDP_USER U
+                            ON U.USER_ID = T.CREATE_BY) P
+                    where  req_type = '0' and ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_tmp_query>
+    <!--临时支付调整申请-->
+    <common_adjusttmp_query>
+        <common>
+            <![CDATA[
+                                   SELECT P.*
+                  FROM (SELECT T.*,
+                               S.BILL_STATE,
+                               DECODE(T.STATE, '4', 0, RC.TO_PROCESS) AS TO_PROCESS,
+                               RC.PROCESSING,
+                               RC.PROCESSED,
+                               U.USER_NAME AS CREATE_BY_NAME,
+                               (SELECT DISTINCT U.USER_NAME
+                                  FROM SCDP_USER U
+                                 WHERE U.USER_ID = T.UPDATE_BY) AS UPDATE_BY_NAME
+                          FROM FAD_PAY_REQ_H T
+                          LEFT JOIN (SELECT C.SYS_CODE, C.CODE_DESC AS BILL_STATE
+                                      FROM SCDP_CODE C
+                                     WHERE C.CODE_TYPE = 'CDM_BILL_STATE') S
+                            ON T.STATE = S.SYS_CODE
+                          LEFT JOIN (SELECT PUUID,
+                                           SUM(DECODE(C.STATE, '2', 1, 0)) AS TO_PROCESS,
+                                           SUM(DECODE(C.STATE, '8', 1, 0)) AS PROCESSING,
+                                           SUM(DECODE(C.STATE, '4', 1, 0)) AS PROCESSED
+                                      FROM FAD_PAY_REQ_C C
+                                     WHERE C.AUDIT_MONEY > 0
+                                     GROUP BY C.PUUID) RC
+                            ON T.UUID = RC.PUUID
+                          LEFT JOIN SCDP_USER U
+                            ON U.USER_ID = T.CREATE_BY) P
+                    where  req_type = '2' and ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_adjusttmp_query>
+    <!--支付申请查询-->
+    <common_pay_scmcontract_query>
+        <common>
+            <![CDATA[select *
+                        from   (select sce.*,
+                                       pr.project_money,
+                                       pr.actual_money,
+                                       null             as reqc_money,
+                                       null             as reqc_audit_money
+                                from   vw_scm_contract_execute sce
+                                left   join vw_prm_receipt pr
+                                on     sce.project_id = pr.prm_project_main_id)
+                         where ${conditions} and ${selfconditions} ]]>
+        </common>
+    </common_pay_scmcontract_query>
+
+    <!--月度支付申请-->
+    <common_month_query>
+        <common>
+            <![CDATA[
+                        select t.*,
+                   ROW_NUMBER() OVER(PARTITION BY T.YEAR, T.MONTH ORDER BY T.REQNO ASC)||'期' AS PAY_NUMBER,
+                   s.BILL_STATE,
+                   decode(t.state, '4', 0, rc.to_process) as to_process,
+                   rc.processing,
+                   rc.processed,
+                   (select distinct u.user_name
+                      from scdp_user u
+                     where u.user_id = t.create_by) as create_by_name,
+                   (select distinct u.user_name
+                      from scdp_user u
+                     where u.user_id = t.update_by) as update_by_name
+              from fad_pay_req_h t
+              left join (select c.sys_code, c.code_desc as BILL_STATE
+                           from scdp_code c
+                          where c.code_type = 'CDM_BILL_STATE') s
+                on t.state = s.sys_code
+              left join (select puuid,
+                                sum(decode(c.state, '2', 1, 0)) as to_process,
+                                sum(decode(c.state, '8', 1, 0)) as processing,
+                                sum(decode(c.state, '4', 1, 0)) as processed
+                           from fad_pay_req_c c
+                           WHERE C.AUDIT_MONEY > 0
+                          group by c.puuid) rc
+                on t.uuid = rc.puuid
+             where req_type = '1'  and ${conditions} and ${voidfilter}
+            ]]>
+        </common>
+    </common_month_query>
+</DAO>

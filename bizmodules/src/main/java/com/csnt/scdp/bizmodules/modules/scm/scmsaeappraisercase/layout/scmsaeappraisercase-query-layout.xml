@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>scmsaeappraisercase-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="A1:A1" fieldLabel_s="caseName" cid="caseName" field="case_name"/>
+    </conditions>
+    <results resultGridConfig="{'autoResizeColumn':false}">
+        <JTextCol text_s="caseName" dataIndex="caseName" width_n="120"/>
+        <JRCheckCol text_s="isactive" dataIndex="isactive" width_n="80" />
+        <JTextCol text_s="remark" dataIndex="remark" width_n="200"/>
+    </results>
+</commonquery>

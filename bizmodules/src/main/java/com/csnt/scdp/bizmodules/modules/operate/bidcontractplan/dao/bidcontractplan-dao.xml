@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select t.*
+                            from operate_business_bid_info t
+                        where 1=1 and  (t.is_void is null or t.is_void=0)
+                              and  ${conditions}]]>
+        </common>
+    </common_query>
+    <common_jquery>
+        <common>
+            <![CDATA[
+                   SELECT S.* 　FROM (SELECT T1.*,
+                         C.CUSTOMER_NAME,
+                         T3.ORG_NAME AS CONTRACTOR_OFFICE_NAME,
+                         T5.STATE_DESC
+                    FROM OPERATE_BUSINESS_BID_INFO T1
+                    LEFT JOIN PRM_CUSTOMER C
+                      ON T1.CUSTOMER_ID = C.UUID
+                    LEFT JOIN SCDP_ORG T3
+                      ON T1.CONTRACTOR_OFFICE = T3.ORG_CODE
+                    LEFT JOIN FM_STATE T5
+                      ON T5.STATE_CODE = T1.Build_Region
+                   WHERE (T1.IS_VOID IS NULL OR T1.IS_VOID = 0)) S
+                 WHERE ${conditions}  and ${selfconditions}
+                 ]]>
+        </common>
+    </common_jquery>
+</DAO>

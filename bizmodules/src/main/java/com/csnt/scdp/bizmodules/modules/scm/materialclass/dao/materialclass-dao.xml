@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[SELECT T.*,
+       (SELECT CODE_DESC
+          FROM SCDP_CODE A
+         WHERE A.CODE_TYPE = 'SCM_MATERIAL_CLASS_LEVEL'
+           AND A.SYS_CODE = T.CLASS_LEVEL) AS CLASS_LEVEL_COMBO,
+        (SELECT CODE_DESC
+          FROM SCDP_CODE A
+         WHERE A.CODE_TYPE = 'PRM_OPERATIVE_SEGMENTS'
+           AND A.SYS_CODE = T.OPERATIVE_SEGMENTS) AS OPERATIVE_SEGMENTS_COMBO,
+         (SELECT NAME
+          FROM SCM_MATERIAL_ITEM A
+         WHERE A.UUID = T.ITEM_CLASS) AS ITEM_CLASS_COMBO,
+       (SELECT CODE_DESC
+          FROM SCDP_CODE A
+         WHERE A.CODE_TYPE = 'SCM_DEFAULTPROPERTY'
+           AND A.SYS_CODE = T.IS_RIGID) AS IS_RIGID_COMBO,
+       DECODE(T.MATERIAL_TYPE,0,'设备','外协') AS MATERIAL_TYPE_NAME
+  FROM SCM_MATERIAL_CLASS T
+ where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+    <jgrid_query>
+        <common>
+            <![CDATA[SELECT T.*,
+       (SELECT CODE_DESC
+          FROM SCDP_CODE A
+         WHERE A.CODE_TYPE = 'SCM_MATERIAL_CLASS_LEVEL'
+           AND A.SYS_CODE = T.CLASS_LEVEL) AS CLASS_LEVEL_COMBO,
+       (SELECT CODE_DESC
+          FROM SCDP_CODE A
+         WHERE A.CODE_TYPE = 'SCM_DEFAULTPROPERTY'
+           AND A.SYS_CODE = T.IS_RIGID) AS IS_RIGID_COMBO,
+       (SELECT CODE_DESC
+                      FROM SCDP_CODE A
+                     WHERE A.CODE_TYPE = 'PRM_OPERATIVE_SEGMENTS'
+                       AND A.SYS_CODE = T.OPERATIVE_SEGMENTS) AS OPERATIVE_SEGMENTS_COMBO
+  FROM SCM_MATERIAL_CLASS T
+ where ${conditions} and ${voidfilter}]]>
+        </common>
+    </jgrid_query>
+    <materialClassCode_common_query>
+        <common>
+            <![CDATA[select t1.*,t2.code_desc as class_level_desc, t3.code_desc as is_rigid_desc from scm_material_class t1
+             left join scdp_code t2 on t2.code_type='PRM_PURCHASE_LEVEL' and t1.class_level=t2.sys_code
+             left join scdp_code t3 on t3.code_type='SCM_DEFAULTPROPERTY' and t1.is_rigid=t3.sys_code
+             where ${conditions} ]]>
+        </common>
+    </materialClassCode_common_query>
+</DAO>

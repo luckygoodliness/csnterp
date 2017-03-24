@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="assetTransferDto" row="24*6" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JText pos="A1:A1" cid="ransferApplyId" fieldLabel_s="ransferApplyId" allowBlank_b="true"/>
+        <JDatetime pos="B1:B1" cid="applyDate" fieldLabel_s="applyDate" allowBlank_b="false"/>
+        <JText pos="C1:C1" cid="cardCode" fieldLabel_s="cardCode" allowBlank_b="true" readOnly_b="true" adaptable_b="false"/>
+        <!--<JCard pos="C1:C1" cid="cardCode" fieldLabel_s="cardCode" allowBlank_b="false"
+          refer_j='[{"refField":"assetName","valueField":"assetName"},{"refField":"endUserName","valueField":"endUserName"},{"refField":"operatePerson","valueField":"operatePerson"},{"refField":"state","valueField":"state"}]'/>
+-->
+        <!--<JText pos="D1:D1" cid="state" fieldLabel_s="state" allowBlank_b="true"/>-->
+        <JCombo pos="D1:D1" cid="state" fieldLabel_s="state" comboType="scdp_fmcode" codeType="ASSET_TRANSFER_STATE"/>
+
+        <JHidden cid="cardUuid"/>
+       <!-- <JText pos="A2:B2" cid="assetName" fieldLabel_s="资产名称" allowBlank_b="true"/>-->
+        <JCard2 pos="A2:B2" cid="assetName" fieldLabel_s="资产名称" allowBlank_b="false"
+               refer_j='[{"refField":"cardUuid","valueField":"uuid"},{"refField":"cardCode","valueField":"cardCode"},
+               {"refField":"endUserName","valueField":"endUserName"},{"refField":"operatePerson","valueField":"operatePerson"},
+               {"refField":"state","valueField":"state"},{"refField":"endUserName","valueField":"endUserName"},
+               {"refField":"officeId","valueField":"officeId"}]'/>
+
+        <JText pos="C2:C2" cid="endUserName" fieldLabel_s="使用人姓名" allowBlank_b="true"/>
+        <JText pos="D2:D2" cid="officeId" fieldLabel_s="使用部门" allowBlank_b="true"/>
+
+        <JText pos="A3:A3" cid="inPersonName" fieldLabel_s="转入人" allowBlank_b="true"/>
+        <JText pos="B3:B3" cid="inOfficeId" fieldLabel_s="转入部门" allowBlank_b="true"/>
+        <JText pos="C3:C3" cid="operatePerson" fieldLabel_s="operatePerson" allowBlank_b="false"/>
+        <JText pos="D3:D3" cid="processTime" fieldLabel_s="处理时间" allowBlank_b="true"/>
+
+        <JTextArea pos="A4:D5" cid="remark" fieldLabel_s="备注" allowBlank_b="true"/>
+        <JText pos="A6:A6" cid="outPersonName" fieldLabel_s="outPersonName" allowBlank_b="false"/>
+        <JText pos="B6:B6" cid="applyDate" fieldLabel_s="申请时间" allowBlank_b="true"/>
+
+
+        <!--<JText pos="A7:A7" cid="outOfficeId" fieldLabel_s="outOfficeId" allowBlank_b="true"/>-->
+        <!--<JText pos="B3:B3" cid="inOfficeId" fieldLabel_s="inOfficeId" allowBlank_b="true"/>-->
+        <!--<JText pos="C2:C2" cid="companyCode" fieldLabel_s="companyCode" allowBlank_b="true"/>-->
+        <!--<JText pos="C3:C3" cid="companyName" fieldLabel_s="companyName" allowBlank_b="true"/>-->
+        <!--<JText pos="C4:C4" cid="departmentCode" fieldLabel_s="departmentCode" allowBlank_b="true"/>-->
+        <!--<JText pos="A5:A5" cid="createOffice" fieldLabel_s="createOffice" allowBlank_b="true"/>-->
+        <!--<JText pos="B5:B5" cid="updateOffice" fieldLabel_s="updateOffice" allowBlank_b="true"/>-->
+    </JForm>
+</view>

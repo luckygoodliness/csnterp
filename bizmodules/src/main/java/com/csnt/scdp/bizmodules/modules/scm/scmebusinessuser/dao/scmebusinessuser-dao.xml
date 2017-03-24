@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <!--<![CDATA[select t1.*, t2.supplier_othername as scm_Supplier_Name,t2.supplier_code,-->
+            <!--t3.org_name as office_name,t3.org_code-->
+            <!--from scm_ebusiness_user t1-->
+            <!--left join scm_supplier t2-->
+            <!--on t1.scm_supplier_id = t2.supplier_code-->
+            <!--left join scdp_org t3-->
+            <!--on t1.office_id = t3.org_code-->
+            <!--where ${conditions} ]]>-->
+            <![CDATA[select t1.*, t2.complete_name as scm_Supplier_Name,
+                     t3.org_name as office_name
+                     from scm_ebusiness_user t1
+                     left join scm_supplier t2
+                     on t1.scm_supplier_id = t2.supplier_code
+                     left join scdp_org t3
+                     on t1.office_id = t3.org_code
+                    where ${conditions} ]]>
+            <!--<![CDATA[select * from scm_ebusiness_user where ${conditions} and ${voidfilter}]]>-->
+        </common>
+    </common_query>
+
+    <gird_common_query>
+        <common>
+            <![CDATA[
+                    select *
+                      from (select t1.*,
+                                   t2.complete_name as scm_supplier_name,
+                                   t3.org_name      as office_name
+                              from scm_ebusiness_user t1
+                              left join scm_supplier t2
+                                on t1.scm_supplier_id = t2.supplier_code
+                              left join scdp_org t3
+                                on t1.office_id = t3.org_code)
+                     where   ${conditions}  and ${voidfilter}  and ${selfconditions}
+                    ]]>
+        </common>
+    </gird_common_query>
+</DAO>

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JPanel col="1*1" pos="A1:A1" title_s="" row="flex" border_n="0" cid="mainPanel">
+    </JPanel>
+</view>

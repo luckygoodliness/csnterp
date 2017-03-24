@@ -1,0 +1,488 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20141222" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="PackageDs" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="beginDate"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="manager"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="endDate"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="isMajorProject"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="wcblfTo"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="wcblfFrom"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="office"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="projectId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT T.*, MOD(ROWNUM, 2) AS FOR_COLOUR
+  FROM (SELECT M.UUID AS PRM_PROJECT_MAIN_ID, --项目id
+               SO.ORG_NAME AS CONTRACTOR_OFFICE, --部门
+               M.PROJECT_CODE, --项目代号
+               M.PROJECT_NAME, --项目名称
+               PPP.UUID AS PURCHASE_PACKAGE_ID, --包id
+               PPP.PACKAGE_NAME, --包名 
+               PPP.PACKAGE_BUDGET_MONEY, --包预算
+               PPRD.YSQJE_YS, --已申请金额(数量*对应预算单价)
+               PPRD.YSQJE_QS, --已申请但未做完合同的金额(数量*期望单价)
+               PPRD.YSQJE_HT, --已做合同的金额
+               PPRD.BUDGET_HT, --已做合同的预算
+               NVL(PPRD.BUDGET_HT, 0) - NVL(PPRD.YSQJE_HT, 0) AS BJYE, --包结余额
+               PPP.PACKAGE_BUDGET_MONEY - NVL(PPRD.YSQJE_HT, 0) -
+               NVL(PPRD.YSQJE_QS, 0) AS BKYJE, --包可用金额
+               DECODE(NVL(PPP.PACKAGE_BUDGET_MONEY, 0),
+                      0,
+                      0,
+                      NVL(PPRD.YSQJE_YS, 0) /
+                      NVL(PPP.PACKAGE_BUDGET_MONEY, 0)) AS WCBL, --完成比例
+               PROJECT_MANAGER,
+               SU.USER_NAME,
+               SU.USER_MOBILE
+          FROM PRM_PROJECT_MAIN M
+          LEFT JOIN SCDP_USER SU ON SU.USER_ID = M.PROJECT_MANAGER
+          LEFT JOIN SCDP_ORG SO ON SO.ORG_CODE = M.CONTRACTOR_OFFICE
+          LEFT JOIN PRM_PURCHASE_PACKAGE PPP ON M.UUID =
+                                                PPP.PRM_PROJECT_MAIN_ID
+          LEFT JOIN (SELECT PPRD.PURCHASE_PACKAGE_ID,
+                           YSQJE_YS,
+                           YSQJE_QS,
+                           YSQJE_HT,
+                           BUDGET_HT
+                      FROM (SELECT PPRD.PURCHASE_PACKAGE_ID,
+                                   SUM(NVL(PPRD.HANDLE_AMOUNT, PPRD.AMOUNT) *
+                                       NVL(PPRD.BUDGET_PRICE, 0)) AS YSQJE_YS, --已申请金额(数量*对应预算单价)
+                                   SUM(NVL(PPRD.HANDLE_AMOUNT, PPRD.AMOUNT) *
+                                       DECODE(SC.STATE,
+                                              2,
+                                              0,
+                                              NVL(PPRD.EXPECTED_PRICE, 0))) AS YSQJE_QS --已申请但未做完合同的金额(数量*期望单价)
+                              FROM PRM_PURCHASE_REQ_DETAIL PPRD
+                              LEFT JOIN SCM_CONTRACT SC ON PPRD.SCM_CONTRACT_ID =
+                                                           SC.UUID
+                             WHERE NVL(PPRD.ISFALLBACK, 0) = 0
+                               AND EXISTS
+                             (SELECT 1
+                                      FROM PRM_PURCHASE_REQ PPR
+                                     WHERE PPR.UUID = PPRD.PRM_PURCHASE_REQ_ID
+                                       AND PPR.IS_PROJECT = 1
+                                       AND PPR.STATE IN ('1', '2'))
+                               AND (SC.STATE IS NULL OR SC.STATE <> '3')
+                            --部门、项目
+                             GROUP BY PPRD.PURCHASE_PACKAGE_ID) PPRD
+                      LEFT JOIN (SELECT SC.PURCHASE_PACKAGE_ID,
+                                       SUM(SC.AMOUNT) AS YSQJE_HT,
+                                       SUM(SC.BUDGET_HT) AS BUDGET_HT
+                                  FROM (SELECT SC.UUID,
+                                               MAX(SC.PURCHASE_PACKAGE_ID) AS PURCHASE_PACKAGE_ID,
+                                               MAX(SC.AMOUNT) AS AMOUNT,
+                                               SUM(PPRD.HANDLE_AMOUNT *
+                                                   PPRD.BUDGET_PRICE) AS BUDGET_HT
+                                          FROM SCM_CONTRACT SC
+                                          LEFT JOIN PRM_PURCHASE_REQ_DETAIL PPRD ON SC.UUID =
+                                                                                    PPRD.SCM_CONTRACT_ID
+                                         WHERE SC.STATE = 2
+                                         GROUP BY SC.UUID) SC
+                                 GROUP BY SC.PURCHASE_PACKAGE_ID
+                                --where 部门、项目
+                                ) SC ON PPRD.PURCHASE_PACKAGE_ID =
+                                        SC.PURCHASE_PACKAGE_ID) PPRD ON PPP.UUID =
+                                                                        PPRD.PURCHASE_PACKAGE_ID
+         WHERE PPP.UUID IS NOT NULL
+           AND PPP.PACKAGE_STATE = '2'
+           AND (M.UUID = '${projectId}' OR '${projectId}' IS NULL)
+           AND (M.IS_MAJOR_PROJECT = '${isMajorProject}' OR
+               '${isMajorProject}' IS NULL)
+           AND (M.CONTRACTOR_OFFICE = '${office}' OR '${office}' IS NULL)
+           AND (M.PROJECT_MANAGER = '${manager}' OR '${manager}' IS NULL)
+           AND ('${beginDate}' IS NULL OR
+               M.ESTABLISH_DATE >= TO_DATE('${beginDate}', 'yyyy-mm-dd'))
+           AND ('${endDate}' IS NULL OR
+               M.ESTABLISH_DATE <= TO_DATE('${endDate}', 'yyyy-mm-dd'))
+         ORDER BY M.CREATE_TIME DESC, PPP.PACKAGE_NO) T
+ WHERE ('${wcblfFrom}' IS NULL OR T.WCBL * 100 >= '${wcblfFrom}')
+   AND ('${wcblfTo}' IS NULL OR T.WCBL * 100 <= '${wcblfTo}')
+]]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="分包进度表">
+<ReportPageAttr>
+<HR F="0" T="1"/>
+<FR/>
+<HC/>
+<FC/>
+<UPFCR COLUMN="false" ROW="true"/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1409700,1447800,1152000,723900,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[5295900,3695700,10782300,3086100,2476500,4032000,4032000,4032000,4032000,3352800,5181600,0,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" cs="11" s="0">
+<O>
+<![CDATA[分包进度表]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" s="1">
+<O>
+<![CDATA[部门]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" s="1">
+<O>
+<![CDATA[项目代号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="1" s="1">
+<O>
+<![CDATA[项目名称]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="1" s="1">
+<O>
+<![CDATA[分包名]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="1" s="1">
+<O>
+<![CDATA[分包完成比例]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="1" s="1">
+<O>
+<![CDATA[包预算金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="1" s="1">
+<O>
+<![CDATA[已申请金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="1" s="1">
+<O>
+<![CDATA[包可用金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="1" s="1">
+<O>
+<![CDATA[分包结余额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="1" s="1">
+<O>
+<![CDATA[项目经理]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="1" s="1">
+<O>
+<![CDATA[联系电话]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="1" s="2">
+<PrivilegeControl/>
+</C>
+<C c="0" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="PackageDs" columnName="CONTRACTOR_OFFICE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="PackageDs" columnName="PROJECT_CODE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="A3"/>
+</C>
+<C c="2" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="PackageDs" columnName="PROJECT_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="A3"/>
+</C>
+<C c="3" r="2" s="3">
+<O t="DSColumn">
+<Attributes dsName="PackageDs" columnName="PACKAGE_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="A3"/>
+</C>
+<C c="4" r="2" s="4">
+<O t="DSColumn">
+<Attributes dsName="PackageDs" columnName="WCBL"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="PackageDs" columnName="PACKAGE_BUDGET_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="A3"/>
+</C>
+<C c="6" r="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="PackageDs" columnName="YSQJE_YS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="A3"/>
+</C>
+<C c="7" r="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="PackageDs" columnName="BKYJE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="A3"/>
+</C>
+<C c="8" r="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="PackageDs" columnName="BJYE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="A3"/>
+</C>
+<C c="9" r="2" s="6">
+<O t="DSColumn">
+<Attributes dsName="PackageDs" columnName="USER_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="A3"/>
+</C>
+<C c="10" r="2" s="6">
+<O t="DSColumn">
+<Attributes dsName="PackageDs" columnName="USER_MOBILE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" leftParentDefault="false" left="A3"/>
+</C>
+<C c="11" r="2">
+<O t="DSColumn">
+<Attributes dsName="PackageDs" columnName="FOR_COLOUR"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[backgroundColour]]></Name>
+<Condition class="com.fr.data.condition.ObjectCondition">
+<Compare op="0">
+<O>
+<![CDATA[1]]></O>
+</Compare>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.BackgroundHighlightAction">
+<Scope val="1"/>
+<Background name="ColorBackground" color="-4144960"/>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="10" r="7">
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting orientation="1">
+<PaperSize width="720000000" height="51840000"/>
+<Margin top="144000" left="144000" bottom="144000" right="144000"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="144"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="88"/>
+<Background name="ColorBackground" color="-1"/>
+<Border>
+<Top style="1" color="-16777216"/>
+<Bottom style="1" color="-16777216"/>
+<Left style="1" color="-16777216"/>
+<Right style="1" color="-16777216"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="2" imageLayout="1">
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.00%]]></Format>
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<FRFont name="SimSun" style="0" size="80"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

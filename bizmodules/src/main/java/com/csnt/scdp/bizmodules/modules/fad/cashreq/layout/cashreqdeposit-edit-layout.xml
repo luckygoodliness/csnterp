@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JTab pos="A1:A1" row="flex" col="1*1" border_n="1">
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="费用申请" border_n="1">
+            <JForm pos="A1:A1" cid="fadCashReqDto" row="23*200" col="0.25*4" title_s="" border_n="1">
+                <JHidden cid="uuid"/>
+                <JHidden cid="tblVersion"/>
+                <JHidden cid="isProject"/>
+                <JHidden cid="reqType" allowBlank_b="true"/>
+
+                <JText pos="A1:A1" cid="runningNo" fieldLabel_s="runningNo" allowBlank_b="true" readOnly_b="true"
+                       adaptable_b="false"/>
+
+                <JCur pos="B1:B1" cid="money" fieldLabel_s="money" allowBlank_b="false" minValue="0.01"/>
+
+                <JCheck pos="C1:C1" cid="isUrgent" fieldLabel_s="isUrgent" allowBlank_b="true"/>
+
+                <JCombo pos="D1:D1" cid="state" fieldLabel_s="state" comboType="scdp_fmcode" codeType="FAD_BILL_STATE"
+                        displayDesc_b="true" readOnly_b="true" adaptable_b="false"/>
+
+                <JHidden cid="operateBusinessBidInfoIdDesc" allowBlank_b="true"/>
+                <JOperateBusiness pos="A2:A2" cid="operateBusinessBidInfoId" fieldLabel_s="operateBusinessBidInfoId"
+                                  valueField="uuid" descField="projectName" allowBlank_b="true"/>
+
+                <JNoneFinishedProject pos="B2:B2" cid="fadSubjectCode" fieldLabel_s="projectCode" allowBlank_b="true"
+                                      valueField="projectCode"
+                                      refer_j='[{"refField":"projectId","valueField":"uuid"},
+                                      {"refField":"projectName","valueField":"projectName"}]'/>
+
+                <JHidden cid="projectId" fieldLabel_s="projectId" allowBlank_b="true"/>
+
+                <JText pos="C2:C2" cid="projectName" fieldLabel_s="projectName" allowBlank_b="true"
+                       readOnly_b="true" adaptable_b="false"/>
+                <!--M7_C5_F2_逾期利息-->
+                <JText pos="D2:D2" cid="totalOverdueInterest" fieldLabel_s="totalOverdueInterest" allowBlank_b="true"
+                        readOnly_b="true" adaptable_b="false"/>
+                <JText pos="A3:B3" cid="subjectName" fieldLabel_s="subjectName" allowBlank_b="true"
+                       readOnly_b="true" adaptable_b="false"/>
+
+                <JCombo pos="C3:D3" cid="depositType" fieldLabel_s="depositType"
+                        comboType="scdp_fmcode" codeType="FAD_DEPOSIT_TYPE" displayDesc_b="true"
+                        allowBlank_b="false"/>
+
+                <JCombo pos="A4:A4" cid="payStyle" fieldLabel_s="payStyle"
+                        comboType="scdp_fmcode" codeType="FAD_PAYWAY" displayDesc_b="true"
+                        readOnly_b="true" adaptable_b="false" allowBlank_b="false"/>
+
+                <JDate pos="B4:B4" cid="applyDate" fieldLabel_s="applyDate" allowBlank_b="true"/>/>
+                <JDate pos="C4:C4" cid="squareDate" fieldLabel_s="squareDate" allowBlank_b="false"/>
+                <!--M7_C5_F1_保证金申请-->
+                <JDate pos="D4:D4" cid="preclearDate" fieldLabel_s="preclearDate" allowBlank_b="false"/>
+
+                <JHidden cid="staffIdDesc"/>
+                <JUserGrid pos="A5:A5" cid="staffId" fieldLabel_s="staffId" valueField_s="userId"
+                           descField_s="userName" allowBlank_b="false" displayDesc_b="true"/>
+
+                <JHidden cid="officeIdDesc"/>
+                <JErpDepartMent pos="B5:B5" fieldLabel_s="officeId" cid="officeId" allowBlank_b="true"
+                                labelWidth_n="100" displayDesc_b="true"
+                                readOnly_b="true" adaptable_b="false"/>
+
+                <JText pos="C5:D5" cid="model" fieldLabel_s="model" allowBlank_b="false"/>
+
+                <JHidden cid="supplierCode"/>
+                <JSFSupplierGrid pos="A6:B6" cid="payeeName" fieldLabel_s="payeeName" allowBlank_b="false"
+                                 refer_j='[{"refField":"payeeBankName","valueField":"bankName"},
+                                 {"refField":"supplierCode","valueField":"uuid"},
+                                 {"refField":"payeeAccount","valueField":"accountNo"}]'/>
+
+
+                <JText pos="C6:C6" cid="payeeBankName" fieldLabel_s="payeeBankName" allowBlank_b="false"/>
+
+                <JCombo pos="D6:D6" cid="payeeAccount" comboType="supplier_bank_account_no"
+                        fieldLabel_s="payeeAccount" allowBlank_b="false" filterFields="supplierCode"
+                        displayDesc_b="false" vtype_s=""/>
+
+                <JTextArea pos="A7:B8" cid="remark" fieldLabel_s="remark" allowBlank_b="true"/>
+
+                <JText pos="C7:D7" cid="other" fieldLabel_s="other" allowBlank_b="true"/>
+
+                <JHidden cid="operatorId" fieldLabel_s="operatorId"/>
+                <JText pos="C8:C8" cid="operatorName" fieldLabel_s="operatorName" readOnly_b="true"
+                       adaptable_b="false"/>
+                <JDate pos="D8:D8" fieldLabel_s="operateTime" cid="operateTime" readOnly_b="true"
+                       adaptable_b="false"/>
+            </JForm>
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="核销信息" border_n="1">
+            <JEGrid pos="A1:A1" cid="fadCashReqInvoiceDto" store="Invoice.store.FadCashReqInvoiceStore"
+                    title_s="" editable_b="false" withToolbar_b="false">
+                <JTextCol text_s="runningNo" width_n="180" dataIndex="invoiceRunningNo"/>
+                <JComboCol text_s="state" dataIndex="state" allowBlank_b="true" width_n="250">
+                    <JCombo allowBlank_b="true" comboType="scdp_fmcode" codeType="FAD_BILL_STATE" displayDesc_b="true"/>
+                </JComboCol>
+                <JTextCol text_s="核销类型" width_n="180" dataIndex="clearanceTypeName"/>
+
+                <JTextCol text_s="invoiceNo" width_n="180" dataIndex="invoiceNo"/>
+                <JCurCol text_s="clearanceMoney" dataIndex="clearanceMoney" width_n="150"/>
+            </JEGrid>
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex,25" col="0.1*10" title_s="附件信息" border_n="1">
+            <JEGrid pos="A1:J1" cid="cdmFileRelationDto" store="Cdmfile.store.CdmFileRelationStore"
+                    toolbarAtBottom_b="false" hideCopyAdd_b="true" withSelMode_b="true"
+                    cdmFileType="NONPRM_CASH_DEPOSIT">
+                <JTextCol text_s="fileName" dataIndex="fileName" width_n="300"/>
+                <JTextCol text_s="fileSize" dataIndex="convertedFileSize" width_n="120"/>
+                <JTextCol text_s="remark" dataIndex="remark" width_n="400"/>
+            </JEGrid>
+            <JButton pos="A2:A2" cid="fileUpload" text_s="附件上传" iconCls="file_upload_icon"/>
+            <JButton pos="B2:B2" cid="fileDownload" text_s="附件下载" iconCls="file_download_icon"/>
+            <JButton pos="C2:C2" cid="filePreview" text_s="附件预览" iconCls="file_preview_icon"/>
+            <JButton pos="D2:D2" cid="fileDelete" text_s="附件删除" iconCls="delete_btn"/>
+        </JPanel>
+    </JTab>
+</view>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query_department>
+        <common>
+            <![CDATA[SELECT t1.*,
+                               T3.USER_NAME      AS MANAGER,
+                               T4.CUSTOMER_NAME  AS CUSTOMER,
+                               T5.ORG_NAME       AS DEPARTMENT,
+                               SCODE.CODE_DESC   AS STATE_NM
+                          from PRM_PROJECT_MAIN T1
+                          LEFT JOIN SCDP_USER T3
+                            ON T3.USER_ID = T1.PROJECT_MANAGER
+                          LEFT JOIN SCDP_ORG T5
+                            ON T1.CONTRACTOR_OFFICE = T5.ORG_CODE
+                          LEFT JOIN PRM_CUSTOMER T4
+                            ON T4.UUID = T1.CUSTOMER_ID
+                           LEFT JOIN SCDP_CODE SCODE
+                            ON SCODE.CODE_TYPE = 'CDM_BILL_STATE'
+                            AND T1.PURCHASE_PLAN_STATE = SCODE.SYS_CODE
+                         WHERE (t1.IS_VOID IS NULL OR t1.IS_VOID = 0)
+                        and ${conditions}]]>
+        </common>
+    </common_query_department>
+
+    <package_common_query>
+        <common>
+            <![CDATA[select * from prm_purchase_package where ${conditions} and ${voidfilter}]]>
+        </common>
+    </package_common_query>
+
+    <materialClassCode_common_query>
+        <common>
+            <![CDATA[select t1.*,t2.code_desc as class_level_desc, t3.code_desc as is_rigid_desc from scm_material_class t1
+             left join scdp_code t2 on t2.code_type='PRM_PURCHASE_LEVEL' and t1.class_level=t2.sys_code
+             left join scdp_code t3 on t3.code_type='SCM_DEFAULTPROPERTY' and t1.is_rigid=t3.sys_code
+             where ${conditions} ]]>
+        </common>
+    </materialClassCode_common_query>
+
+    <get_req_info>
+        <common>
+            <![CDATA[
+              SELECT T.*
+  FROM (SELECT T.PURCHASE_PACKAGE_ID AS UUID,T.APPLIED_MONEY,T.COMPLETE_PERCENT,T.PACKAGE_BALANCE FROM VW_PRM_PUR_LOCK T
+WHERE T.PURCHASE_PACKAGE_ID IN (${packageIds})) T
+                    ]]>
+        </common>
+    </get_req_info>
+    <prm_purchase_detail_subject_property>
+        <common>
+            SELECT D.PRM_BUDGET_REF_ID,
+            UPPER(D.PRM_BUDGET_TYPE) AS PRM_BUDGET_TYPE,
+            D.PRM_PROJECT_MAIN_ID,
+            P.SUBJECT_PROPERTY
+            FROM PRM_PURCHASE_PLAN_DETAIL D, PRM_PURCHASE_PACKAGE P
+            WHERE D.PURCHASE_PACKAGE_ID = P.UUID
+            AND (D.IS_VOID = '0' OR D.IS_VOID IS NULL)
+            AND D.PRM_PROJECT_MAIN_ID =?
+        </common>
+    </prm_purchase_detail_subject_property>
+</DAO>

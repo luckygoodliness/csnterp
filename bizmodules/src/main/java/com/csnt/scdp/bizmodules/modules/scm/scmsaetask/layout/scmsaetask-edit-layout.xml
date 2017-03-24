@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="scmSaeTaskDto" row="23*3,flex,23*1" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JInt pos="A1:A1" cid="curYear" fieldLabel_s="curYear" allowBlank_b="true"/>
+        <JText pos="B1:B1" cid="title" fieldLabel_s="title" allowBlank_b="true"/>
+        <JCombo pos="C1:C1" cid="materialType" fieldLabel_s="materialType" displayDesc_b="true" comboType="scdp_fmcode"
+                codeType="SCM_SAE_CASE_TYPE" allowBlank_b="true"/>
+        <JCombo pos="D1:D1" cid="state" fieldLabel_s="state" displayDesc_b="true" comboType="scdp_fmcode"
+                codeType="SCM_SAE_CASE_STATE" allowBlank_b="true"/>
+        <JDate pos="A2:A2" cid="beginTime" fieldLabel_s="beginTime" allowBlank_b="true"/>
+        <JDate pos="B2:B2" cid="endTime" fieldLabel_s="endTime" allowBlank_b="true"/>
+        <JText pos="C2:C2" cid="userCode" fieldLabel_s="userCode" allowBlank_b="true"/>
+        <JDatetime pos="D2:D2" cid="createTime" fieldLabel_s="createTime" allowBlank_b="true"/>
+        <JPanel pos="A4:D4" row="flex" col="0.1*10" title_s="" border_n="1">
+            <JEGrid pos="A1:J1" cid="scmSaeFormDto" store="Scmsaetask.store.ScmSaeFormStore"
+                withSearchBar_b="true" sortableColumns_b="true"
+                searchFieldTips="物料科目,供应商" searchFilterCids="materialClassName,supplierName"
+                needFilter_b="true">
+            <JHidden cid="scmSaeObjectId"/>
+            <JTextCol text_s="materialClassName" dataIndex="materialClassName" width_n="150" readOnly_b="true" />
+            <JTextCol text_s="supplierName" dataIndex="supplierName" width_n="150" readOnly_b="true" />
+            <JComboCol text_s="comprehensive" dataIndex="comprehensive" width_n="120">
+                <JCombo  cid="comprehensive" allowBlank_b="true"
+                         comboType="scdp_fmcode"
+                         codeType="TEN_STAR" displayDesc_b="false" queryDelay_n="600"/>
+            </JComboCol>
+            <JComboCol text_s="item1" dataIndex="item1" width_n="120">
+                <JCombo  cid="item1" allowBlank_b="true"
+                         comboType="scdp_fmcode"
+                         codeType="TEN_STAR" displayDesc_b="false" queryDelay_n="600"/>
+            </JComboCol>
+            <JComboCol text_s="item2" dataIndex="item2" width_n="120">
+                <JCombo  cid="item2" allowBlank_b="true"
+                         comboType="scdp_fmcode"
+                         codeType="TEN_STAR" displayDesc_b="false" queryDelay_n="600"/>
+            </JComboCol>
+            <JComboCol text_s="item3" dataIndex="item3" width_n="120">
+                <JCombo  cid="item3" allowBlank_b="true"
+                         comboType="scdp_fmcode"
+                         codeType="TEN_STAR" displayDesc_b="false" queryDelay_n="600"/>
+            </JComboCol>
+            <JComboCol text_s="item4" dataIndex="item4" width_n="120">
+                <JCombo  cid="item4" allowBlank_b="true"
+                         comboType="scdp_fmcode"
+                         codeType="TEN_STAR" displayDesc_b="false" queryDelay_n="600"/>
+            </JComboCol>
+            <JComboCol text_s="item5" dataIndex="item5" width_n="120">
+                <JCombo  cid="item5" allowBlank_b="true"
+                         comboType="scdp_fmcode"
+                         codeType="TEN_STAR" displayDesc_b="false" queryDelay_n="600"/>
+            </JComboCol>
+            <JComboCol text_s="item6" dataIndex="item6" width_n="120">
+                <JCombo  cid="item6" allowBlank_b="true"
+                         comboType="scdp_fmcode"
+                         codeType="TEN_STAR" displayDesc_b="false" queryDelay_n="600"/>
+            </JComboCol>
+            <JComboCol text_s="item7" dataIndex="item7" width_n="120">
+                <JCombo  cid="item7" allowBlank_b="true"
+                         comboType="scdp_fmcode"
+                         codeType="TEN_STAR" displayDesc_b="false" queryDelay_n="600"/>
+            </JComboCol>
+            <JComboCol text_s="item8" dataIndex="item8" width_n="120">
+                <JCombo  cid="item8" allowBlank_b="true"
+                         comboType="scdp_fmcode"
+                         codeType="TEN_STAR" displayDesc_b="false" queryDelay_n="600"/>
+            </JComboCol>
+            <JComboCol text_s="item9" dataIndex="item9" width_n="120">
+                <JCombo  cid="item9" allowBlank_b="true"
+                         comboType="scdp_fmcode"
+                         codeType="TEN_STAR" displayDesc_b="false" queryDelay_n="600"/>
+            </JComboCol>
+            <JComboCol text_s="item10" dataIndex="item10" width_n="120">
+                <JCombo  cid="item10" allowBlank_b="true"
+                         comboType="scdp_fmcode"
+                         codeType="TEN_STAR" displayDesc_b="false" queryDelay_n="600"/>
+            </JComboCol>
+
+            <JComboCol text_s="item11" dataIndex="item11" width_n="120">
+                <JCombo  cid="item11" allowBlank_b="true"
+                         comboType="scdp_fmcode"
+                         codeType="TEN_STAR" displayDesc_b="false" queryDelay_n="600"/>
+            </JComboCol>
+            <JComboCol text_s="item12" dataIndex="item12" width_n="120">
+                <JCombo  cid="item12" allowBlank_b="true"
+                         comboType="scdp_fmcode"
+                         codeType="TEN_STAR" displayDesc_b="false" queryDelay_n="600"/>
+            </JComboCol>
+            <JComboCol text_s="item13" dataIndex="item13" width_n="120">
+                <JCombo  cid="item13" allowBlank_b="true"
+                         comboType="scdp_fmcode"
+                         codeType="TEN_STAR" displayDesc_b="false" queryDelay_n="600"/>
+            </JComboCol>
+            <JComboCol text_s="item14" dataIndex="item14" width_n="120">
+                <JCombo  cid="item14" allowBlank_b="true"
+                         comboType="scdp_fmcode"
+                         codeType="TEN_STAR" displayDesc_b="false" queryDelay_n="600"/>
+            </JComboCol>
+            <JComboCol text_s="item15" dataIndex="item15" width_n="120">
+            <JCombo  cid="item15" allowBlank_b="true"
+                     comboType="scdp_fmcode"
+                     codeType="TEN_STAR" displayDesc_b="false" queryDelay_n="600"/>
+        </JComboCol>
+
+            <!--
+            <JIntCol text_s="comprehensive" dataIndex="comprehensive" width_n="150">
+                <JInt allowBlank_b="true"/>
+            </JIntCol>
+            <JIntCol text_s="item1" dataIndex="item1" width_n="130">
+                <JInt allowBlank_b="true"/>
+            </JIntCol>
+            <JIntCol text_s="item2" dataIndex="item2" width_n="130">
+                <JInt allowBlank_b="true"/>
+            </JIntCol>
+            <JIntCol text_s="item3" dataIndex="item3" width_n="130">
+                <JInt allowBlank_b="true"/>
+            </JIntCol>
+            <JIntCol text_s="item4" dataIndex="item4" width_n="130">
+                <JInt allowBlank_b="true"/>
+            </JIntCol>
+            <JIntCol text_s="item5" dataIndex="item5" width_n="130">
+                <JInt allowBlank_b="true"/>
+            </JIntCol>
+            <JIntCol text_s="item6" dataIndex="item6" width_n="130">
+                <JInt allowBlank_b="true"/>
+            </JIntCol>
+            <JIntCol text_s="item7" dataIndex="item7" width_n="130">
+                <JInt allowBlank_b="true"/>
+            </JIntCol>
+            <JIntCol text_s="item8" dataIndex="item8" width_n="130">
+                <JInt allowBlank_b="true"/>
+            </JIntCol>
+            <JIntCol text_s="item9" dataIndex="item9" width_n="130">
+                <JInt allowBlank_b="true"/>
+            </JIntCol>
+            <JIntCol text_s="item10" dataIndex="item10" width_n="130">
+                <JInt allowBlank_b="true"/>
+            </JIntCol>
+            <JIntCol text_s="item11" dataIndex="item11" width_n="130">
+                <JInt allowBlank_b="true"/>
+            </JIntCol>
+            <JIntCol text_s="item12" dataIndex="item12" width_n="130">
+                <JInt allowBlank_b="true"/>
+            </JIntCol>
+            <JIntCol text_s="item13" dataIndex="item13" width_n="130">
+                <JInt allowBlank_b="true"/>
+            </JIntCol>
+            <JIntCol text_s="item14" dataIndex="item14" width_n="130">
+                <JInt allowBlank_b="true"/>
+            </JIntCol>
+            <JIntCol text_s="item15" dataIndex="item15" width_n="130">
+                <JInt allowBlank_b="true"/>
+            </JIntCol>-->
+        </JEGrid>
+
+        </JPanel>
+        <JDisplay pos="A5:D5" value="提示：可以利用Tab键来切换评价项，利用↑↓键来选择分数。"
+                  fieldStyle_j="{'fontSize':'19px','color': 'red'}"/>
+    </JForm>
+</view>

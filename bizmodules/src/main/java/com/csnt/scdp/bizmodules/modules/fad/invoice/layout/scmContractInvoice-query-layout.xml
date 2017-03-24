@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>invoice-dao</daotype>
+        <daokey>contract_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="A1:A1" fieldLabel_s="invoiceReqNo" cid="invoiceReqNo" field="invoice_req_no"/>
+        <JText pos="B1:B1" fieldLabel_s="invoiceNo" cid="invoiceNo" field="invoice_no"/>
+        <JText pos="C1:C1" fieldLabel_s="发票金额" cid="expensesMoneyQ" field="expenses_money"/>
+
+        <!--<JCombo pos="D1:D1" cid="invoiceType" fieldLabel_s="invoiceType"-->
+        <!--comboType="scdp_fmcode" codeType="FAD_INVOICE_TYPE" displayDesc_b="true" field="invoice_Type"/>-->
+        <JCombo pos="D1:D1" cid="state" fieldLabel_s="state"
+                comboType="scdp_fmcode" codeType="FAD_BILL_STATE" displayDesc_b="true" field="state"/>
+        <JHidden cid="officeId_QDesc"/>
+
+        <!--<JCombo pos="C2:C2" cid="fadSubjectCode" fieldLabel_s="subjectCode"-->
+        <!--comboType="fm_fad_project" field="fad_subject_Code"/>-->
+        <JProject pos="A2:A2" fieldLabel_s="项目" cid="prmProjectName" valueField="projectName"
+                  allowBlank_b="true" refer_j='[{"refField":"fadSubjectCode","valueField":"projectCode"}]'/>
+        <JHidden cid="createByQ" field="create_by"/>
+        <JUserGrid pos="B2:B2" fieldLabel_s="创建人" cid="createByQName"
+                   refer_j='[{"refField":"createByQ","valueField":"userId"}]'/>
+        <JErpDepartMent pos="C2:C2" fieldLabel_s="officeId" cid="officeId_Q"
+                        field="office_Id"/>
+        <!--<JErpDepartMent pos="C2:C2" fieldLabel_s="officeId" cid="officeId_Q" codeField="orgName"-->
+        <!--field="office_Name"/>-->
+        <!--<JHidden cid="officeName" field="office_Name"/>-->
+        <JText pos="D2:D2" cid="fadSubjectCode" fieldLabel_s="fadSubjectCode" field="fad_subject_Code"/>
+        <JText pos="A3:B3" cid="supplierName" fieldLabel_s="supplierName" field="supplier_Name"/>
+        <!--<JSupplierGrid pos="A3:B3" fieldLabel_s="supplierName" cid="supplierName_query"-->
+        <!--refer_j='[{"refField":"supplierCode","valueField":"uuid"}]'/>-->
+        <!--<JHidden cid="supplierCode" field="supplier_id"/>-->
+        <JText pos="C3:C3" cid="scmContractCode" fieldLabel_s="scmContractCode" field="scm_Contract_Code"
+               upperCase_b="true"/>
+        <JCombo pos="D3:D3" fieldLabel_s="是否项目" cid="isProject" field="is_Project"
+                comboType="scdp_fmcode" codeType="CDM_YES_OR_NO" displayDesc_b="true"/>
+        <JHidden></JHidden>
+    </conditions>
+    <results resultGridConfig="{'autoResizeColumn':false,'withSearchBar':true,
+    'searchFieldTips':'项目代号、合同编号、供应商',
+    'searchFilterCids':'scmContractCode,fadSubjectCode,projectName,supplierName','needFilter':true}">
+        <!--<JTextCol text_s="prmProjectMainId" dataIndex="prmProjectMainId" width_n="120"/>-->
+        <JTextCol text_s="invoiceReqNo" dataIndex="invoiceReqNo" width_n="100"/>
+        <!--<JTextCol text_s="subjectCode" dataIndex="subjectCode" width_n="120"/>-->
+        <JTextCol text_s="state" dataIndex="stateName" width_n="80"/>
+        <JTextCol text_s="fadSubjectCode" dataIndex="fadSubjectCode" width_n="100"/>
+        <!--<JTextCol text_s="prmProjectMainId" dataIndex="projectName" width_n="120"/>-->
+        <JTextCol text_s="scmContractCode" dataIndex="scmContractCode" width_n="100"/>
+        <JTextCol text_s="supplierName" dataIndex="supplierName" width_n="200"/>
+        <JCurCol text_s="发票金额" dataIndex="expensesMoney" width_n="100"/>
+        <JTextCol text_s="subjectName" dataIndex="subjectName" width_n="100"/>
+        <JTextCol text_s="invoiceNo" dataIndex="invoiceNo" width_n="100"/>
+        <!--<JTextCol text_s="invoiceCode" dataIndex="invoiceCode" width_n="120"/>-->
+        <!--<JTextCol text_s="expensesType" dataIndex="expensesType" width_n="120" Hidden_b="true"/>-->
+        <!--<JTextCol text_s="subjectName" dataIndex="subjectName" width_n="120"/>-->
+        <!--<JIntCol text_s="invoiceNum" dataIndex="invoiceNum" width_n="100"/>-->
+        <!--<JDecCol text_s="expensesMoney" dataIndex="expensesMoney" width_n="150"/>-->
+        <!--<JTextCol text_s="supplierId" dataIndex="supplierId" width_n="120"/>-->
+        <!--<JTextCol text_s="taxRegistrationNo" dataIndex="taxRegistrationNo" width_n="120"/>-->
+        <!--<JTextCol text_s="outerNo" dataIndex="outerNo" width_n="120"/>-->
+        <!--<JTextCol text_s="renderType" dataIndex="renderType" width_n="120"/>-->
+        <!--<JTextCol text_s="invoiceType" dataIndex="invoiceType" width_n="120"/>-->
+        <!--<JTextCol text_s="payStyle" dataIndex="payStyle" width_n="120"/>-->
+        <JTextCol text_s="报销部门" dataIndex="officeName" width_n="100"/>
+        <!--<JDecCol text_s="taxRate" dataIndex="taxRate" width_n="150"/>-->
+        <!--<JTextCol text_s="remark" dataIndex="remark" width_n="120"/>-->
+        <JTextCol text_s="报销人" dataIndex="renderPersonName" width_n="100"/>
+        <JTextCol text_s="创建人" dataIndex="createByName" width_n="100"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+        <!--<JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>-->
+        <JTextCol dataIndex="tblVersion" width_n="0" hidden_b="true"/>
+    </results>
+</commonquery>

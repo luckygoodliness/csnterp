@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>scmcontract-dao</daotype>
+        <daokey>contract_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="A1:A1" fieldLabel_s="scmContractCode" cid="scmContractCode" field="scm_Contract_Code"/>
+        <JText pos="B1:B1" fieldLabel_s="supplierName" cid="supplierName" field="supplier_Name"/>
+        <JHidden pos="B1:B1" fieldLabel_s="supplierCode" cid="supplierCode" field="supplier_Code"/>
+        <JHidden pos="B1:B1" fieldLabel_s="supplierCodeS" cid="supplierCodeS" field="supplier_Code_S"/>
+        <JText pos="C1:C1" fieldLabel_s="projectId" cid="projectId" field="project_Id"/>
+        <JText pos="D1:D1" fieldLabel_s="departmentCode" cid="officeIdDesc" field="office_id_desc"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="scmContractCode" dataIndex="scmContractCode" width_n="120"/>
+        <JTextCol text_s="contractNature" dataIndex="contractNatureS" width_n="120"/>
+        <JTextCol text_s="projectName" dataIndex="projectName" width_n="120"/>
+        <JTextCol text_s="departmentCode" dataIndex="officeIdDesc" width_n="120"/>
+        <JTextCol text_s="supplierName" dataIndex="supplierName" width_n="120"/>
+        <JDecCol text_s="contractAmount" dataIndex="amount" width_n="150"/>
+        <JDatetimeCol text_s="effectiveDate" dataIndex="effectiveDate" width_n="150"/>
+        <JDatetimeCol text_s="stampDate" dataIndex="stampDate" width_n="150"/>
+        <JTextCol text_s="contractState" dataIndex="contractState" width_n="120"/>
+        <JTextCol text_s="isVirtual" dataIndex="isVirtual" width_n="120" hidden_b="true"/>
+        <JTextCol text_s="taxRegistrationNo" dataIndex="taxRegistrationNo" width_n="120" hidden_b="true"/>
+        <JDecCol text_s="paidRt" dataIndex="paidRt" width_n="150"/>
+        <JDecCol text_s="invoiceAmountRt" dataIndex="invoiceAmountRt" width_n="150"/>
+        <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+        <JTextCol text_s="subjectCode" dataIndex="subjectCode" hidden_b="true"/>
+        <JTextCol dataIndex="uuid" hidden_b="true"/>
+        <JTextCol dataIndex="budgetId" hidden_b="true"/>
+        <JTextCol dataIndex="supplierCode" hidden_b="true"/>
+        <JTextCol dataIndex="projectMainId" hidden_b="true"/>
+        <JTextCol dataIndex="debter" hidden_b="true"/>
+        <JTextCol dataIndex="debterDepartment" hidden_b="true"/>
+
+        <JTextCol dataIndex="completeNameNew" hidden_b="true"/>
+        <JTextCol dataIndex="officeId" hidden_b="true"/>
+        <JTextCol dataIndex="payeeName" hidden_b="true"/>
+        <JTextCol dataIndex="isProject" hidden_b="true"/>
+        <JTextCol dataIndex="purchasePackageId" hidden_b="true"/>
+        <JTextCol dataIndex="payType" hidden_b="true"/>
+
+    </results>
+</commonquery>

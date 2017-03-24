@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[1143000,723900,864000,864000,864000,864000,864000,864000,864000,864000,864000,864000,864000,864000,864000,864000,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[1440000,16421100,4648200,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" cs="3" s="0">
+<O>
+<![CDATA[现金流量明细表]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="1" s="1">
+<PrivilegeControl/>
+</C>
+<C c="2" r="1">
+<O>
+<![CDATA[单位：元]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="2" s="2">
+<O>
+<![CDATA[序号]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="2" s="2">
+<O>
+<![CDATA[现金流项目]]></O>
+<PrivilegeControl/>
+</C>
+<C c="2" r="2" s="2">
+<O>
+<![CDATA[金 额]]></O>
+<PrivilegeControl/>
+</C>
+<C c="0" r="3" s="3">
+<O t="I">
+<![CDATA[1]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="3" s="4">
+<O>
+<![CDATA[一、项目收款]]></O>
+<PrivilegeControl/>
+</C>
+<C c="2" r="3" s="4">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="4" s="3">
+<O t="I">
+<![CDATA[2]]></O>
+<PrivilegeControl/>
+</C>
+<C c="1" r="4" s="4">
+<O>
+<![CDATA[1、当年项目收款]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="4" s="4">
+<PrivilegeControl/>
+</C>
+<C c="0" r="5" s="3">
+<O t="I">
+<![CDATA[3]]></O>
+<PrivilegeControl/>
+</C>
+<C c="1" r="5" s="4">
+<O>
+<![CDATA[二、项目支出]]></O>
+<PrivilegeControl/>
+</C>
+<C c="2" r="5" s="4">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="6" s="3">
+<O t="I">
+<![CDATA[4]]></O>
+<PrivilegeControl/>
+</C>
+<C c="1" r="6" s="4">
+<O>
+<![CDATA[1、当年项目应付款]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="6" s="4">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="7" s="3">
+<O t="I">
+<![CDATA[5]]></O>
+<PrivilegeControl/>
+</C>
+<C c="1" r="7" s="4">
+<O>
+<![CDATA[2、当年项目预付款]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="7" s="4">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="8" s="3">
+<O t="I">
+<![CDATA[6]]></O>
+<PrivilegeControl/>
+</C>
+<C c="1" r="8" s="4">
+<O>
+<![CDATA[3、当年保证金付款]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="8" s="4">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="9" s="3">
+<O t="I">
+<![CDATA[7]]></O>
+<PrivilegeControl/>
+</C>
+<C c="1" r="9" s="4">
+<O>
+<![CDATA[4、项目借款（包括分公司借款、周转金、个人借款等）]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="9" s="4">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="10" s="3">
+<O t="I">
+<![CDATA[8]]></O>
+<PrivilegeControl/>
+</C>
+<C c="1" r="10" s="3">
+<O>
+<![CDATA[项目现金流盈亏]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="10" s="4">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="11" s="3">
+<O t="I">
+<![CDATA[9]]></O>
+<PrivilegeControl/>
+</C>
+<C c="1" r="11" s="4">
+<O>
+<![CDATA[三、薪酬及非项目支出]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="11" s="4">
+<PrivilegeControl/>
+</C>
+<C c="0" r="12" s="3">
+<O t="I">
+<![CDATA[10]]></O>
+<PrivilegeControl/>
+</C>
+<C c="1" r="12" s="4">
+<O>
+<![CDATA[1、薪酬支出]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="12" s="4">
+<PrivilegeControl/>
+</C>
+<C c="0" r="13" s="3">
+<O t="I">
+<![CDATA[11]]></O>
+<PrivilegeControl/>
+</C>
+<C c="1" r="13" s="4">
+<O>
+<![CDATA[2、非项目费用支出]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="13" s="4">
+<PrivilegeControl/>
+</C>
+<C c="0" r="14" s="3">
+<O t="I">
+<![CDATA[12]]></O>
+<PrivilegeControl/>
+</C>
+<C c="1" r="14" s="4">
+<O>
+<![CDATA[3、分摊费支出]]></O>
+<PrivilegeControl/>
+</C>
+<C c="2" r="14" s="4">
+<PrivilegeControl/>
+</C>
+<C c="0" r="15" s="3">
+<O t="I">
+<![CDATA[13]]></O>
+<PrivilegeControl/>
+</C>
+<C c="1" r="15" s="3">
+<O>
+<![CDATA[部门现金流盈亏]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="15" s="4">
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting/>
+</ReportSettings>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="96"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="宋体" style="1" size="96"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="宋体" style="0" size="96"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="宋体" style="0" size="96"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

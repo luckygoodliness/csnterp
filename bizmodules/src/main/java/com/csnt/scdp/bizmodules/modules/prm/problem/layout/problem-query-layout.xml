@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>problem-dao</daotype>
+        <daokey>common_query_department</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JProject pos="A1:A1" cid="prmProjectMainId_query" fieldLabel_s="prmProjectMainId"
+                  refer_j='[{"refField":"prmProjectMainId","valueField":"uuid"}]'/>
+        <JHidden pos="A1:A1" cid="prmProjectMainId" field="p.prm_project_main_Id"/>
+        <JHidden cid ="departmentCodeDesc"/>
+        <JErpDepartMent pos="B1:B1" fieldLabel_s="departmentCode" cid="departmentCode"
+                      field="department_code"/>
+        <!--<JOrg pos="B1:B1" cid="departmentCode" fieldLabel_s="departmentCode" field="department_code"/>-->
+        <!--<JText pos="C1:C1" cid="problemType" fieldLabel_s="problemType" field="problem_type"/>-->
+        <JCombo pos="C1:C1" cid="problemType" fieldLabel_s="problemType" allowBlank_b="true"
+                comboType="scdp_fmcode"  field="problem_type"
+                codeType="PRM_PROBLEM_TYPE" displayDesc_b="true" fullInfo_b="false" multiSelect_b="false"/>
+        <JUserGrid pos="D1:D1" cid="postPerson_query" fieldLabel_s="postPerson" refer_j='[{"refField":"postPerson","valueField":"uuid"}]' />
+        <JHidden pos="D1:D1" cid="postPersons" field="post_person"/>
+        <!--<JText pos="C2:C2" fieldLabel_s="createBy" cid="createBy" field="create_by"/>-->
+        <!--<JText pos="D2:D2" fieldLabel_s="updateBy" cid="updateby" field="update_by"/>-->
+        <!--<JFromTo pos="A3:B3" subXtype="JDatetime" fieldLabel_s="createTime" cid="createTime" field="create_time"/>-->
+        <!--<JFromTo pos="C3:D3" subXtype="JDatetime" fieldLabel_s="updateTime" cid="updateTime" field="update_time"/>-->
+    </conditions>
+    <results>
+
+            <JTextCol text_s="prmProjectMainId" dataIndex="projectName" width_n="180"/>
+        <JTextCol text_s="departmentCode" dataIndex="orgName" width_n="120"/>
+        <JDateCol text_s="postDate" dataIndex="postDate" width_n="120"/>
+            <JTextCol text_s="problemType" dataIndex="prmProblemTypeCombo" width_n="120"/>
+            <JTextCol text_s="description" dataIndex="description" width_n="120"/>
+            <JTextCol text_s="postPerson" dataIndex="postPersonName" width_n="120"/>
+            <JTextCol text_s="proposalSolution" dataIndex="proposalSolution" width_n="120"/>
+        <JDateCol text_s="proposalDate" dataIndex="proposalDate" width_n="150"/>
+            <JTextCol text_s="provider" dataIndex="providerName" width_n="120"/>
+            <JTextCol text_s="remark" dataIndex="remark" width_n="500"/>
+            <!--<JTextCol text_s="state" dataIndex="cdmBillStateCombo" width_n="120"/>-->
+            <!--<JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120"/>-->
+
+            <!---->
+            <!--<JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>-->
+
+        <!--<JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>-->
+            <!--<JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>-->
+
+        <!--<JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>-->
+    </results>
+</commonquery>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <commonquery version="1.0">
+        <querysql>
+            <daotype>scmcontract-dao</daotype>
+            <daokey>contractdetail_query</daokey>
+        </querysql>
+        <defaultSort>create_time desc</defaultSort>
+        <conditions columns="4">
+            <JHidden pos="A1:A1" fieldLabel_s="" cid="scmContractId" field="scm_contract_id"/>
+            <JText pos="A1:A1" fieldLabel_s="materialName" cid="materialName" field="material_name"/>
+            <!--<JText pos="B1:B1" fieldLabel_s="supplierName" cid="supplierName" field="supplier_Name"/>-->
+            <JText pos="B1:B1" fieldLabel_s="model" cid="model" field="model"/>
+        </conditions>
+        <quickquery>
+            <QueryCids>scmContractId</QueryCids>
+            <ForceQueryCids></ForceQueryCids>
+        </quickquery>
+        <results>
+            <JHidden text_s="uuid" dataIndex="uuid"/>
+            <JTextCol text_s="materialName" dataIndex="materialName" width_n="120"/>
+            <JTextCol text_s="model" dataIndex="model" width_n="120"/>
+            <JTextCol text_s="units" dataIndex="units" width_n="120"/>
+            <JDecCol text_s="quantity" dataIndex="amount" width_n="150"/>
+            <JDecCol text_s="unitPriceTalk" dataIndex="unitPriceTalk" width_n="150"/>
+            <JDecCol text_s="unitPriceTrue" dataIndex="unitPriceTrue" width_n="150"/>
+            <JDecCol text_s="totalMoney" dataIndex="total" width_n="150"/>
+            <JTextCol text_s="factory" dataIndex="factory" width_n="150"/>
+            <JTextCol text_s="remark" dataIndex="remark" width_n="150"/>
+        </results>
+    </commonquery>

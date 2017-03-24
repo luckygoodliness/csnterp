@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>payreq-dao</daotype>
+        <daokey>common_month_query</daokey>
+        <needfilter>false</needfilter>
+    </querysql>
+    <defaultSort>year desc,month desc ,reqNo desc</defaultSort>
+    <conditions columns="4">
+        <JCombo pos="A1:A1" cid="yearQ" fieldLabel_s="year" multiSelect_b="false" allowBlank_b="true"
+                comboType="payreq_month" fullInfo_b="false" upperCase_b="false"   field="year"/>
+        <!---->
+        <JCombo pos="B1:B1" cid="monthQ" fieldLabel_s="month" multiSelect_b="false" allowBlank_b="true"
+                comboType="scdp_fmcode" codeType="CDM_MONTH"
+                fullInfo_b="true" upperCase_b="false"
+                displayDesc_b="true" field="month"/>
+        <JCombo pos="C1:C1" fieldLabel_s="state" cid="stateQ"
+                comboType="scdp_fmcode" codeType="CDM_BILL_STATE" displayDesc_b="true" field="state"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="reqno" dataIndex="reqno" width_n="120"/>
+        <JTextCol text_s="state" dataIndex="billState" />
+        <JIntCol text_s="year" dataIndex="year" width_n="120"/>
+        <JTextCol text_s="month" dataIndex="month" width_n="140"/>
+        <JTextCol text_s="payNumber" dataIndex="payNumber" width_n="140"/>
+        <!--<JTextCol text_s="remark" dataIndex="remark" width_n="200"/>-->
+        <JIntCol text_s="toProcess" dataIndex="toProcess" width_n="120"/>
+        <JIntCol text_s="processing" dataIndex="processing" width_n="120"/>
+        <JIntCol text_s="processed" dataIndex="processed" width_n="120"/>
+    </results>
+</commonquery>

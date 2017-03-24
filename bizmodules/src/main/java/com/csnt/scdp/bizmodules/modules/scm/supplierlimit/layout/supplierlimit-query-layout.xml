@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>supplierlimit-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JCombo pos="A1:A1" cid="year" fieldLabel_s="year" displayDesc_b="true" comboType="scdp_fmcode"
+                codeType="CDM_YEAR" allowBlank_b="true" field="year"/>
+        <JCombo pos="B1:B1" cid="state" fieldLabel_s="state"
+                comboType="scdp_fmcode" codeType="FAD_BILL_STATE" displayDesc_b="true" field="state"/>
+        <JText pos="C1:D1" cid="title" fieldLabel_s="title" allowBlank_b="true" field="title"/>
+    </conditions>
+    <results resultGridConfig="{'autoResizeColumn':false}">
+        <JIntCol text_s="year" dataIndex="year" width_n="100" />
+        <JTextCol text_s="title" dataIndex="title" width_n="120"/>
+        <JTextCol text_s="state" dataIndex="stateName" width_n="120"/>
+        <JDatetimeCol text_s="beginTime" dataIndex="beginTime" width_n="150"/>
+        <JDatetimeCol text_s="endTime" dataIndex="endTime" width_n="150"/>
+        <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+            <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+            <JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>
+        <JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>
+    </results>
+</commonquery>

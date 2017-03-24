@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select * from non_budget_monitor_y where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+
+    <get_monitor_in>
+        <common>
+            <![CDATA[
+                    SELECT Y.UUID,
+       Y.YEAR,
+       Y.BUDGET_TYPE,
+       Y.SUBJECT,
+       DECODE(Y.IN_OUT_TYPE, 'I', '利', 'O', '收', '') AS IN_OUT_TYPE,
+       Y.ASSIGNED_MONEY,
+       Y.OCCURRED_MONEY,
+       Y.SEQ_NO
+  FROM NON_BUDGET_MONITOR_Y Y
+ WHERE Y.BUDGET_TYPE IN ( '其他收入', '财务收入')
+   AND Y.YEAR = ?
+ ORDER BY DECODE(Y.BUDGET_TYPE,  '其他收入', 1, '财务收入', 2),
+          Y.SEQ_NO,
+          DECODE(Y.IN_OUT_TYPE, 'O', 1, 'I', 2)
+                    ]]>
+        </common>
+    </get_monitor_in>
+
+    <get_monitor_out>
+        <common>
+            <![CDATA[
+                    SELECT Y.UUID,
+       Y.YEAR,
+       Y.BUDGET_TYPE,
+       Y.SUBJECT,
+       DECODE(Y.IN_OUT_TYPE, 'I', '利', 'O', '收', '') AS IN_OUT_TYPE,
+       Y.ASSIGNED_MONEY,
+       Y.OCCURRED_MONEY,
+       Y.SEQ_NO
+  FROM NON_BUDGET_MONITOR_Y Y
+ WHERE Y.BUDGET_TYPE IN ('部门非项目支出', '其他非项目支出')
+   AND Y.YEAR = ?
+ ORDER BY DECODE(Y.BUDGET_TYPE, '部门非项目支出', 1, '其他非项目支出', 2),
+          Y.SEQ_NO
+                    ]]>
+        </common>
+    </get_monitor_out>
+</DAO>

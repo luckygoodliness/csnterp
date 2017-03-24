@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>apply-dao</daotype>
+        <daokey>common_query</daokey>
+    </querysql>
+    <defaultSort>a.create_time desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="A1:A1" fieldLabel_s="applyCode" cid="applyCode" field="a.apply_code"/>
+        <JText pos="B1:B1" fieldLabel_s="assetCode" cid="assetCode" field="b.asset_code"/>
+        <JCombo pos="C1:C1" cid="state" fieldLabel_s="state" comboType="scdp_fmcode" codeType="CDM_BILL_STATE"
+                displayDesc_b="true" field="a.state"/>
+        <JText pos="D1:D1" fieldLabel_s="assetName" cid="assetName" field="b.asset_name"/>
+
+        <JText pos="A2:A2" fieldLabel_s="applyUserName" cid="applyUserName" field="a.apply_user_name"/>
+        <JHidden cid="applyOfficeIdDesc"/>
+        <JErpDepartMent pos="B2:B2" fieldLabel_s="applyOfficeId" cid="applyOfficeId"
+                        field="a.apply_office_id" labelWidth_n="100"/>
+        <JFromTo pos="C2:D2" subXtype="JDatetime" fieldLabel_s="createTime" cid="createTime" field="a.create_time"/>
+
+        <JCombo pos="A3:A3" fieldLabel_s="deviceType" cid="deviceType" comboType="asset_card_devicetype"
+                displayDesc_b="true" field="b.device_type" multiSelect_b="true"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="applyCode" dataIndex="applyCode" width_n="120"/>
+        <JTextCol text_s="state" dataIndex="state" width_n="100"/>
+        <JTextCol text_s="applyOfficeId" dataIndex="applyOfficeId" width_n="100"/>
+        <JTextCol text_s="deviceType" dataIndex="deviceTypeName" width_n="100"/>
+        <JTextCol text_s="assetName" dataIndex="assetName" width_n="120"/>
+        <JTextCol text_s="assetCode" dataIndex="assetCode" width_n="120"/>
+        <!--<JTextCol text_s="discardReason" dataIndex="discardReason" width_n="120"/>
+        <JTextCol text_s="residualHandle" dataIndex="residualHandle" width_n="120"/>-->
+        <JTextCol text_s="model" dataIndex="model" width_n="80"/>
+        <JDecCol text_s="localValue" dataIndex="localValue" width_n="80"/>
+        <JCurCol text_s="depreciation" dataIndex="depreciation" width_n="80"/>
+        <JCurCol text_s="netValue" dataIndex="netValue" width_n="80"/>
+        <JTextCol text_s="specification" dataIndex="specification" width_n="80"/>
+        <JTextCol text_s="applyUserName" dataIndex="applyUserName" width_n="100"/>
+        <JDatetimeCol text_s="applyDate" dataIndex="applyDate" width_n="130"/>
+        <JTextCol dataIndex="deviceType" width_n="0" hidden_b="true"/>
+        <!--<JTextCol text_s="residualHandle" dataIndex="residualHandle" width_n="120"/>
+        <JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120"/>
+        <JTextCol text_s="companyName" dataIndex="companyName" width_n="120"/>
+        <JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120"/>
+        <JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>
+        <JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120"/>
+        <JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>
+        <JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>
+        <JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120"/>
+        <JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>
+        -->
+    </results>
+</commonquery>

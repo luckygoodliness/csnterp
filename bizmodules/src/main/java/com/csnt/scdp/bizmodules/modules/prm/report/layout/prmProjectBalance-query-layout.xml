@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonreport version="1.0">
+    <report>
+        <reporttype>L</reporttype>
+        <reporttemplate>erp/prm/M3_NRPT3_已立项目余额表.cpt</reporttemplate>
+        <reportcache>false</reportcache>
+    </report>
+    <conditions columns="4">
+        <JHidden cid="officeIdDesc" field="officeIdDesc"/>
+        <JErpDepartMent pos="A1:A1" cid="officeId" fieldLabel_s="officeId" field="officeId" labelWidth_n="100"
+                        allowBlank_b="false"/>
+        <JText pos="B1:B1" cid="projectCode" fieldLabel_s="projectCode" field="projectCode"/>
+        <JText pos="C1:C1" cid="projectName" fieldLabel_s="projectName" field="projectName"/>
+        <JCombo pos="D1:D1" cid="subjectCode" fieldLabel_s="subjectCode" field="subjectCode"
+                comboType="fm_vw_prm_non_pur_info_subject_name" displayDesc_b="true"/>
+    </conditions>
+</commonreport>

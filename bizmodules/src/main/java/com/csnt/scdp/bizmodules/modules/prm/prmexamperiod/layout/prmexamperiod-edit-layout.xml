@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="prmExamPeriodDto" row="23*1" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+
+        <JDate pos="A1:A1" cid="examDate" fieldLabel_s="examDate" allowBlank_b="false" labelWidth_n="132"/>
+        <JDate pos="B1:B1" cid="beginDate" fieldLabel_s="beginDate" allowBlank_b="false" labelWidth_n="132"/>
+        <JDate pos="C1:C1" cid="endDate" fieldLabel_s="endDate" allowBlank_b="false" labelWidth_n="132"/>
+
+        <JCheck pos="D1:D1" cid="isActive" fieldLabel_s="isActive" active="true" checked="checked"/>
+        <JTextArea pos="A2:D3" cid="remark" fieldLabel_s="remark" labelWidth_n="132" allowBlank_b="true"/>
+
+    </JForm>
+
+</view>

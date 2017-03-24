@@ -1,0 +1,497 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[SELECT T.*,
+       NVL(T.TOTAL_VALUE,0) AS NVL_TOTAL_VALUE,
+       (SELECT C.CODE_DESC
+          FROM SCDP_CODE C
+         WHERE C.CODE_TYPE = 'CDM_BILL_STATE'
+           AND C.SYS_CODE = T.STATE) AS STATE_COMBO,
+       (SELECT ORG_NAME FROM SCDP_ORG A WHERE A.ORG_CODE = T.OFFICE_ID) AS OFFICE_ID_NAME,
+       DECODE(T.CONTRACT_NATURE, '0', '采购', '1', '外协', '其它') AS CONTRACT_NATURE_COMBO,
+       (SELECT CODE_DESC
+          FROM SCDP_CODE A
+         WHERE A.CODE_TYPE = 'SCM_PURCHASE_TYPE'
+           AND A.SYS_CODE = T.PURCHASE_TYPES) AS PURCHASE_TYPES_COMBO,
+       (SELECT CODE_DESC
+          FROM SCDP_CODE A
+         WHERE A.CODE_TYPE = 'FAD_PAYWAY'
+           AND A.SYS_CODE = T.PAY_TYPE) AS PAY_TYPE_COMBO,
+       (SELECT CODE_DESC
+          FROM SCDP_CODE A
+         WHERE A.CODE_TYPE = 'SCM_CONTRACT_STATE'
+           AND A.SYS_CODE = T.CONTRACT_STATE) AS CONTRACT_STATE_COMBO,
+       (SELECT CODE_DESC
+          FROM SCDP_CODE A
+         WHERE A.CODE_TYPE = 'SCM_CONTRACT_PAY_TYPE'
+           AND A.SYS_CODE = T.CONTRACT_PAY_TYPE) AS CONTRACT_PAY_TYPE_COMBO,
+       DECODE(T.IS_URGENT, '1', '是', '否') AS IS_URGENT_COMBO,
+       DECODE(T.IS_CLOSED, '1', '已结算', '未结算') AS IS_CLOSED_COMBO,
+       DECODE(T.IS_VIRTUAL, '1', '是', '否') AS IS_VIRTUAL_COMBO,
+       (SELECT USER_NAME FROM SCDP_USER A WHERE A.USER_ID = T.DEBTER) AS DEBTER_NAME,
+       (SELECT ORG_NAME
+          FROM SCDP_ORG A
+         WHERE A.ORG_CODE = T.DEBTER_DEPARTMENT) AS DEBTER_DEPARTMENT_NAME,
+       NVL(PPM.PROJECT_NAME,
+           (SELECT N.FINANCIAL_SUBJECT
+              FROM NON_PROJECT_SUBJECT_SUBJECT N
+             WHERE N.FINANCIAL_SUBJECT_CODE = T.SUBJECT_CODE)) AS PROJECT_NAME,
+       DECODE(NVL(T.IS_PROJECT, 0), 0, T.SUBJECT_CODE, PPM.PROJECT_CODE) AS PROJECT_CODE,
+       RD.ALL_NAME,
+       RD2.PURCHASE_REQ_NO,
+       NVL(SC.ORIGINAL_VALUE, T.AMOUNT) AS FIRST_AMOUNT,
+       SS.SUPPLIER_GENRE,
+       SS.SUPPLIER_GENRE_NAME
+  FROM SCM_CONTRACT T
+  LEFT JOIN (SELECT SCM_CONTRACT_ID, LISTAGG(RD.NAME, ';') WITHIN
+              GROUP(
+              ORDER BY RD.UUID) AS ALL_NAME
+               FROM (SELECT *
+                       FROM (SELECT RD.*,
+                                    ROW_NUMBER() OVER(PARTITION BY RD.SCM_CONTRACT_ID ORDER BY RD.EXPECTED_PRICE * RD.AMOUNT DESC) AS ROW_NUMBER
+                               FROM PRM_PURCHASE_REQ_DETAIL RD) RD
+                      WHERE RD.ROW_NUMBER <= 10) RD
+              GROUP BY RD.SCM_CONTRACT_ID) RD ON RD.SCM_CONTRACT_ID =
+                                                 T.UUID
+  LEFT JOIN (SELECT SCM_CONTRACT_ID, LISTAGG(RD.PURCHASE_REQ_NO, ';') WITHIN
+              GROUP(
+              ORDER BY RD.PURCHASE_REQ_NO) AS PURCHASE_REQ_NO
+               FROM (SELECT DISTINCT RD.SCM_CONTRACT_ID, PPR.PURCHASE_REQ_NO
+                       FROM PRM_PURCHASE_REQ PPR
+                       LEFT JOIN PRM_PURCHASE_REQ_DETAIL RD ON PPR.UUID =
+                                                               RD.PRM_PURCHASE_REQ_ID
+                      WHERE RD.SCM_CONTRACT_ID IS NOT NULL) RD
+              GROUP BY RD.SCM_CONTRACT_ID) RD2 ON RD2.SCM_CONTRACT_ID =
+                                                  T.UUID
+  LEFT JOIN (SELECT PROJECT_CODE, PROJECT_NAME, UUID
+               FROM PRM_PROJECT_MAIN PM) PPM ON T.PROJECT_ID = PPM.UUID
+  LEFT JOIN (SELECT *
+               FROM (SELECT UUID,
+                            SCM_CONTRACT_ID,
+                            ORIGINAL_VALUE,
+                            ROW_NUMBER() OVER(PARTITION BY SC.SCM_CONTRACT_ID ORDER BY SC.UPDATE_TIME DESC) AS ROW_NUMBER
+                       FROM SCM_CONTRACT_CHANGE SC) SC
+              WHERE SC.ROW_NUMBER = 1) SC ON T.UUID = SC.SCM_CONTRACT_ID
+  LEFT JOIN (SELECT UUID,
+                    SS.SUPPLIER_GENRE,
+                    DECODE(SS.SUPPLIER_GENRE,
+                           '0',
+                           '合格供方',
+                           '1',
+                           '普通供方',
+                           '2',
+                           '零星供方',
+                           '3',
+                           '报销供方',
+                           '其它') AS SUPPLIER_GENRE_NAME
+               FROM SCM_SUPPLIER SS) SS ON T.SUPPLIER_CODE = SS.UUID
+                    WHERE  ${conditions} and ${voidfilter} and ${selfconditions}
+                    ]]>
+        </common>
+    </common_query>
+    <invoicecontract_query>
+        <common>
+            <![CDATA[select t.*,
+            (select s.user_name from scdp_user s where s.user_id = t.debter) as debter_Name,
+            (select TAX_REGISTRATION_NO from scm_supplier s where s.uuid = t.SUPPLIER_CODE) as TAX_REGISTRATION_NO,
+            (decode(nvl(IS_PROJECT,0),0,t.subject_code,t.PROJECT_CODE)) as subject_code_Q
+           from vw_scm_contract_execute t
+          where ${conditions}
+            and t.fad_Invoice_Money_U >0
+            and t.state ='2'
+            and ${voidfilter} and ${selfconditions} ]]>
+        </common>
+    </invoicecontract_query>
+    <paycontract_query>
+        <common>
+            <![CDATA[select t.*
+           from vw_scm_contract_execute t
+          where ${conditions}
+            and t.fad_invoice_money_u >0
+            and ${voidfilter} and ${selfconditions} ]]>
+        </common>
+    </paycontract_query>
+    <contract_query>
+        <common>
+            <![CDATA[SELECT T.*,decode(t.is_project,1,'',t.subject_code) as subject_code_render,
+                           decode(T.CONTRACT_NATURE,'0','采购','1','外协','未知') AS CONTRACT_NATURE_S,
+                           NVL((SELECT P.AMOUNT
+                                 FROM SCM_CONTRACT_PAY P
+                                WHERE P.SCM_CONTRACT_ID = T.UUID),
+                               0) AS PAID_RT,
+                           NVL((SELECT SUM(AMOUNT)
+                                 FROM SCM_CONTRACT_INVOICE I
+                                WHERE I.SCM_CONTRACT_ID = T.UUID),
+                               0) AS INVOICE_AMOUNT_RT,
+                      (SELECT CODE_DESC
+                      FROM SCDP_CODE A
+                     WHERE A.CODE_TYPE = 'SCM_CONTRACT_PAY_TYPE'
+                       AND A.SYS_CODE = T.CONTRACT_PAY_TYPE) AS CONTRACT_PAY_TYPE_COMBO,
+                       (SELECT CODE_DESC
+                      FROM SCDP_CODE A
+                     WHERE A.CODE_TYPE = 'SCM_CONTRACT_STATE'
+                       AND A.SYS_CODE = T.CONTRACT_STATE) AS CONTRACT_STATE_COMBO,
+                   DECODE(T.IS_URGENT,1,'是','否') AS IS_URGENT_COMBO,
+                   DECODE(T.IS_VIRTUAL,1,'是','否') AS IS_VIRTUAL_COMBO,
+                           (SELECT S.TAX_REGISTRATION_NO
+                              FROM SCM_SUPPLIER S
+                             WHERE S.UUID = T.SUPPLIER_CODE) AS TAX_REGISTRATION_NO,
+                           (SELECT PROJECT_CODE
+                              FROM PRM_PROJECT_MAIN M
+                             WHERE M.UUID = T.PROJECT_ID) AS CONTRACT_SUBJECT_CODE,
+                           (SELECT O.ORG_NAME
+                              FROM SCDP_ORG O
+                             WHERE O.ORG_CODE = T.OFFICE_ID) AS OFFICE_ID_DESC,
+                           (SELECT SP.COMPLETE_NAME
+                              FROM SCM_SUPPLIER SP
+                             WHERE SP.UUID = T.SUPPLIER_CODE) AS COMPLETE_NAME_NEW,
+                                    v.*
+                      FROM SCM_CONTRACT T,vw_prm_budget v
+                     WHERE ${conditions}
+                       and t.purchase_package_id=v.PACKAGE_ID(+)
+                       AND t.state ='2'
+                       AND ${voidfilter} ]]>
+        </common>
+    </contract_query>
+    <contract_query_q>
+        <common>
+            <![CDATA[SELECT T.*,
+                           DECODE(T.IS_PROJECT, 1, '', T.SUBJECT_CODE) AS SUBJECT_CODE_RENDER,
+                           DECODE(T.CONTRACT_NATURE, '0', '采购', '1', '外协', '未知') AS CONTRACT_NATURE_S,
+                           NVL((SELECT P.AMOUNT
+                                 FROM SCM_CONTRACT_PAY P
+                                WHERE P.SCM_CONTRACT_ID = T.UUID),
+                               0) AS PAID_RT,
+                           (SELECT CODE_DESC
+                              FROM SCDP_CODE A
+                             WHERE A.CODE_TYPE = 'SCM_CONTRACT_PAY_TYPE'
+                               AND A.SYS_CODE = T.CONTRACT_PAY_TYPE) AS CONTRACT_PAY_TYPE_COMBO,
+                           (SELECT CODE_DESC
+                              FROM SCDP_CODE A
+                             WHERE A.CODE_TYPE = 'SCM_CONTRACT_STATE'
+                               AND A.SYS_CODE = T.CONTRACT_STATE) AS CONTRACT_STATE_COMBO,
+                           DECODE(T.IS_URGENT, 1, '是', '否') AS IS_URGENT_COMBO,
+                           DECODE(T.IS_VIRTUAL, 1, '是', '否') AS IS_VIRTUAL_COMBO,
+                           S.TAX_REGISTRATION_NO AS TAX_REGISTRATION_NO,
+                           NVL(PPM.PROJECT_NAME,
+                               (SELECT N.FINANCIAL_SUBJECT
+                                  FROM NON_PROJECT_SUBJECT_SUBJECT N
+                                 WHERE N.FINANCIAL_SUBJECT_CODE = T.SUBJECT_CODE)) AS FAD_SUBJECT_NAME,
+                           DECODE(NVL(T.IS_PROJECT, 0), 0, T.SUBJECT_CODE, PPM.PROJECT_CODE) AS FAD_SUBJECT_CODE,
+                           PPM.PROJECT_CODE AS CONTRACT_SUBJECT_CODE,
+                           (SELECT O.ORG_NAME FROM SCDP_ORG O WHERE O.ORG_CODE = T.OFFICE_ID) AS OFFICE_ID_DESC,
+                           S.COMPLETE_NAME AS COMPLETE_NAME_NEW
+                      FROM SCM_CONTRACT T
+                      LEFT JOIN SCM_SUPPLIER S ON S.UUID = T.SUPPLIER_CODE
+                      LEFT JOIN PRM_PROJECT_MAIN PPM ON PPM.UUID = T.PROJECT_ID
+                     WHERE ${conditions} and  ${selfconditions}
+                       AND t.state ='2'
+                       AND NOT EXISTS (SELECT 1
+                                     FROM PRM_FINAL_ESTIMATE PFE
+                                    WHERE PFE.SQUARE_TYPE = 1
+                                      AND PFE.PRM_PROJECT_MAIN_ID =T.PROJECT_ID)
+                       AND (t.IS_VOID IS NULL OR t.IS_VOID = 0) ]]>
+        </common>
+    </contract_query_q>
+    <contract_grid_query>
+        <common>
+            <![CDATA[SELECT T.*,
+                           (SELECT C.CODE_DESC
+                              FROM SCDP_CODE C
+                             WHERE C.SYS_CODE = T.CONTRACT_NATURE
+                               AND C.CODE_TYPE = 'SCM_CONTRACT_NATURE') AS CONTRACT_NATURE_S,
+                           NVL((SELECT P.SCM_PAID_MONEY
+                                 FROM VW_SCM_CONTRACT_EXECUTE_SIMPLE P
+                                WHERE P.UUID = T.UUID),
+                               0) AS PAID_RT,
+                           NVL((SELECT SUM(AMOUNT)
+                                 FROM SCM_CONTRACT_INVOICE I
+                                WHERE I.SCM_CONTRACT_ID = T.UUID),
+                               0) AS INVOICE_AMOUNT_RT,
+                      (SELECT CODE_DESC
+                      FROM SCDP_CODE A
+                     WHERE A.CODE_TYPE = 'SCM_CONTRACT_PAY_TYPE'
+                       AND A.SYS_CODE = T.CONTRACT_PAY_TYPE) AS CONTRACT_PAY_TYPE_COMBO,
+                       (SELECT CODE_DESC
+                      FROM SCDP_CODE A
+                     WHERE A.CODE_TYPE = 'SCM_CONTRACT_STATE'
+                       AND A.SYS_CODE = T.CONTRACT_STATE) AS CONTRACT_STATE_COMBO,
+                   (SELECT CODE_DESC
+                      FROM SCDP_CODE A
+                     WHERE A.CODE_TYPE = 'SCM_IS_URGENT'
+                       AND A.SYS_CODE = T.IS_URGENT) AS IS_URGENT_COMBO,
+                       NVL(PPM.PROJECT_NAME,(SELECT N.FINANCIAL_SUBJECT FROM NON_PROJECT_SUBJECT_SUBJECT N WHERE N.FINANCIAL_SUBJECT_CODE=  T.SUBJECT_CODE)) AS FAD_SUBJECT_NAME,
+                     DECODE(NVL(T.IS_PROJECT,0),0,T.SUBJECT_CODE,PPM.PROJECT_CODE) AS FAD_SUBJECT_CODE,
+                   DECODE(T.IS_VIRTUAL,1,'是','否') AS IS_VIRTUAL_COMBO,
+                           (SELECT S.TAX_REGISTRATION_NO
+                              FROM SCM_SUPPLIER S
+                             WHERE S.UUID = T.SUPPLIER_CODE) AS TAX_REGISTRATION_NO,
+                           (SELECT PROJECT_CODE
+                              FROM PRM_PROJECT_MAIN M
+                             WHERE M.UUID = T.PROJECT_ID) AS CONTRACT_SUBJECT_CODE,
+                                    v.*
+                      FROM SCM_CONTRACT T,vw_prm_budget v,(SELECT PROJECT_CODE,PROJECT_NAME ,UUID FROM  PRM_PROJECT_MAIN PM ) PPM
+                     WHERE ${conditions}
+                       and t.purchase_package_id=v.PACKAGE_ID(+)
+                       and T.PROJECT_ID=PPM.UUID(+)
+                       AND t.state ='2'
+                       AND ${voidfilter}
+                       AND ${selfconditions} ]]>
+        </common>
+    </contract_grid_query>
+    <jscmcontractdetail_query>
+        <common>
+            <![CDATA[select * from scm_contract_detail where ${conditions} and ${voidfilter}]]>
+        </common>
+    </jscmcontractdetail_query>
+    <contractdetail_query>
+        <common>
+            <![CDATA[select t.*,t.amount*unit_price_true as total from scm_contract_detail t where ${conditions} and ${voidfilter}]]>
+        </common>
+    </contractdetail_query>
+    <simple_query>
+        <common>
+            <![CDATA[SELECT * FROM SCM_CONTRACT T WHERE T.SCM_CONTRACT_CODE=?]]>
+        </common>
+    </simple_query>
+    <!-- 为判断 合同总额不能超过申请明细意向总金额(申请明细数据*意向单价) 增加的查询！-->
+    <query_prmpurchasereqdetaillist_by_contract>
+        <common>
+            <![CDATA[SELECT SUM(BUDGET_PRICE) FROM PRM_PURCHASE_REQ_DETAIL WHERE SCM_CONTRACT_ID=?]]>
+        </common>
+    </query_prmpurchasereqdetaillist_by_contract>
+    <query_file>
+        <common>
+            <![CDATA[
+                SELECT * FROM CDM_FILE_RELATION WHERE CDM_FILE_TYPE = ?  AND FILE_CLASSIFY = ? ORDER BY CREATE_TIME DESC
+            ]]>
+        </common>
+    </query_file>
+    <common_pay_scmcontract_query>
+        <common>
+            <![CDATA[
+                            SELECT T.*
+                  FROM (SELECT S.*,
+                               NVL(S.PROJECT_CODE, S.SUBJECT_CODE) AS FAD_SUBJECT_CODE,
+                               SUM(S.SCM_NEED_PAY_MONEY) OVER(PARTITION BY S.SUPPLIER_CODE) SCM_SUPPLIER_UN_PAID_MONEY,
+                               PR.PROJECT_MONEY,
+                               PR.ACTUAL_MONEY,
+                               NVL(PR.ACTUAL_MONEY * 100 /   DECODE(PR.PROJECT_MONEY, 0, NULL, PR.PROJECT_MONEY),  0) AS PRM_RECEIPT_RATE,
+                               NVL(S.SCM_PAID_MONEY * 100 /  DECODE(S.AMOUNT, 0, NULL, S.AMOUNT),   0) AS SCM_PAID_RATE,
+                               NULL AS REQC_MONEY,
+                               NULL AS REQC_AUDIT_MONEY,
+                               NULL AS REQC_UNPAID_MONEY
+                          FROM VW_SCM_CONTRACT_EXECUTE S
+                          LEFT JOIN VW_PRM_RECEIPT PR
+                            ON S.PROJECT_ID = PR.UUID) T
+                         where ${conditions} and ${selfconditions} ]]>
+        </common>
+    </common_pay_scmcontract_query>
+    <update_contractcode_to_prmpurchasereqdetail>
+        <common>
+            UPDATE PRM_PURCHASE_REQ_DETAIL SET SCM_CONTRACT_CODE=?
+            WHERE SCM_CONTRACT_ID=?
+        </common>
+    </update_contractcode_to_prmpurchasereqdetail>
+    <reject_prmpurchaserreqdetail>
+        <common>
+            UPDATE PRM_PURCHASE_REQ_DETAIL SET ISFALLBACK='1',FALLBACK_REASON=? WHERE SCM_CONTRACT_ID=?
+        </common>
+    </reject_prmpurchaserreqdetail>
+    <split_in_prmpurchaserreqdetail_scmcontract>
+        <common>
+            UPDATE PRM_PURCHASE_REQ_DETAIL PPRD SET PPRD.SCM_CONTRACT_ID=NULL,PPRD.SCM_CONTRACT_CODE=NULL WHERE
+            PPRD.SCM_CONTRACT_ID=?
+        </common>
+    </split_in_prmpurchaserreqdetail_scmcontract>
+    <update_contractstate_by_pk>
+        <common>
+            UPDATE SCM_CONTRACT SET CONTRACT_STATE=? WHERE UUID=?
+        </common>
+    </update_contractstate_by_pk>
+    <find_package_name_by_package_id>
+        <common>
+            <![CDATA[
+            SELECT A.PACKAGE_NAME,T.PURCHASE_PACKAGE_ID FROM PRM_PURCHASE_REQ_DETAIL T
+            LEFT JOIN PRM_PURCHASE_PACKAGE A
+            ON T.PURCHASE_PACKAGE_ID = A.UUID WHERE ${selfconditions}
+            ]]>
+        </common>
+    </find_package_name_by_package_id>
+    <allotContractMoney>
+        <common>
+            UPDATE PRM_PURCHASE_REQ_DETAIL D
+            SET D.ACTUAL_PURCHASE_MONEY = (SELECT DECODE(R.ROW_NUM,
+            1,
+            PROPORTION_MONEY + R.AMOUNT -
+            R.TOTAL_PROPORTION_MONEY,
+            PROPORTION_MONEY) AS PROPORTION_MONEY_NEW
+            FROM (SELECT R.*,
+            ROUND(R.AMOUNT * R.PROPORTION,
+            3) AS PROPORTION_MONEY,
+            SUM(ROUND(R.AMOUNT *
+            R.PROPORTION,
+            3)) OVER() AS TOTAL_PROPORTION_MONEY,
+            ROWNUM AS ROW_NUM
+            FROM (SELECT R.*,
+            DECODE(R.SUM_TOTAL,
+            0,
+            0,
+            R.TOTAL_EXPECTED_PRICE /
+            R.SUM_TOTAL) AS PROPORTION
+            FROM (SELECT SC.UUID AS UUID_SC,
+            PPRD.UUID AS UUID_PPRD,
+            SC.AMOUNT,
+            PPRD.HANDLE_AMOUNT,
+            PPRD.EXPECTED_PRICE,
+            PPRD.SEQ_NO,
+            NVL(PPRD.HANDLE_AMOUNT,
+            0) *
+            NVL(PPRD.EXPECTED_PRICE,
+            0) AS TOTAL_EXPECTED_PRICE,
+            SUM(NVL(PPRD.HANDLE_AMOUNT,
+            0) *
+            NVL(PPRD.EXPECTED_PRICE,
+            0)) OVER() AS SUM_TOTAL
+            FROM SCM_CONTRACT SC,
+            PRM_PURCHASE_REQ_DETAIL PPRD
+            WHERE SC.UUID =
+            ?
+            AND SC.UUID =
+            PPRD.SCM_CONTRACT_ID) R
+            ORDER BY R.SEQ_NO DESC) R) R
+            WHERE R.UUID_PPRD = D.UUID)
+            WHERE D.SCM_CONTRACT_ID = ?
+        </common>
+    </allotContractMoney>
+
+    <price_database_query>
+        <common>
+            <![CDATA[select *
+  from (select scd.material_name,
+               scd.model,
+               ss.complete_name,
+               sc.supplier_code as supplier_id,
+               scd.unit_price_talk,
+               scd.unit_price_true,
+               sc.scm_contract_code,
+               sc.uuid,
+               sc.effective_date,
+               so.org_name,
+               sc.office_id,
+               ppm.project_code,
+               ppm.uuid as project_id,
+               ppm.project_name,
+               pc.BUILD_REGION,
+               BUILD_REGION_name,
+               smc.name
+          from scm_contract_detail scd
+          left join scm_contract sc on sc.uuid = scd.scm_contract_id
+          left join PRM_PURCHASE_PACKAGE ppp on ppp.uuid=sc.purchase_package_id
+          left join scm_material_class smc on smc.code=ppp.material_class_code
+          left join prm_project_main ppm on ppm.uuid = sc.project_id
+          left join scm_supplier ss on sc.supplier_code = ss.uuid
+          left join scdp_org so on sc.office_id = so.org_code
+          left join (select prm_project_main_id，LISTAGG(pcd.state_desc, ';') WITHIN
+ GROUP(
+ ORDER BY pcd.prm_project_main_id) as BUILD_REGION_name，LISTAGG(pcd.BUILD_REGION, ';') WITHIN
+ GROUP(
+ ORDER BY pcd.prm_project_main_id) as BUILD_REGION
+  from (select distinct pcd.prm_project_main_id,
+                        fs.state_desc,
+                        pc.BUILD_REGION
+          from prm_contract pc
+          left join prm_contract_detail pcd on pc.uuid = pcd.prm_contract_id
+          left join Fm_State fs on fs.state_code = pc.BUILD_REGION) pcd
+ group by pcd.prm_project_main_id
+) pc on pc.prm_project_main_id = ppm.uuid) R  where ${conditions}]]>
+        </common>
+    </price_database_query>
+    <scm_find_msg_info>
+        <common>
+            <![CDATA[SELECT SC.UUID,
+            SC.SCM_CONTRACT_CODE,
+            NVL(SC.AMOUNT, 0) AS AMOUNT,
+            NVL(SC.TOTAL_VALUE, 0) AS ADVANCE,
+            RD.PURCHASE_REQ_NO,
+            MP.STAFF_ID
+            FROM SCM_CONTRACT SC
+            LEFT JOIN (SELECT SCM_CONTRACT_ID, LISTAGG(RD.PURCHASE_REQ_NO, ';') WITHIN
+            GROUP(
+            ORDER BY RD.PURCHASE_REQ_NO) AS PURCHASE_REQ_NO
+            FROM (SELECT DISTINCT RD.SCM_CONTRACT_ID, PPR.PURCHASE_REQ_NO
+            FROM PRM_PURCHASE_REQ PPR
+            LEFT JOIN PRM_PURCHASE_REQ_DETAIL RD ON PPR.UUID =
+            RD.PRM_PURCHASE_REQ_ID
+            WHERE RD.SCM_CONTRACT_ID IS NOT NULL) RD
+            GROUP BY RD.SCM_CONTRACT_ID) RD ON RD.SCM_CONTRACT_ID =
+            SC.UUID
+            INNER JOIN (SELECT MP.PRM_PROJECT_MAIN_ID, MAX(MP.STAFF_ID) AS STAFF_ID
+            FROM PRM_MEMBER_DETAIL_P MP
+            WHERE MP.POST =
+            (SELECT R.UUID
+            FROM SCDP_ROLE R
+            WHERE EXISTS (SELECT *
+            FROM SCDP_EXPAND_COLUMN ER
+            LEFT JOIN SCDP_EXPAND_ROW EC ON ER.UUID =
+            EC.EXPAND_ID
+            WHERE EC.DATA_UUID = R.UUID
+            AND EC.EXPAND_VALUE = 'Y'
+            AND ER.EXPAND_CODE = 'IS_PROJECT_ROLE'
+            AND ER.EXPAND_TYPE = 'ROLE')
+            AND R.ROLE_NAME = '项目经理')
+            GROUP BY MP.PRM_PROJECT_MAIN_ID) MP ON SC.PROJECT_ID =
+            MP.PRM_PROJECT_MAIN_ID
+            WHERE SC.UUID =? ]]>
+        </common>
+    </scm_find_msg_info>
+    <get_scm_supplier_limit>
+        <common>
+            <![CDATA[SELECT T.*,
+       NVL(SC.VOLUME, 0) AS U_VOLUME,
+       NVL(SC.AMOUNT, 0) AS U_AMOUNT,
+       (SELECT SC.AMOUNT FROM SCM_CONTRACT SC WHERE SC.UUID = ?) AS AMOUNT,
+       (SELECT SS.COMPLETE_NAME
+          FROM SCM_SUPPLIER SS
+         WHERE T.SCM_SUPPLIER_ID = SS.UUID) AS SUPPLIER_NAME
+  FROM (SELECT SSLD.SCM_SUPPLIER_ID,
+               SSLD.MAX_VOLUME,
+               SSLD.MAX_AMOUNT,
+               SSL.BEGIN_TIME,
+               SSL.END_TIME
+          FROM SCM_SUPPLIER_LIMIT SSL
+          LEFT JOIN SCM_SUPPLIER_LIMIT_DETAIL SSLD ON SSL.UUID =
+                                                      SSLD.SCM_SUPPLIER_LIMIT_ID
+         WHERE SSL.BEGIN_TIME <= SYSDATE
+           AND SSL.END_TIME >= SYSDATE
+           AND SSL.STATE = 2
+           AND SSLD.SCM_SUPPLIER_ID =
+               (SELECT SC.SUPPLIER_CODE
+                  FROM SCM_CONTRACT SC
+                 WHERE SC.UUID = ?)) T
+  LEFT JOIN (SELECT SC.SUPPLIER_CODE AS SCM_SUPPLIER_ID,
+                    SUM(SC.AMOUNT) AS AMOUNT,
+                    COUNT(1) AS VOLUME
+               FROM SCM_CONTRACT SC
+              WHERE SC.SUPPLIER_CODE =
+                    (SELECT SC.SUPPLIER_CODE
+                       FROM SCM_CONTRACT S
+                      WHERE S.UUID = ?)
+                AND SC.STATE = '2'
+              GROUP BY SC.SUPPLIER_CODE) SC ON SC.SCM_SUPPLIER_ID =
+                                               T.SCM_SUPPLIER_ID
+]]>
+        </common>
+    </get_scm_supplier_limit>
+    <get_supplier_last_contract_time>
+        <common>
+            <![CDATA[ SELECT SSE.UUID, TO_CHAR(MAX(SSE.CREATE_TIME), 'YYYY-MM-DD') AS LAST_TIME
+   FROM SCM_SUPPLIER_EVALUATION SSE
+  WHERE SSE.SCM_SUPPLIER_ID = ?
+    AND SSE.EVALUATE_FROM = '1'
+  GROUP BY SSE.UUID]]>
+        </common>
+    </get_supplier_last_contract_time>
+
+</DAO>

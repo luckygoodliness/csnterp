@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonreport version="1.0">
+    <report>
+        <reporttype>L</reporttype>
+        <reporttemplate>erp/scm/ScmPurchaseRequisitionDetail.cpt</reporttemplate>
+        <reportcache>false</reportcache>
+    </report>
+    <conditions columns="4">
+        <JHidden cid="officeDesc"/>
+        <JHidden cid="projectId" field="projectId"/>
+        <JErpDepartMent pos="A1:A1" fieldLabel_s="office" cid="office" field="office" readOnly_b="true"
+                        adaptable_b="false"/>
+        <!--<JText pos="B1:B1" cid="fadSubjectCode" fieldLabel_s="fadSubjectCode" field="fadSubjectCode"/>-->
+        <!--<JDate pos="C1:C1" cid="nowBegin" fieldLabel_s="nowBegin" field="nowBegin"/>-->
+        <!--<JDate pos="D1:D1" cid="nowEnd" fieldLabel_s="nowEnd" field="nowEnd"/>-->
+        <JProject  pos="B1:B1" fieldLabel_s="项目" cid="prmProjectName" valueField="projectName"
+                   allowBlank_b="true" refer_j='[{"refField":"projectId","valueField":"uuid"}]'/>
+        <JText pos="C1:C1" cid="purchaseReqNo" fieldLabel_s="申请单号" field="purchaseReqNo"/>
+    </conditions>
+</commonreport>

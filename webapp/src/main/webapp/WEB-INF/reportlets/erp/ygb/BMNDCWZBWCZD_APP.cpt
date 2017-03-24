@@ -1,0 +1,2241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20151125" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="T1" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="year"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--T1
+SELECT
+R.ORG_CODE,
+R.CUR_YEAR,
+R.TARGET,
+NVL(R.MONEY, 0) + NVL(JH.JZ, 0) MONEY,
+NVL(JH.MONEY_JH, 0) MONEY_JH,
+DECODE(NVL(JH.MONEY_JH, 0),0,0,(NVL(R.MONEY, 0) + NVL(JH.JZ, 0)) / NVL(JH.MONEY_JH, NULL)) WCBL
+FROM
+(
+  SELECT
+  R.ORG_CODE,
+  R.CUR_YEAR,
+  R.TARGET,
+  SUM(R.MONEY) MONEY,
+  DECODE(R.TARGET, '合同额', '1', '立项利润', '2', '收款', '3', '结算收入', '4', '结算利润', '5', '6') FLAG
+  FROM
+  (
+    SELECT
+    D.ORG_CODE,
+    D.CUR_YEAR,
+    D.CUR_MONTH,
+    '合同额' TARGET,
+    NVL2(SUM(D.CONTRACT_MONEY), SUM(D.CONTRACT_MONEY) / 10000, 0) MONEY --合同额
+    FROM
+    (
+      SELECT
+      P.EXAM_DATE,
+      P.CONTRACT_SIGN_MONEY CONTRACT_MONEY,
+      P.CONTRACTOR_OFFICE ORG_CODE,
+      TO_CHAR(NVL(EXAM_DATE, SYSDATE), 'yyyy') CUR_YEAR,
+      TO_CHAR(NVL(EXAM_DATE, SYSDATE), 'mm') CUR_MONTH
+      FROM
+      PRM_CONTRACT P
+      WHERE
+      NVL(P.PROJECT_SOURCE_TYPE, 0) <> '4'
+      AND P.PRM_CODE_TYPE<>'JI_GAI'
+      AND TO_CHAR(P.CREATE_TIME,'yyyy')<=${year}
+    ) D
+    GROUP BY
+    D.ORG_CODE,
+    D.CUR_YEAR,
+    D. CUR_MONTH
+    
+    UNION ALL
+ 
+    SELECT
+    D.ORG_CODE,
+    D.CUR_YEAR,
+    D. CUR_MONTH,
+    '立项利润' TARGET,
+    NVL2(SUM(D.PROFIT_MONEY), SUM(D.PROFIT_MONEY) / 10000, 0) MONEY --立项利润
+    FROM
+    (
+      SELECT
+      R.ORG_CODE,
+      R.PRM_PROJECT_MAIN_ID,
+      R.CUR_YEAR,
+      R.CUR_MONTH,
+      NVL(R.PROFIT, 0) - NVL(R.PROFIT_L, 0) PROFIT_MONEY
+      FROM
+      (
+        SELECT
+        R.UUID,
+        R.ORG_CODE,
+        R.PRM_PROJECT_MAIN_ID,
+        R.CUR_YEAR,
+        R.CUR_MONTH,
+        PROFIT,
+        LEAD(R.PROFIT) OVER(PARTITION BY R.PRM_PROJECT_MAIN_ID ORDER BY R.CUR_YEAR DESC, R.CUR_MONTH DESC) PROFIT_L
+        FROM
+        (
+          SELECT
+          R.*,
+          ROW_NUMBER() OVER(PARTITION BY R.PRM_PROJECT_MAIN_ID, R.CUR_YEAR, R.CUR_MONTH ORDER BY R.CUR_TIME DESC) ROW_NUM
+          FROM
+          (
+            SELECT
+            PPMC.UUID,
+            PPMC.CONTRACTOR_OFFICE ORG_CODE,
+            PPMC.PRM_PROJECT_MAIN_ID,
+            TO_CHAR(PPMC.EXAM_DATE, 'yyyy') CUR_YEAR,
+            TO_CHAR(PPMC.EXAM_DATE, 'mm') CUR_MONTH,
+            PPMC.EXAM_DATE CUR_TIME,
+            NVL(PPMC.PROJECT_MONEY, 0) - NVL(PPMC.COST_CONTROL_MONEY, 0) PROFIT
+            FROM
+            PRM_PROJECT_MAIN_C PPMC
+     
+            WHERE
+           
+            PPMC.STATE = 2
+            AND PPMC.PRM_CODE_TYPE<>'JI_GAI'
+            AND
+            (
+              SUBSTR(PPMC.PROJECT_CODE, 1, 1)<> '研'
+              OR
+              SUBSTR(PPMC.PROJECT_CODE, 7, 2) = 'KY'
+            )--不含外部研发
+            AND
+            NVL(PPMC.IS_PRE_PROJECT, 0) = 0
+            AND
+            PPMC.ESTABLISH_DATE >= TO_DATE('2014-06-01', 'yyyy-MM-dd')
+          ) R
+        ) R
+        WHERE
+        R.ROW_NUM = 1
+      ) R
+    ) D
+    GROUP BY
+    D.ORG_CODE,
+    D.CUR_YEAR,
+    D. CUR_MONTH
+    
+    UNION ALL
+ 
+    SELECT
+    R.ORG_CODE,
+    R.CUR_YEAR,
+    R.CUR_MONTH,
+    '收款' TARGET,
+    NVL2(SUM(R.ACTUAL_MONEY), SUM(R.ACTUAL_MONEY) / 10000, 0) MONEY --收款
+    FROM
+    (
+      SELECT
+      M.CONTRACTOR_OFFICE ORG_CODE,
+      T.ACTUAL_MONEY,
+      T.EXAM_DATE,
+      TO_CHAR(T.EXAM_DATE, 'yyyy') CUR_YEAR,
+      TO_CHAR(T.EXAM_DATE, 'mm') CUR_MONTH
+      FROM
+      PRM_RECEIPTS T,
+      PRM_PROJECT_MAIN M
+      WHERE
+      T.PRM_PROJECT_MAIN_ID = M.UUID
+      AND
+      T.STATE IN ('2','4','8')
+    ) R
+    GROUP BY
+    R.ORG_CODE,
+    R.CUR_YEAR,
+    R.CUR_MONTH
+    
+    UNION ALL
+    
+    SELECT
+    PPM.CONTRACTOR_OFFICE ORG_CODE,
+    JS.CUR_YEAR,
+    JS.CUR_MONTH,
+    '结算收入' TARGET,
+    SUM(JSSR) / 10000 MONEY
+    FROM
+    (
+      SELECT
+      PROJECT_ID,
+      CUR_YEAR,
+      CUR_MONTH,
+      SUM(JSSR) JSSR
+      FROM
+      (
+        SELECT
+        T.PRM_PROJECT_MAIN_ID PROJECT_ID,
+        TO_CHAR(T.EXAM_DATE, 'YYYY') CUR_YEAR,
+        TO_CHAR(T.EXAM_DATE, 'MM') CUR_MONTH,
+        T.SQUARE_PROJECT_MONEY JSSR --收入
+        FROM
+        PRM_FINAL_ESTIMATE T,
+        PRM_PROJECT_MAIN M
+        WHERE
+        T.EXAM_DATE IS NOT NULL
+        AND
+        T.PRM_PROJECT_MAIN_ID = M.UUID
+        AND
+        M.PROJECT_CODE NOT LIKE '研%'
+      ) R
+      GROUP BY
+      PROJECT_ID,
+      CUR_YEAR,
+      CUR_MONTH
+    ) JS
+    
+    LEFT JOIN
+    PRM_PROJECT_MAIN PPM
+    ON
+    PPM.UUID = JS.PROJECT_ID
+    
+    GROUP BY
+    PPM.CONTRACTOR_OFFICE,
+    JS.CUR_YEAR,
+    JS.CUR_MONTH
+    
+    UNION ALL
+    
+     SELECT NVL(JS.DEPARTMENT_CODE, XZ.DEPARTMENT_CODE) AS ORG_CODE,
+                     NVL(JS.CUR_YEAR, XZ.CUR_YEAR) AS CUR_YEAR,
+                     NVL(JS.CUR_MONTH, XZ.CUR_MONTH) AS CUR_MONTH,
+                     '结算利润' AS TARGET,
+                     SUM(NVL(JSLR, 0) - NVL(SJXZ, 0)) / 10000 AS JSLR
+                FROM (SELECT DEPARTMENT_CODE,
+                             CUR_YEAR,
+                             CUR_MONTH,
+                             SUM(JSLR) AS JSLR
+                        FROM (SELECT T.DEPARTMENT_CODE AS DEPARTMENT_CODE,
+                                     TO_CHAR(T.EXAM_DATE, 'YYYY') AS CUR_YEAR,
+                                     TO_CHAR(T.EXAM_DATE, 'MM') AS CUR_MONTH,
+                                     NVL(T. SQUARE_GROSS_PROFIT, 0)+
+                                       NVL(T.TAX_CORRECTION, 0) AS JSLR --利润
+                                FROM PRM_FINAL_ESTIMATE T
+                               WHERE T.EXAM_DATE IS NOT NULL
+                                 AND NOT EXISTS
+                               (SELECT 1
+                                        FROM PRM_PROJECT_MAIN PPM
+                                       WHERE PPM.UUID = T.PRM_PROJECT_MAIN_ID
+                                         AND SUBSTR(PPM.PROJECT_CODE, 0, 1) = '研')) R
+                       GROUP BY DEPARTMENT_CODE, CUR_YEAR, CUR_MONTH) JS
+                FULL JOIN (SELECT DEPARTMENT_CODE,
+                                  CUR_YEAR,
+                                  CUR_MONTH,
+                                  SUM(SJXZ) AS SJXZ
+                             FROM (SELECT T.DEPARTMENT_CODE AS DEPARTMENT_CODE,
+                                          TO_CHAR(T.EXAM_R_TAX_DATE, 'YYYY') AS CUR_YEAR,
+                                          TO_CHAR(T.EXAM_R_TAX_DATE, 'MM') AS CUR_MONTH,
+                                          T.TAX_CORRECTION AS SJXZ --税金修正
+                                     FROM PRM_FINAL_ESTIMATE T
+                                    WHERE T.EXAM_R_TAX_DATE IS NOT NULL
+                                      AND NOT EXISTS
+                                    (SELECT 1
+                                             FROM PRM_PROJECT_MAIN PPM
+                                            WHERE PPM.UUID =
+                                                  T.PRM_PROJECT_MAIN_ID
+                                              AND SUBSTR(PPM.PROJECT_CODE,
+                                                         0,
+                                                         1) = '研')) R
+                            GROUP BY DEPARTMENT_CODE, CUR_YEAR, CUR_MONTH) XZ ON JS.
+               DEPARTMENT_CODE =
+                                                                                 XZ.DEPARTMENT_CODE
+                                                                             AND JS.
+               CUR_YEAR =
+                                                                                 XZ.CUR_YEAR
+                                                                             AND JS.
+               CUR_MONTH =
+                                                                                 XZ.CUR_MONTH
+               GROUP BY NVL(JS.DEPARTMENT_CODE, XZ.DEPARTMENT_CODE),
+                        NVL(JS.CUR_YEAR, XZ.CUR_YEAR),
+                        NVL(JS.CUR_MONTH, XZ.CUR_MONTH)
+    
+    UNION ALL
+    
+    SELECT
+    R.ORG_CODE,
+    TO_CHAR(R.CUR_YEAR) CUR_YEAR,
+    TO_CHAR(R.CUR_MONTH) CUR_MONTH,
+    '收支盈余' TARGET,
+    SUM(MONEY) MONEY
+    FROM
+    (
+      SELECT
+      NVL(QTCB.ORG_CODE, JSLR.ORG_CODE) ORG_CODE,
+      NVL(QTCB.CUR_YEAR, JSLR.CUR_YEAR) CUR_YEAR,
+      NVL(QTCB.CUR_MONTH, JSLR.CUR_MONTH) CUR_MONTH,
+      '收支盈余',
+      NVL(JSLR.JSLR, 0) - NVL(QTCB.MONEY, 0) MONEY
+      FROM
+      (
+        SELECT
+        R.ORG_CODE,
+        TO_CHAR(R.CUR_YEAR) CUR_YEAR,
+        (CASE WHEN R.CUR_MONTH>=10 THEN TO_CHAR(R.CUR_MONTH) ELSE '0'||TO_CHAR(R.CUR_MONTH) END) CUR_MONTH,
+        '其他成本',
+        SUM(MONEY) MONEY
+        FROM
+        (
+          --人工费
+          SELECT
+          MLC.OFFICE_ID ORG_CODE,
+          MLC.YEAR CUR_YEAR,
+          MLC.MONTH CUR_MONTH,
+          SUM(MONEY) / 10000 MONEY
+          FROM
+          MONITOR_LABOR_COST MLC
+          GROUP BY
+          OFFICE_ID,
+          MLC.YEAR,
+          MLC.MONTH
+                  
+          UNION ALL
+
+          --其他分摊费用
+          SELECT
+          MOS.OFFICE_ID ORG_CODE,
+          MOS.YEAR CUR_YEAR,
+          MOS.MONTH CUR_MONTH,
+          SUM(MONEY) / 10000 MONEY
+          FROM
+          MONITOR_OTHER_SHARE MOS
+          GROUP BY
+          OFFICE_ID,
+          MOS.YEAR,
+          MOS.MONTH
+          
+          UNION ALL
+
+          --非项目费用
+          SELECT
+          ORG_CODE,
+          TO_NUMBER(CUR_YEAR) CUR_YEAR,
+          TO_NUMBER(CUR_MONTH) CUR_MONTH,
+          SUM(MONEY) / 10000 MONEY
+          FROM
+          (
+            SELECT
+            NPBH.OFFICE_ID ORG_CODE,
+            TO_CHAR(VBD48.CERTIFICATE_CREATE_TIME, 'yyyy') CUR_YEAR,
+            TO_CHAR(VBD48.CERTIFICATE_CREATE_TIME, 'mm') CUR_MONTH,
+            VBD48.MONEY
+            FROM
+            (
+              SELECT
+              NVL(NVL(FAD_CASH_REQ_INVOICE.FAD_INVOICE_ID, SCM_CONTRACT_INVOICE.FAD_INVOICE_ID), VBD48.UUID) UUID,
+              VBD48.CERTIFICATE_CREATE_TIME,
+              VBD48.BUDGET_C_UUID,
+              VBD48.SUBJECT_NAME,
+              NVL(VBD48.MONEY, 0) MONEY
+              FROM
+              VW_BUDGET_DETAIL48 VBD48
+              
+              LEFT JOIN
+              FAD_CASH_REQ_INVOICE
+              ON
+              VBD48.UUID = FAD_CASH_REQ_INVOICE.UUID
+              
+              LEFT JOIN
+              SCM_CONTRACT_INVOICE 
+              ON
+              VBD48.UUID = SCM_CONTRACT_INVOICE.UUID
+              
+              WHERE
+              NVL(VBD48.IS_PROJECT, 0) != 1
+              AND
+              VBD48.BUDGET_C_UUID IS NOT NULL
+            ) VBD48
+            
+            LEFT JOIN
+            NON_PROJECT_BUDGET_C NPBC
+            ON
+            VBD48.BUDGET_C_UUID = NPBC.UUID
+            
+            LEFT JOIN
+            NON_PROJECT_BUDGET_H NPBH
+            ON
+            NPBC.HID = NPBH.UUID
+          ) R
+          GROUP BY
+          R.ORG_CODE,
+          R.CUR_YEAR,
+          R.CUR_MONTH
+        ) R
+        WHERE
+        EXISTS
+        (
+          SELECT
+          1
+          FROM
+          OPERATE_COMPANY_PLAN_H H
+          
+          LEFT JOIN
+          OPERATE_COMPANY_PLAN_C C
+          ON
+          H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+          
+          WHERE
+          H.START_YEAR = R.CUR_YEAR
+          AND
+          C.OBJECT_ID = R.ORG_CODE
+        )
+        GROUP BY
+        R.ORG_CODE,
+        R.CUR_YEAR,
+        R.CUR_MONTH
+      ) QTCB
+      
+      --结算利润
+      FULL JOIN
+      (
+        SELECT NVL(JS.DEPARTMENT_CODE, XZ.DEPARTMENT_CODE) AS ORG_CODE,
+                     NVL(JS.CUR_YEAR, XZ.CUR_YEAR) AS CUR_YEAR,
+                     NVL(JS.CUR_MONTH, XZ.CUR_MONTH) AS CUR_MONTH,
+                     '结算利润' AS TARGET,
+                     SUM(NVL(JSLR, 0) - NVL(SJXZ, 0)) / 10000 AS JSLR
+                FROM (SELECT DEPARTMENT_CODE,
+                             CUR_YEAR,
+                             CUR_MONTH,
+                             SUM(JSLR) AS JSLR
+                        FROM (SELECT T.DEPARTMENT_CODE AS DEPARTMENT_CODE,
+                                     TO_CHAR(T.EXAM_DATE, 'YYYY') AS CUR_YEAR,
+                                     TO_CHAR(T.EXAM_DATE, 'MM') AS CUR_MONTH,
+                                     NVL(T. SQUARE_GROSS_PROFIT, 0)+
+                                       NVL(T.TAX_CORRECTION, 0) AS JSLR --利润
+                                FROM PRM_FINAL_ESTIMATE T
+                               WHERE T.EXAM_DATE IS NOT NULL
+                                 AND NOT EXISTS
+                               (SELECT 1
+                                        FROM PRM_PROJECT_MAIN PPM
+                                       WHERE PPM.UUID = T.PRM_PROJECT_MAIN_ID
+                                         AND SUBSTR(PPM.PROJECT_CODE, 0, 1) = '研')) R
+                       GROUP BY DEPARTMENT_CODE, CUR_YEAR, CUR_MONTH) JS
+                FULL JOIN (SELECT DEPARTMENT_CODE,
+                                  CUR_YEAR,
+                                  CUR_MONTH,
+                                  SUM(SJXZ) AS SJXZ
+                             FROM (SELECT T.DEPARTMENT_CODE AS DEPARTMENT_CODE,
+                                          TO_CHAR(T.EXAM_R_TAX_DATE, 'YYYY') AS CUR_YEAR,
+                                          TO_CHAR(T.EXAM_R_TAX_DATE, 'MM') AS CUR_MONTH,
+                                          T.TAX_CORRECTION AS SJXZ --税金修正
+                                     FROM PRM_FINAL_ESTIMATE T
+                                    WHERE T.EXAM_R_TAX_DATE IS NOT NULL
+                                      AND NOT EXISTS
+                                    (SELECT 1
+                                             FROM PRM_PROJECT_MAIN PPM
+                                            WHERE PPM.UUID =
+                                                  T.PRM_PROJECT_MAIN_ID
+                                              AND SUBSTR(PPM.PROJECT_CODE,
+                                                         0,
+                                                         1) = '研')) R
+                            GROUP BY DEPARTMENT_CODE, CUR_YEAR, CUR_MONTH) XZ ON JS.
+               DEPARTMENT_CODE =
+                                                                                 XZ.DEPARTMENT_CODE
+                                                                             AND JS.
+               CUR_YEAR =
+                                                                                 XZ.CUR_YEAR
+                                                                             AND JS.
+               CUR_MONTH =
+                                                                                 XZ.CUR_MONTH
+               GROUP BY NVL(JS.DEPARTMENT_CODE, XZ.DEPARTMENT_CODE),
+                        NVL(JS.CUR_YEAR, XZ.CUR_YEAR),
+                        NVL(JS.CUR_MONTH, XZ.CUR_MONTH)
+      )
+      JSLR
+      ON
+      JSLR.ORG_CODE = QTCB.ORG_CODE
+      AND
+      JSLR.CUR_YEAR = QTCB.CUR_YEAR
+      AND
+      JSLR.CUR_MONTH = QTCB.CUR_MONTH
+    ) R
+    WHERE
+    EXISTS
+    (
+      SELECT
+      1
+      FROM
+      OPERATE_COMPANY_PLAN_H H
+      
+      LEFT JOIN
+      OPERATE_COMPANY_PLAN_C C
+      ON
+      H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+      
+      WHERE
+      H.START_YEAR = R.CUR_YEAR
+      AND
+      C.OBJECT_ID = R.ORG_CODE
+    )
+    GROUP BY
+    R.ORG_CODE,
+    R.CUR_YEAR,
+    R.CUR_MONTH
+  ) R
+  GROUP BY
+  R.ORG_CODE,
+  R.CUR_YEAR,
+  R.TARGET
+  HAVING
+  R.ORG_CODE = '${officeId}'
+) R
+
+LEFT JOIN
+--指标
+(
+  SELECT
+  JH.ORG_CODE,
+  JH.CUR_YEAR,
+  JH.TARGET,
+  SUM(JH.MONEY_JH) MONEY_JH,
+  SUM(JH.JZ) JZ
+  FROM
+  (
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '合同额' TARGET,
+    NVL(C.JHHTE, 0) MONEY_JH, --合同额(万元)
+    NVL(C.JZHTE, 0) + NVL(C.HTEXZ, 0) JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    
+    UNION ALL
+    
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '立项利润' TARGET,
+    NVL(C.JHLXLR, 0) MONEY_JH,
+    NVL(C.JZLR, 0) + NVL(C.lxlrxz, 0) JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    
+    UNION ALL
+    
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '收款' TARGET,
+    NVL(C.JHSR, 0) MONEY_JH,
+    NVL(JZSR, 0)+NVL(BMSRXZ,0) JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    
+    UNION ALL
+    
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '结算收入' TARGET,
+    NVL(C.JHJSSR, 0) MONEY_JH,
+    BMJSSRXZ AS JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    
+    UNION ALL
+    
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '结算利润' TARGET,
+    NVL(C.JHJSLR, 0) MONEY_JH,
+    BMJSLRXZ AS JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    
+    UNION ALL
+    
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '收支盈余' TARGET,
+    NVL(C.JHSZYY, 0) MONEY_JH,
+    BMJSLRXZ AS JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+  ) JH
+  GROUP BY
+  JH.ORG_CODE,
+  JH.CUR_YEAR,
+  JH.TARGET
+) JH
+ON
+R.ORG_CODE = JH.ORG_CODE
+AND
+R.CUR_YEAR = JH.CUR_YEAR
+AND
+R.TARGET = JH.TARGET
+
+WHERE
+R.CUR_YEAR = ${if(year =='',"TO_CHAR(SYSDATE, 'yyyy')","'"+year+"'")}
+ORDER BY
+R.FLAG ASC]]></Query>
+</TableData>
+<TableData name="T2" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="year"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="target"/>
+<O>
+<![CDATA[合同额]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[--T2
+SELECT
+R.ORG_CODE,
+R.CUR_YEAR,
+R.CUR_MONTH || '月' CUR_MONTH,
+R.TARGET,
+CASE WHEN TO_NUMBER(R.CUR_MONTH) = 1 THEN NVL(R.MONEY, 0) + NVL(JH.JZ, 0) ELSE NVL(R.MONEY, 0) END MONEY,
+SUM(NVL(R.MONEY, 0)) OVER(PARTITION BY R.TARGET ORDER BY TO_NUMBER(R.CUR_MONTH) ROWS BETWEEN 12 PRECEDING AND 0 FOLLOWING) + NVL(JH.JZ, 0) MONEY_LJ
+FROM
+(
+  SELECT
+  R.ORG_CODE,
+  R.CUR_YEAR,
+  R.CUR_MONTH,
+  R.TARGET,
+  SUM(R.MONEY) MONEY,
+  DECODE(R.TARGET,'合同额','1','立项利润','2','收款','3','结算收入','4','结算利润','5','6') FLAG
+  FROM
+  (
+    SELECT
+    D.ORG_CODE,
+    D.CUR_YEAR,
+    D.CUR_MONTH,
+    '合同额' TARGET,
+    NVL2(SUM(D.CONTRACT_MONEY), SUM(D.CONTRACT_MONEY) / 10000, 0) MONEY --合同额
+    FROM
+    (
+      SELECT
+      P.EXAM_DATE,
+      P.CONTRACT_SIGN_MONEY CONTRACT_MONEY,
+      P.CONTRACTOR_OFFICE ORG_CODE,
+      TO_CHAR(NVL(EXAM_DATE, SYSDATE), 'yyyy') CUR_YEAR,
+      TO_CHAR(NVL(EXAM_DATE, SYSDATE), 'mm') CUR_MONTH
+      FROM
+      PRM_CONTRACT P
+      WHERE
+      NVL(P.PROJECT_SOURCE_TYPE, 0) <> '4'
+			AND P.PRM_CODE_TYPE<>'JI_GAI'
+			AND TO_CHAR(P.CREATE_TIME,'yyyy')<=${year}
+    ) D
+    GROUP BY
+    D.ORG_CODE,
+    D.CUR_YEAR,
+    D. CUR_MONTH
+    
+    UNION ALL
+ 
+    SELECT
+    D.ORG_CODE,
+    D.CUR_YEAR,
+    D. CUR_MONTH,
+    '立项利润' TARGET,
+    NVL2(SUM(D.PROFIT_MONEY), SUM(D.PROFIT_MONEY) / 10000, 0) MONEY --立项利润
+    FROM
+    (
+      SELECT
+      R.ORG_CODE,
+      R.PRM_PROJECT_MAIN_ID,
+      R.CUR_YEAR,
+      R.CUR_MONTH,
+      NVL(R.PROFIT, 0) - NVL(R.PROFIT_L, 0) PROFIT_MONEY
+      FROM
+      (
+        SELECT
+        R.UUID,
+        R.ORG_CODE,
+        R.PRM_PROJECT_MAIN_ID,
+        R.CUR_YEAR,
+        R.CUR_MONTH,
+        PROFIT,
+        LEAD(R.PROFIT) OVER(PARTITION BY R.PRM_PROJECT_MAIN_ID ORDER BY R.CUR_YEAR DESC, R.CUR_MONTH DESC) PROFIT_L
+        FROM
+        (
+          SELECT
+          R.*,
+          ROW_NUMBER() OVER(PARTITION BY R.PRM_PROJECT_MAIN_ID, R.CUR_YEAR, R.CUR_MONTH ORDER BY R.CUR_TIME DESC) ROW_NUM
+          FROM
+          (
+            SELECT
+            PPMC.UUID,
+            PPMC.CONTRACTOR_OFFICE ORG_CODE,
+            PPMC.PRM_PROJECT_MAIN_ID,
+            TO_CHAR(PPMC.EXAM_DATE, 'yyyy') CUR_YEAR,
+            TO_CHAR(PPMC.EXAM_DATE, 'mm') CUR_MONTH,
+            PPMC.EXAM_DATE CUR_TIME,
+            NVL(PPMC.PROJECT_MONEY, 0) - NVL(PPMC.COST_CONTROL_MONEY, 0) PROFIT
+            FROM
+            PRM_PROJECT_MAIN_C PPMC
+            
+            WHERE
+            PPMC.STATE = 2
+						AND PPMC.PRM_CODE_TYPE<>'JI_GAI'
+            AND
+            (
+              SUBSTR(PPMC.PROJECT_CODE, 1, 1)<> '研'
+              OR
+              SUBSTR(PPMC.PROJECT_CODE, 7, 2) = 'KY'
+            )--不含外部研发
+            AND
+            NVL(PPMC.IS_PRE_PROJECT, 0) = 0
+            AND
+            PPMC.ESTABLISH_DATE >= TO_DATE('2014-06-01', 'yyyy-MM-dd')
+          ) R
+        ) R
+        WHERE
+        R.ROW_NUM = 1
+      ) R
+    ) D
+    GROUP BY
+    D.ORG_CODE,
+    D.CUR_YEAR,
+    D. CUR_MONTH
+    
+    UNION ALL
+ 
+    SELECT
+    R.ORG_CODE,
+    R.CUR_YEAR,
+    R.CUR_MONTH,
+    '收款' TARGET,
+    NVL2(SUM(R.ACTUAL_MONEY), SUM(R.ACTUAL_MONEY) / 10000, 0) MONEY --收款
+    FROM
+    (
+      SELECT
+      M.CONTRACTOR_OFFICE ORG_CODE,
+      T.ACTUAL_MONEY,
+      T.EXAM_DATE,
+      TO_CHAR(T.EXAM_DATE, 'yyyy') CUR_YEAR,
+      TO_CHAR(T.EXAM_DATE, 'mm') CUR_MONTH
+      FROM
+      PRM_RECEIPTS T,
+      PRM_PROJECT_MAIN M
+      WHERE
+      T.PRM_PROJECT_MAIN_ID = M.UUID
+      AND
+      T.STATE IN ('2','4','8')
+    ) R
+    GROUP BY
+    R.ORG_CODE,
+    R.CUR_YEAR,
+    R.CUR_MONTH
+    
+    UNION ALL
+    
+    SELECT
+    PPM.CONTRACTOR_OFFICE ORG_CODE,
+    JS.CUR_YEAR,
+    JS.CUR_MONTH,
+    '结算收入' TARGET,
+    SUM(JSSR) / 10000 MONEY
+    FROM
+    (
+      SELECT
+      PROJECT_ID,
+      CUR_YEAR,
+      CUR_MONTH,
+      SUM(JSSR) JSSR
+      FROM
+      (
+        SELECT
+        T.PRM_PROJECT_MAIN_ID PROJECT_ID,
+        TO_CHAR(T.EXAM_DATE, 'YYYY') CUR_YEAR,
+        TO_CHAR(T.EXAM_DATE, 'MM') CUR_MONTH,
+        T.SQUARE_PROJECT_MONEY JSSR --收入
+        FROM
+        PRM_FINAL_ESTIMATE T,
+        PRM_PROJECT_MAIN M
+        WHERE
+        T.EXAM_DATE IS NOT NULL
+        AND
+        T.PRM_PROJECT_MAIN_ID = M.UUID
+        AND
+        M.PROJECT_CODE NOT LIKE '研%'
+      ) R
+      GROUP BY
+      PROJECT_ID,
+      CUR_YEAR,
+      CUR_MONTH
+    ) JS
+    
+    LEFT JOIN
+    PRM_PROJECT_MAIN PPM
+    ON
+    PPM.UUID = JS.PROJECT_ID
+    
+    GROUP BY
+    PPM.CONTRACTOR_OFFICE,
+    JS.CUR_YEAR,
+    JS.CUR_MONTH
+    
+    UNION ALL
+    
+    SELECT NVL(JS.DEPARTMENT_CODE, XZ.DEPARTMENT_CODE) AS ORG_CODE,
+                     NVL(JS.CUR_YEAR, XZ.CUR_YEAR) AS CUR_YEAR,
+                     NVL(JS.CUR_MONTH, XZ.CUR_MONTH) AS CUR_MONTH,
+                     '结算利润' AS TARGET,
+                     SUM(NVL(JSLR, 0) - NVL(SJXZ, 0)) / 10000 AS JSLR
+                FROM (SELECT DEPARTMENT_CODE,
+                             CUR_YEAR,
+                             CUR_MONTH,
+                             SUM(JSLR) AS JSLR
+                        FROM (SELECT T.DEPARTMENT_CODE AS DEPARTMENT_CODE,
+                                     TO_CHAR(T.EXAM_DATE, 'YYYY') AS CUR_YEAR,
+                                     TO_CHAR(T.EXAM_DATE, 'MM') AS CUR_MONTH,
+                                     NVL(T. SQUARE_GROSS_PROFIT, 0)+
+                                       NVL(T.TAX_CORRECTION, 0) AS JSLR --利润
+                                FROM PRM_FINAL_ESTIMATE T
+                               WHERE T.EXAM_DATE IS NOT NULL
+                                 AND NOT EXISTS
+                               (SELECT 1
+                                        FROM PRM_PROJECT_MAIN PPM
+                                       WHERE PPM.UUID = T.PRM_PROJECT_MAIN_ID
+                                         AND SUBSTR(PPM.PROJECT_CODE, 0, 1) = '研')) R
+                       GROUP BY DEPARTMENT_CODE, CUR_YEAR, CUR_MONTH) JS
+                FULL JOIN (SELECT DEPARTMENT_CODE,
+                                  CUR_YEAR,
+                                  CUR_MONTH,
+                                  SUM(SJXZ) AS SJXZ
+                             FROM (SELECT T.DEPARTMENT_CODE AS DEPARTMENT_CODE,
+                                          TO_CHAR(T.EXAM_R_TAX_DATE, 'YYYY') AS CUR_YEAR,
+                                          TO_CHAR(T.EXAM_R_TAX_DATE, 'MM') AS CUR_MONTH,
+                                          T.TAX_CORRECTION AS SJXZ --税金修正
+                                     FROM PRM_FINAL_ESTIMATE T
+                                    WHERE T.EXAM_R_TAX_DATE IS NOT NULL
+                                      AND NOT EXISTS
+                                    (SELECT 1
+                                             FROM PRM_PROJECT_MAIN PPM
+                                            WHERE PPM.UUID =
+                                                  T.PRM_PROJECT_MAIN_ID
+                                              AND SUBSTR(PPM.PROJECT_CODE,
+                                                         0,
+                                                         1) = '研')) R
+                            GROUP BY DEPARTMENT_CODE, CUR_YEAR, CUR_MONTH) XZ ON JS.
+               DEPARTMENT_CODE =
+                                                                                 XZ.DEPARTMENT_CODE
+                                                                             AND JS.
+               CUR_YEAR =
+                                                                                 XZ.CUR_YEAR
+                                                                             AND JS.
+               CUR_MONTH =
+                                                                                 XZ.CUR_MONTH
+               GROUP BY NVL(JS.DEPARTMENT_CODE, XZ.DEPARTMENT_CODE),
+                        NVL(JS.CUR_YEAR, XZ.CUR_YEAR),
+                        NVL(JS.CUR_MONTH, XZ.CUR_MONTH)
+    
+    UNION ALL
+    
+    SELECT
+    R.ORG_CODE,
+    TO_CHAR(R.CUR_YEAR) CUR_YEAR,
+    TO_CHAR(R.CUR_MONTH) CUR_MONTH,
+    '收支盈余' TARGET,
+    SUM(MONEY) MONEY
+    FROM
+    (
+      SELECT
+      NVL(QTCB.ORG_CODE, JSLR.ORG_CODE) ORG_CODE,
+      NVL(QTCB.CUR_YEAR, JSLR.CUR_YEAR) CUR_YEAR,
+      NVL(QTCB.CUR_MONTH, JSLR.CUR_MONTH) CUR_MONTH,
+      '收支盈余',
+      NVL(JSLR.JSLR, 0) - NVL(QTCB.MONEY, 0) MONEY
+      FROM
+      (
+        SELECT
+        R.ORG_CODE,
+        TO_CHAR(R.CUR_YEAR) CUR_YEAR,
+        (CASE WHEN R.CUR_MONTH>=10 THEN TO_CHAR(R.CUR_MONTH) ELSE '0'||TO_CHAR(R.CUR_MONTH) END) CUR_MONTH,
+        '其他成本',
+        SUM(MONEY) MONEY
+        FROM
+        (
+          --人工费
+          SELECT
+          MLC.OFFICE_ID ORG_CODE,
+          MLC.YEAR CUR_YEAR,
+          MLC.MONTH CUR_MONTH,
+          SUM(MONEY) / 10000 MONEY
+          FROM
+          MONITOR_LABOR_COST MLC
+          GROUP BY
+          OFFICE_ID,
+          MLC.YEAR,
+          MLC.MONTH
+                  
+          UNION ALL
+
+          --其他分摊费用
+          SELECT
+          MOS.OFFICE_ID ORG_CODE,
+          MOS.YEAR CUR_YEAR,
+          MOS.MONTH CUR_MONTH,
+          SUM(MONEY) / 10000 MONEY
+          FROM
+          MONITOR_OTHER_SHARE MOS
+          GROUP BY
+          OFFICE_ID,
+          MOS.YEAR,
+          MOS.MONTH
+          
+          UNION ALL
+
+          --非项目费用
+          SELECT
+          ORG_CODE,
+          TO_NUMBER(CUR_YEAR) CUR_YEAR,
+          TO_NUMBER(CUR_MONTH) CUR_MONTH,
+          SUM(MONEY) / 10000 MONEY
+          FROM
+          (
+            SELECT
+            NPBH.OFFICE_ID ORG_CODE,
+            TO_CHAR(VBD48.CERTIFICATE_CREATE_TIME, 'yyyy') CUR_YEAR,
+            TO_CHAR(VBD48.CERTIFICATE_CREATE_TIME, 'mm') CUR_MONTH,
+            VBD48.MONEY
+            FROM
+            (
+              SELECT
+              NVL(NVL(FAD_CASH_REQ_INVOICE.FAD_INVOICE_ID, SCM_CONTRACT_INVOICE.FAD_INVOICE_ID), VBD48.UUID) UUID,
+              VBD48.CERTIFICATE_CREATE_TIME,
+              VBD48.BUDGET_C_UUID,
+              VBD48.SUBJECT_NAME,
+              NVL(VBD48.MONEY, 0) MONEY
+              FROM
+              VW_BUDGET_DETAIL48 VBD48
+              
+              LEFT JOIN
+              FAD_CASH_REQ_INVOICE
+              ON
+              VBD48.UUID = FAD_CASH_REQ_INVOICE.UUID
+              
+              LEFT JOIN
+              SCM_CONTRACT_INVOICE 
+              ON
+              VBD48.UUID = SCM_CONTRACT_INVOICE.UUID
+              
+              WHERE
+              NVL(VBD48.IS_PROJECT, 0) != 1
+              AND
+              VBD48.BUDGET_C_UUID IS NOT NULL
+            ) VBD48
+            
+            LEFT JOIN
+            NON_PROJECT_BUDGET_C NPBC
+            ON
+            VBD48.BUDGET_C_UUID = NPBC.UUID
+            
+            LEFT JOIN
+            NON_PROJECT_BUDGET_H NPBH
+            ON
+            NPBC.HID = NPBH.UUID
+          ) R
+          GROUP BY
+          R.ORG_CODE,
+          R.CUR_YEAR,
+          R.CUR_MONTH
+        ) R
+        WHERE
+        EXISTS
+        (
+          SELECT
+          1
+          FROM
+          OPERATE_COMPANY_PLAN_H H
+          
+          LEFT JOIN
+          OPERATE_COMPANY_PLAN_C C
+          ON
+          H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+          
+          WHERE
+          H.START_YEAR = R.CUR_YEAR
+          AND
+          C.OBJECT_ID = R.ORG_CODE
+        )
+        GROUP BY
+        R.ORG_CODE,
+        R.CUR_YEAR,
+        R.CUR_MONTH
+      ) QTCB
+      
+      --结算利润
+      FULL JOIN
+      (SELECT NVL(JS.DEPARTMENT_CODE, XZ.DEPARTMENT_CODE) AS ORG_CODE,
+                     NVL(JS.CUR_YEAR, XZ.CUR_YEAR) AS CUR_YEAR,
+                     NVL(JS.CUR_MONTH, XZ.CUR_MONTH) AS CUR_MONTH,
+                     '结算利润' AS TARGET,
+                     SUM(NVL(JSLR, 0) - NVL(SJXZ, 0)) / 10000 AS JSLR
+                FROM (SELECT DEPARTMENT_CODE,
+                             CUR_YEAR,
+                             CUR_MONTH,
+                             SUM(JSLR) AS JSLR
+                        FROM (SELECT T.DEPARTMENT_CODE AS DEPARTMENT_CODE,
+                                     TO_CHAR(T.EXAM_DATE, 'YYYY') AS CUR_YEAR,
+                                     TO_CHAR(T.EXAM_DATE, 'MM') AS CUR_MONTH,
+                                     NVL(T. SQUARE_GROSS_PROFIT, 0)+
+                                       NVL(T.TAX_CORRECTION, 0) AS JSLR --利润
+                                FROM PRM_FINAL_ESTIMATE T
+                               WHERE T.EXAM_DATE IS NOT NULL
+                                 AND NOT EXISTS
+                               (SELECT 1
+                                        FROM PRM_PROJECT_MAIN PPM
+                                       WHERE PPM.UUID = T.PRM_PROJECT_MAIN_ID
+                                         AND SUBSTR(PPM.PROJECT_CODE, 0, 1) = '研')) R
+                       GROUP BY DEPARTMENT_CODE, CUR_YEAR, CUR_MONTH) JS
+                FULL JOIN (SELECT DEPARTMENT_CODE,
+                                  CUR_YEAR,
+                                  CUR_MONTH,
+                                  SUM(SJXZ) AS SJXZ
+                             FROM (SELECT T.DEPARTMENT_CODE AS DEPARTMENT_CODE,
+                                          TO_CHAR(T.EXAM_R_TAX_DATE, 'YYYY') AS CUR_YEAR,
+                                          TO_CHAR(T.EXAM_R_TAX_DATE, 'MM') AS CUR_MONTH,
+                                          T.TAX_CORRECTION AS SJXZ --税金修正
+                                     FROM PRM_FINAL_ESTIMATE T
+                                    WHERE T.EXAM_R_TAX_DATE IS NOT NULL
+                                      AND NOT EXISTS
+                                    (SELECT 1
+                                             FROM PRM_PROJECT_MAIN PPM
+                                            WHERE PPM.UUID =
+                                                  T.PRM_PROJECT_MAIN_ID
+                                              AND SUBSTR(PPM.PROJECT_CODE,
+                                                         0,
+                                                         1) = '研')) R
+                            GROUP BY DEPARTMENT_CODE, CUR_YEAR, CUR_MONTH) XZ ON JS.
+               DEPARTMENT_CODE =
+                                                                                 XZ.DEPARTMENT_CODE
+                                                                             AND JS.
+               CUR_YEAR =
+                                                                                 XZ.CUR_YEAR
+                                                                             AND JS.
+               CUR_MONTH =
+                                                                                 XZ.CUR_MONTH
+               GROUP BY NVL(JS.DEPARTMENT_CODE, XZ.DEPARTMENT_CODE),
+                        NVL(JS.CUR_YEAR, XZ.CUR_YEAR),
+                        NVL(JS.CUR_MONTH, XZ.CUR_MONTH)
+      )
+      JSLR
+      ON
+      JSLR.ORG_CODE = QTCB.ORG_CODE
+      AND
+      JSLR.CUR_YEAR = QTCB.CUR_YEAR
+      AND
+      JSLR.CUR_MONTH = QTCB.CUR_MONTH
+    ) R
+    WHERE
+    EXISTS
+    (
+      SELECT
+      1
+      FROM
+      OPERATE_COMPANY_PLAN_H H
+      
+      LEFT JOIN
+      OPERATE_COMPANY_PLAN_C C
+      ON
+      H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+      
+      WHERE
+      H.START_YEAR = R.CUR_YEAR
+      AND
+      C.OBJECT_ID = R.ORG_CODE
+    )
+    GROUP BY
+    R.ORG_CODE,
+    R.CUR_YEAR,
+    R.CUR_MONTH
+  ) R
+  GROUP BY
+  R.ORG_CODE,
+  R.CUR_YEAR,
+  R.CUR_MONTH,
+  R.TARGET
+  HAVING
+  R.ORG_CODE = '${officeId}'
+) R
+
+LEFT JOIN
+--指标
+(
+  SELECT
+  JH.ORG_CODE,
+  JH.CUR_YEAR,
+  '01' CUR_MONTH,
+  JH.TARGET,
+  SUM(JH.MONEY_JH) MONEY_JH,
+  SUM(JH.JZ) JZ
+  FROM
+  (
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '合同额' TARGET,
+    NVL(C.JHHTE, 0) MONEY_JH, --合同额(万元)
+    NVL(C.JZHTE, 0) + NVL(C.HTEXZ, 0) JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    
+    UNION ALL
+    
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '立项利润' TARGET,
+    NVL(C.JHLXLR, 0) MONEY_JH,
+    NVL(C.JZLR, 0) + NVL(C.lxlrxz, 0) JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    
+    UNION ALL
+    
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '收款' TARGET,
+    NVL(C.JHSR, 0) MONEY_JH,
+    NVL(JZSR, 0)+NVL(BMSRXZ,0) JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    
+    UNION ALL
+    
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '结算收入' TARGET,
+    NVL(C.JHJSSR, 0) MONEY_JH,
+    BMJSSRXZ AS JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    
+    UNION ALL
+    
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '结算利润' TARGET,
+    NVL(C.JHJSLR, 0) MONEY_JH,
+    BMJSLRXZ AS JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+    
+    UNION ALL
+    
+    SELECT
+    C.OBJECT_ID ORG_CODE,
+    H.START_YEAR CUR_YEAR,
+    '收支盈余' TARGET,
+    NVL(C.JHSZYY, 0) MONEY_JH,
+    BMJSLRXZ AS JZ --结转+修正
+    FROM
+    OPERATE_COMPANY_PLAN_H H,
+    OPERATE_COMPANY_PLAN_C C
+    WHERE
+    H.UUID = C.OPERATE_COMPANY_PLAN_H_ID
+  ) JH
+  GROUP BY
+  JH.ORG_CODE,
+  JH.CUR_YEAR,
+  JH.TARGET
+) JH
+ON
+R.ORG_CODE = JH.ORG_CODE
+AND
+R.CUR_YEAR = JH.CUR_YEAR
+--AND
+--R.CUR_MONTH = JH.CUR_MONTH
+AND
+R.TARGET = JH.TARGET
+
+WHERE
+R.CUR_YEAR = ${if(year =='',"TO_CHAR(SYSDATE, 'yyyy')","'"+year+"'")}
+AND
+R.TARGET = '${target}'
+ORDER BY
+R.FLAG ASC,
+R.CUR_MONTH ASC]]></Query>
+</TableData>
+<TableData name="OfficeName" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="officeId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select s.org_name from scdp_org s where s.org_code = '${officeId}']]></Query>
+</TableData>
+<TableData name="year" class="com.fr.data.impl.DBTableData">
+<Parameters/>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT H.START_YEAR AS SYS_CODE, H.START_YEAR || '年' AS CODE_DESC
+  FROM OPERATE_COMPANY_PLAN_H H
+ ORDER BY H.START_YEAR DESC]]></Query>
+</TableData>
+</TableDataMap>
+<ReportWebAttr>
+<ServerPrinter/>
+<WebPageContent>
+<ToolBars/>
+<WebPage isPage="false" isShowAsImage="false" isAutoScale="false" isTDHeavy="false"/>
+</WebPageContent>
+</ReportWebAttr>
+<ReportFitAttr fitStateInPC="2" fitFont="true"/>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[723900,723900,723900,723900,1600200,723900,723900,723900,723900,723900,0,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[4572000,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0" cs="4" rs="5">
+<O t="CC">
+<LayoutAttr selectedIndex="0"/>
+<Chart name="默认" chartClass="com.fr.plugin.chart.vanchart.VanChart">
+<Chart class="com.fr.plugin.chart.vanchart.VanChart">
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-1118482"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<ChartAttr isJSDraw="true" isStyleGlobal="false"/>
+<Title4VanChart>
+<Title>
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-6908266"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=year + A11 + " 部门财务指标总体完成进度"]]></Attributes>
+</O>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="微软雅黑" style="0" size="96" foreground="-13421773"/>
+</Attr>
+</TextAttr>
+<TitleVisible value="true" position="0"/>
+</Title>
+<Attr4VanChart useHtml="false" floating="false" x="0.0" y="0.0" limitSize="false" maxHeight="15.0"/>
+</Title4VanChart>
+<Plot class="com.fr.plugin.chart.column.VanChartColumnPlot">
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<Attr isNullValueBreak="true" autoRefreshPerSecond="0" seriesDragEnable="false" plotStyle="4" combinedSize="50.0"/>
+<newHotTooltipStyle>
+<AttrContents>
+<Attr showLine="false" position="1" isWhiteBackground="true" isShowMutiSeries="false" seriesLabel="${VALUE}"/>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#.##]]></Format>
+<PercentFormat>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.##%]]></Format>
+</PercentFormat>
+</AttrContents>
+</newHotTooltipStyle>
+<ConditionCollection>
+<DefaultAttr class="com.fr.chart.chartglyph.ConditionAttr">
+<ConditionAttr name="">
+<AttrList>
+<Attr class="com.fr.plugin.chart.base.AttrTooltip">
+<AttrTooltip>
+<Attr enable="true" followMouse="false" showMutiSeries="false" isCustom="false"/>
+<TextAttr>
+<Attr alignText="0"/>
+</TextAttr>
+<AttrToolTipContent>
+<Attr isCommon="true"/>
+<value class="com.fr.plugin.chart.base.format.AttrTooltipValueFormat">
+<AttrTooltipValueFormat>
+<Attr enable="true"/>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#.##]]></Format>
+</AttrTooltipValueFormat>
+</value>
+<percent class="com.fr.plugin.chart.base.format.AttrTooltipPercentFormat">
+<AttrTooltipPercentFormat>
+<Attr enable="false"/>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#.##%]]></Format>
+</AttrTooltipPercentFormat>
+</percent>
+<category class="com.fr.plugin.chart.base.format.AttrTooltipCategoryFormat">
+<AttrToolTipCategoryFormat>
+<Attr enable="true"/>
+</AttrToolTipCategoryFormat>
+</category>
+<series class="com.fr.plugin.chart.base.format.AttrTooltipSeriesFormat">
+<AttrTooltipSeriesFormat>
+<Attr enable="true"/>
+</AttrTooltipSeriesFormat>
+</series>
+<HtmlLabel customText="" useHtml="false" isCustomWidth="false" isCustomHeight="false" width="50" height="50"/>
+</AttrToolTipContent>
+<GI>
+<AttrBackground>
+<Background name="ColorBackground" color="-16777216"/>
+<Attr shadow="true"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="2"/>
+<newColor borderColor="-16777216"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="0.5"/>
+</AttrAlpha>
+</GI>
+</AttrTooltip>
+</Attr>
+<Attr class="com.fr.chart.base.AttrBorder">
+<AttrBorder>
+<Attr lineStyle="1" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-1"/>
+</AttrBorder>
+</Attr>
+<Attr class="com.fr.chart.base.AttrAlpha">
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</Attr>
+<Attr class="com.fr.plugin.chart.base.AttrLabel">
+<AttrLabel>
+<labelAttr enable="true"/>
+<labelDetail class="com.fr.plugin.chart.base.AttrLabelDetail">
+<Attr showLine="false" position="6" isCustom="true"/>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="微软雅黑" style="0" size="72"/>
+</Attr>
+</TextAttr>
+<AttrToolTipContent>
+<Attr isCommon="true"/>
+<value class="com.fr.plugin.chart.base.format.AttrTooltipValueFormat">
+<AttrTooltipValueFormat>
+<Attr enable="true"/>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.00%]]></Format>
+</AttrTooltipValueFormat>
+</value>
+<percent class="com.fr.plugin.chart.base.format.AttrTooltipPercentFormat">
+<AttrTooltipPercentFormat>
+<Attr enable="false"/>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#.##%]]></Format>
+</AttrTooltipPercentFormat>
+</percent>
+<category class="com.fr.plugin.chart.base.format.AttrTooltipCategoryFormat">
+<AttrToolTipCategoryFormat>
+<Attr enable="false"/>
+</AttrToolTipCategoryFormat>
+</category>
+<series class="com.fr.plugin.chart.base.format.AttrTooltipSeriesFormat">
+<AttrTooltipSeriesFormat>
+<Attr enable="false"/>
+</AttrTooltipSeriesFormat>
+</series>
+<HtmlLabel customText="" useHtml="false" isCustomWidth="false" isCustomHeight="false" width="50" height="50"/>
+</AttrToolTipContent>
+</labelDetail>
+</AttrLabel>
+</Attr>
+</AttrList>
+</ConditionAttr>
+</DefaultAttr>
+</ConditionCollection>
+<Legend4VanChart>
+<Legend>
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-3355444"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<Attr position="4" visible="false"/>
+<FRFont name="微软雅黑" style="0" size="88" foreground="-10066330"/>
+</Legend>
+<Attr4VanChart floating="false" x="0.0" y="0.0" limitSize="false" maxHeight="15.0"/>
+</Legend4VanChart>
+<DataSheet>
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="1" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-16777216"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<Attr isVisible="false"/>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#.##]]></Format>
+</DataSheet>
+<NameJavaScriptGroup>
+<NameJavaScript name="target">
+<JavaScript class="com.fr.js.ParameterJavaScript">
+<Parameters>
+<Parameter>
+<Attributes name="target"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=CATEGORY]]></Attributes>
+</O>
+</Parameter>
+</Parameters>
+</JavaScript>
+</NameJavaScript>
+</NameJavaScriptGroup>
+<newPlotFillStyle>
+<AttrFillStyle>
+<AFStyle colorStyle="1"/>
+<FillStyleName fillStyleName="新特性"/>
+<isCustomFillStyle isCustomFillStyle="false"/>
+<ColorList>
+<OColor colvalue="-10243346"/>
+<OColor colvalue="-8988015"/>
+<OColor colvalue="-472193"/>
+<OColor colvalue="-486008"/>
+<OColor colvalue="-8595761"/>
+<OColor colvalue="-7236949"/>
+<OColor colvalue="-8873759"/>
+<OColor colvalue="-1071514"/>
+<OColor colvalue="-1188474"/>
+<OColor colvalue="-6715442"/>
+<OColor colvalue="-10243346"/>
+<OColor colvalue="-8988015"/>
+<OColor colvalue="-472193"/>
+<OColor colvalue="-486008"/>
+<OColor colvalue="-8595761"/>
+<OColor colvalue="-7236949"/>
+<OColor colvalue="-8873759"/>
+<OColor colvalue="-1071514"/>
+<OColor colvalue="-1188474"/>
+<OColor colvalue="-6715442"/>
+<OColor colvalue="-10243346"/>
+<OColor colvalue="-8988015"/>
+<OColor colvalue="-472193"/>
+<OColor colvalue="-486008"/>
+<OColor colvalue="-8595761"/>
+<OColor colvalue="-7236949"/>
+<OColor colvalue="-8873759"/>
+<OColor colvalue="-1071514"/>
+<OColor colvalue="-1188474"/>
+<OColor colvalue="-6715442"/>
+<OColor colvalue="-10243346"/>
+<OColor colvalue="-8988015"/>
+</ColorList>
+</AttrFillStyle>
+</newPlotFillStyle>
+<VanChartPlotAttr isAxisRotation="false"/>
+<VanChartRectanglePlotAttr vanChartPlotType="normal" isDefaultIntervalBackground="true"/>
+<XAxisList>
+<VanChartAxis class="com.fr.plugin.chart.attr.axis.VanChartAxis">
+<Title>
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-16777216"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<O>
+<![CDATA[]]></O>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="Verdana" style="0" size="88" foreground="-10066330"/>
+</Attr>
+</TextAttr>
+<TitleVisible value="true" position="0"/>
+</Title>
+<newAxisAttr isShowAxisLabel="true"/>
+<AxisLineStyle AxisStyle="1" MainGridStyle="1"/>
+<newLineColor lineColor="-5197648"/>
+<AxisPosition value="3"/>
+<TickLine201106 type="2" secType="0"/>
+<ArrowShow arrowShow="false"/>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="Verdana" style="0" size="64" foreground="-10066330"/>
+</Attr>
+</TextAttr>
+<AxisLabelCount value="=0"/>
+<AxisRange/>
+<AxisUnit201106 isCustomMainUnit="false" isCustomSecUnit="false" mainUnit="=0" secUnit="=0"/>
+<ZoomAxisAttr isZoom="false"/>
+<axisReversed axisReversed="false"/>
+<VanChartAxisAttr mainTickLine="2" secTickLine="0" axisName="X轴" titleUseHtml="false" autoLabelGap="true" limitSize="false" maxHeight="15.0" commonValueFormat="true" isRotation="false"/>
+<HtmlLabel customText="function(){ return this; }" useHtml="false" isCustomWidth="false" isCustomHeight="false" width="50" height="50"/>
+<alertList/>
+<customBackgroundList/>
+</VanChartAxis>
+</XAxisList>
+<YAxisList>
+<VanChartAxis class="com.fr.plugin.chart.attr.axis.VanChartValueAxis">
+<Title>
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-16777216"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<O>
+<![CDATA[]]></O>
+<TextAttr>
+<Attr rotation="-90" alignText="0">
+<FRFont name="Verdana" style="0" size="88" foreground="-10066330"/>
+</Attr>
+</TextAttr>
+<TitleVisible value="true" position="0"/>
+</Title>
+<newAxisAttr isShowAxisLabel="true"/>
+<AxisLineStyle AxisStyle="0" MainGridStyle="1"/>
+<newLineColor mainGridColor="-3881788" lineColor="-5197648"/>
+<AxisPosition value="2"/>
+<TickLine201106 type="2" secType="0"/>
+<ArrowShow arrowShow="false"/>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="Verdana" style="0" size="88" foreground="-10066330"/>
+</Attr>
+</TextAttr>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.00%]]></Format>
+<AxisLabelCount value="=0"/>
+<AxisRange/>
+<AxisUnit201106 isCustomMainUnit="false" isCustomSecUnit="false" mainUnit="=0" secUnit="=0"/>
+<ZoomAxisAttr isZoom="false"/>
+<axisReversed axisReversed="false"/>
+<VanChartAxisAttr mainTickLine="0" secTickLine="0" axisName="Y轴" titleUseHtml="false" autoLabelGap="true" limitSize="false" maxHeight="15.0" commonValueFormat="true" isRotation="false"/>
+<HtmlLabel customText="function(){ return this; }" useHtml="false" isCustomWidth="false" isCustomHeight="false" width="50" height="50"/>
+<alertList/>
+<customBackgroundList/>
+<VanChartValueAxisAttr isLog="false" baseLog="=10"/>
+</VanChartAxis>
+</YAxisList>
+<stackAndAxisCondition>
+<ConditionCollection>
+<DefaultAttr class="com.fr.chart.chartglyph.ConditionAttr">
+<ConditionAttr name=""/>
+</DefaultAttr>
+</ConditionCollection>
+</stackAndAxisCondition>
+<VanChartColumnPlotAttr seriesOverlapPercent="20.0" categoryIntervalPercent="20.0" fixedWidth="false" columnWidth="0" filledWithImage="false" isBar="false"/>
+</Plot>
+<DataProcessor class="com.fr.base.chart.chartdata.model.NormalDataModel"/>
+<ChartDefinition>
+<MoreNameCDDefinition>
+<Top topCate="-1" topValue="-1" isDiscardOtherCate="false" isDiscardOtherSeries="false" isDiscardNullCate="false" isDiscardNullSeries="false"/>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[T1]]></Name>
+</TableData>
+<CategoryName value="TARGET"/>
+<ChartSummaryColumn name="WCBL" function="com.fr.data.util.function.NoneFunction" customName="完成比例"/>
+</MoreNameCDDefinition>
+</ChartDefinition>
+</Chart>
+<tools hidden="true" sort="true" export="true" fullScreen="true"/>
+<VanChartZoom>
+<zoomAttr zoomVisible="false" zoomResize="true" zoomType="xy"/>
+<from>
+<![CDATA[]]></from>
+<to>
+<![CDATA[]]></to>
+</VanChartZoom>
+<refreshMoreLabel>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="微软雅黑" style="0" size="72"/>
+</Attr>
+</TextAttr>
+ moreLabel="true" plusColor="-11349576" minusColor="-741051"</refreshMoreLabel>
+</Chart>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="5" cs="4" rs="5" s="0">
+<O t="CC">
+<LayoutAttr selectedIndex="0"/>
+<Chart name="默认" chartClass="com.fr.plugin.chart.vanchart.VanChart">
+<Chart class="com.fr.plugin.chart.vanchart.VanChart">
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-1118482"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<ChartAttr isJSDraw="true" isStyleGlobal="false"/>
+<Title4VanChart>
+<Title>
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-6908266"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=A11 + " 部门财务指标月度完成情况(" + nvl($target, "合同额") + ")"]]></Attributes>
+</O>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="微软雅黑" style="0" size="96" foreground="-13421773"/>
+</Attr>
+</TextAttr>
+<TitleVisible value="true" position="0"/>
+</Title>
+<Attr4VanChart useHtml="false" floating="false" x="0.0" y="0.0" limitSize="false" maxHeight="15.0"/>
+</Title4VanChart>
+<Plot class="com.fr.plugin.chart.line.VanChartLinePlot">
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<Attr isNullValueBreak="true" autoRefreshPerSecond="0" seriesDragEnable="false" plotStyle="4" combinedSize="50.0"/>
+<newHotTooltipStyle>
+<AttrContents>
+<Attr showLine="false" position="1" isWhiteBackground="true" isShowMutiSeries="false" seriesLabel="${VALUE}"/>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#.##]]></Format>
+<PercentFormat>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#0.##%]]></Format>
+</PercentFormat>
+</AttrContents>
+</newHotTooltipStyle>
+<ConditionCollection>
+<DefaultAttr class="com.fr.chart.chartglyph.ConditionAttr">
+<ConditionAttr name="">
+<AttrList>
+<Attr class="com.fr.plugin.chart.base.AttrTooltip">
+<AttrTooltip>
+<Attr enable="true" followMouse="false" showMutiSeries="false" isCustom="false"/>
+<TextAttr>
+<Attr alignText="0"/>
+</TextAttr>
+<AttrToolTipContent>
+<Attr isCommon="true"/>
+<value class="com.fr.plugin.chart.base.format.AttrTooltipValueFormat">
+<AttrTooltipValueFormat>
+<Attr enable="true"/>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#.##]]></Format>
+</AttrTooltipValueFormat>
+</value>
+<percent class="com.fr.plugin.chart.base.format.AttrTooltipPercentFormat">
+<AttrTooltipPercentFormat>
+<Attr enable="false"/>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#.##%]]></Format>
+</AttrTooltipPercentFormat>
+</percent>
+<category class="com.fr.plugin.chart.base.format.AttrTooltipCategoryFormat">
+<AttrToolTipCategoryFormat>
+<Attr enable="true"/>
+</AttrToolTipCategoryFormat>
+</category>
+<series class="com.fr.plugin.chart.base.format.AttrTooltipSeriesFormat">
+<AttrTooltipSeriesFormat>
+<Attr enable="true"/>
+</AttrTooltipSeriesFormat>
+</series>
+<HtmlLabel customText="" useHtml="false" isCustomWidth="false" isCustomHeight="false" width="50" height="50"/>
+</AttrToolTipContent>
+<GI>
+<AttrBackground>
+<Background name="ColorBackground" color="-16777216"/>
+<Attr shadow="true"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="2"/>
+<newColor borderColor="-16777216"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="0.5"/>
+</AttrAlpha>
+</GI>
+</AttrTooltip>
+</Attr>
+<Attr class="com.fr.plugin.chart.base.VanChartAttrTrendLine">
+<TrendLine>
+<Attr trendLineName=""/>
+<LineStyleInfo>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+<AttrColor>
+<Attr/>
+</AttrColor>
+<AttrLineStyle>
+<newAttr lineStyle="0"/>
+</AttrLineStyle>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-16777216"/>
+</AttrBorder>
+</LineStyleInfo>
+</TrendLine>
+</Attr>
+<Attr class="com.fr.plugin.chart.base.VanChartAttrLine">
+<VanAttrLine>
+<Attr lineWidth="2" lineStyle="0" nullValueBreak="true"/>
+</VanAttrLine>
+</Attr>
+<Attr class="com.fr.plugin.chart.base.VanChartAttrMarker">
+<VanAttrMarker>
+<Attr isCommon="true" markerType="RoundFilledMarker" radius="4.5" width="30.0" height="30.0"/>
+<Background name="NullBackground"/>
+</VanAttrMarker>
+</Attr>
+<Attr class="com.fr.plugin.chart.base.AttrLabel">
+<AttrLabel>
+<labelAttr enable="false"/>
+<labelDetail class="com.fr.plugin.chart.base.AttrLabelDetail">
+<Attr showLine="false" position="6" isCustom="true"/>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="微软雅黑" style="0" size="80"/>
+</Attr>
+</TextAttr>
+<AttrToolTipContent>
+<Attr isCommon="true"/>
+<value class="com.fr.plugin.chart.base.format.AttrTooltipValueFormat">
+<AttrTooltipValueFormat>
+<Attr enable="false"/>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+</AttrTooltipValueFormat>
+</value>
+<percent class="com.fr.plugin.chart.base.format.AttrTooltipPercentFormat">
+<AttrTooltipPercentFormat>
+<Attr enable="false"/>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#.##%]]></Format>
+</AttrTooltipPercentFormat>
+</percent>
+<category class="com.fr.plugin.chart.base.format.AttrTooltipCategoryFormat">
+<AttrToolTipCategoryFormat>
+<Attr enable="false"/>
+</AttrToolTipCategoryFormat>
+</category>
+<series class="com.fr.plugin.chart.base.format.AttrTooltipSeriesFormat">
+<AttrTooltipSeriesFormat>
+<Attr enable="false"/>
+</AttrTooltipSeriesFormat>
+</series>
+<HtmlLabel customText="" useHtml="false" isCustomWidth="false" isCustomHeight="false" width="50" height="50"/>
+</AttrToolTipContent>
+</labelDetail>
+</AttrLabel>
+</Attr>
+</AttrList>
+</ConditionAttr>
+</DefaultAttr>
+</ConditionCollection>
+<Legend4VanChart>
+<Legend>
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-3355444"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<Attr position="4" visible="false"/>
+<FRFont name="微软雅黑" style="0" size="88" foreground="-10066330"/>
+</Legend>
+<Attr4VanChart floating="false" x="0.0" y="0.0" limitSize="false" maxHeight="15.0"/>
+</Legend4VanChart>
+<DataSheet>
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="1" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-16777216"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<Attr isVisible="false"/>
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#.##]]></Format>
+</DataSheet>
+<newPlotFillStyle>
+<AttrFillStyle>
+<AFStyle colorStyle="1"/>
+<FillStyleName fillStyleName="新特性"/>
+<isCustomFillStyle isCustomFillStyle="false"/>
+<ColorList>
+<OColor colvalue="-10243346"/>
+<OColor colvalue="-8988015"/>
+<OColor colvalue="-472193"/>
+<OColor colvalue="-486008"/>
+<OColor colvalue="-8595761"/>
+<OColor colvalue="-7236949"/>
+<OColor colvalue="-8873759"/>
+<OColor colvalue="-1071514"/>
+<OColor colvalue="-1188474"/>
+<OColor colvalue="-6715442"/>
+<OColor colvalue="-10243346"/>
+<OColor colvalue="-8988015"/>
+<OColor colvalue="-472193"/>
+<OColor colvalue="-486008"/>
+<OColor colvalue="-8595761"/>
+<OColor colvalue="-7236949"/>
+<OColor colvalue="-8873759"/>
+<OColor colvalue="-1071514"/>
+<OColor colvalue="-1188474"/>
+<OColor colvalue="-6715442"/>
+<OColor colvalue="-10243346"/>
+<OColor colvalue="-8988015"/>
+<OColor colvalue="-472193"/>
+<OColor colvalue="-486008"/>
+<OColor colvalue="-8595761"/>
+<OColor colvalue="-7236949"/>
+<OColor colvalue="-8873759"/>
+<OColor colvalue="-1071514"/>
+<OColor colvalue="-1188474"/>
+<OColor colvalue="-6715442"/>
+<OColor colvalue="-10243346"/>
+<OColor colvalue="-8988015"/>
+</ColorList>
+</AttrFillStyle>
+</newPlotFillStyle>
+<VanChartPlotAttr isAxisRotation="false"/>
+<VanChartRectanglePlotAttr vanChartPlotType="normal" isDefaultIntervalBackground="true"/>
+<XAxisList>
+<VanChartAxis class="com.fr.plugin.chart.attr.axis.VanChartAxis">
+<Title>
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-16777216"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<O>
+<![CDATA[]]></O>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="微软雅黑" style="0" size="88" foreground="-10066330"/>
+</Attr>
+</TextAttr>
+<TitleVisible value="true" position="0"/>
+</Title>
+<newAxisAttr isShowAxisLabel="true"/>
+<AxisLineStyle AxisStyle="1" MainGridStyle="1"/>
+<newLineColor lineColor="-5197648"/>
+<AxisPosition value="3"/>
+<TickLine201106 type="2" secType="0"/>
+<ArrowShow arrowShow="false"/>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="Verdana" style="0" size="88" foreground="-10066330"/>
+</Attr>
+</TextAttr>
+<AxisLabelCount value="=0"/>
+<AxisRange/>
+<AxisUnit201106 isCustomMainUnit="false" isCustomSecUnit="false" mainUnit="=0" secUnit="=0"/>
+<ZoomAxisAttr isZoom="false"/>
+<axisReversed axisReversed="false"/>
+<VanChartAxisAttr mainTickLine="2" secTickLine="0" axisName="X轴" titleUseHtml="false" autoLabelGap="true" limitSize="false" maxHeight="15.0" commonValueFormat="true" isRotation="false"/>
+<HtmlLabel customText="function(){ return this; }" useHtml="false" isCustomWidth="false" isCustomHeight="false" width="50" height="50"/>
+<alertList/>
+<customBackgroundList/>
+</VanChartAxis>
+</XAxisList>
+<YAxisList>
+<VanChartAxis class="com.fr.plugin.chart.attr.axis.VanChartValueAxis">
+<Title>
+<GI>
+<AttrBackground>
+<Background name="NullBackground"/>
+<Attr shadow="false"/>
+</AttrBackground>
+<AttrBorder>
+<Attr lineStyle="0" isRoundBorder="false" roundRadius="0"/>
+<newColor borderColor="-16777216"/>
+</AttrBorder>
+<AttrAlpha>
+<Attr alpha="1.0"/>
+</AttrAlpha>
+</GI>
+<O>
+<![CDATA[单位：万元]]></O>
+<TextAttr>
+<Attr rotation="-90" alignText="0">
+<FRFont name="微软雅黑" style="0" size="96" foreground="-10066330"/>
+</Attr>
+</TextAttr>
+<TitleVisible value="true" position="1"/>
+</Title>
+<newAxisAttr isShowAxisLabel="true"/>
+<AxisLineStyle AxisStyle="0" MainGridStyle="1"/>
+<newLineColor mainGridColor="-3881788" lineColor="-5197648"/>
+<AxisPosition value="2"/>
+<TickLine201106 type="2" secType="0"/>
+<ArrowShow arrowShow="false"/>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="Verdana" style="0" size="88" foreground="-10066330"/>
+</Attr>
+</TextAttr>
+<AxisLabelCount value="=0"/>
+<AxisRange/>
+<AxisUnit201106 isCustomMainUnit="false" isCustomSecUnit="false" mainUnit="=0" secUnit="=0"/>
+<ZoomAxisAttr isZoom="false"/>
+<axisReversed axisReversed="false"/>
+<VanChartAxisAttr mainTickLine="0" secTickLine="0" axisName="Y轴" titleUseHtml="false" autoLabelGap="true" limitSize="false" maxHeight="15.0" commonValueFormat="true" isRotation="false"/>
+<HtmlLabel customText="function(){ return this; }" useHtml="false" isCustomWidth="false" isCustomHeight="false" width="50" height="50"/>
+<alertList/>
+<customBackgroundList/>
+<VanChartValueAxisAttr isLog="false" baseLog="=10"/>
+</VanChartAxis>
+</YAxisList>
+<stackAndAxisCondition>
+<ConditionCollection>
+<DefaultAttr class="com.fr.chart.chartglyph.ConditionAttr">
+<ConditionAttr name=""/>
+</DefaultAttr>
+</ConditionCollection>
+</stackAndAxisCondition>
+</Plot>
+<DataProcessor class="com.fr.base.chart.chartdata.model.NormalDataModel"/>
+<ChartDefinition>
+<MoreNameCDDefinition>
+<Top topCate="-1" topValue="-1" isDiscardOtherCate="false" isDiscardOtherSeries="false" isDiscardNullCate="false" isDiscardNullSeries="false"/>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[T2]]></Name>
+</TableData>
+<CategoryName value="CUR_MONTH"/>
+<ChartSummaryColumn name="MONEY" function="com.fr.data.util.function.SumFunction" customName="完成额"/>
+<ChartSummaryColumn name="MONEY_LJ" function="com.fr.data.util.function.SumFunction" customName="累计完成额"/>
+</MoreNameCDDefinition>
+</ChartDefinition>
+</Chart>
+<tools hidden="true" sort="true" export="true" fullScreen="true"/>
+<VanChartZoom>
+<zoomAttr zoomVisible="false" zoomResize="true" zoomType="xy"/>
+<from>
+<![CDATA[]]></from>
+<to>
+<![CDATA[]]></to>
+</VanChartZoom>
+<refreshMoreLabel>
+<TextAttr>
+<Attr alignText="0">
+<FRFont name="Microsoft YaHei" style="0" size="72"/>
+</Attr>
+</TextAttr>
+ moreLabel="true" plusColor="-11349576" minusColor="-741051"</refreshMoreLabel>
+</Chart>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="0" r="10">
+<O t="DSColumn">
+<Attributes dsName="OfficeName" columnName="ORG_NAME"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting>
+<PaperSize width="27432000" height="48772800"/>
+<Margin top="986400" left="2743200" bottom="986400" right="2743200"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="false" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+<ParameterUI class="com.fr.form.main.parameter.FormParameterUI">
+<Parameters/>
+<Layout class="com.fr.form.ui.container.WParameterLayout">
+<WidgetName name="para"/>
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<Margin top="0" left="0" bottom="0" right="0"/>
+<Border>
+<border style="0" color="-723724" type="0" borderStyle="0"/>
+<WidgetTitle>
+<O>
+<![CDATA[新建标题]]></O>
+<FRFont name="SimSun" style="0" size="72"/>
+<Position pos="0"/>
+</WidgetTitle>
+<Alpha alpha="1.0"/>
+</Border>
+<Background name="ColorBackground" color="-1118482"/>
+<LCAttr vgap="0" hgap="0" compInterval="0"/>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.Label">
+<WidgetName name="label0_c_c"/>
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<widgetValue>
+<O>
+<![CDATA[年度：]]></O>
+</widgetValue>
+<LabelAttr verticalcenter="true" textalign="0" autoline="true"/>
+<FRFont name="SimSun" style="0" size="72"/>
+<border style="0" color="-723724"/>
+</InnerWidget>
+<BoundsAttr x="12" y="2" width="42" height="21"/>
+</Widget>
+<Widget class="com.fr.form.ui.container.WAbsoluteLayout$BoundsWidget">
+<InnerWidget class="com.fr.form.ui.ComboBox">
+<Listener event="afteredit">
+<JavaScript class="com.fr.js.JavaScriptImpl">
+<Parameters/>
+<Content>
+<![CDATA[_g().parameterCommit();  ]]></Content>
+</JavaScript>
+</Listener>
+<WidgetName name="year"/>
+<WidgetAttr>
+<PrivilegeControl/>
+</WidgetAttr>
+<allowBlank>
+<![CDATA[false]]></allowBlank>
+<Dictionary class="com.fr.data.impl.TableDataDictionary">
+<FormulaDictAttr kiName="SYS_CODE" viName="CODE_DESC"/>
+<TableDataDictAttr>
+<TableData class="com.fr.data.impl.NameTableData">
+<Name>
+<![CDATA[year]]></Name>
+</TableData>
+</TableDataDictAttr>
+</Dictionary>
+<widgetValue>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=year(today())]]></Attributes>
+</O>
+</widgetValue>
+</InnerWidget>
+<BoundsAttr x="56" y="2" width="119" height="21"/>
+</Widget>
+<Sorted sorted="false"/>
+<Display display="true"/>
+<DelayDisplayContent delay="false"/>
+<Position position="0"/>
+<Design_Width design_width="960"/>
+<MobileWidgetList>
+<Widget widgetName="year"/>
+</MobileWidgetList>
+<WidgetNameTagMap>
+<NameTag name="year" tag="年度："/>
+</WidgetNameTagMap>
+</Layout>
+<DesignAttr width="960" height="25"/>
+</ParameterUI>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="微软雅黑" style="0" size="96"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

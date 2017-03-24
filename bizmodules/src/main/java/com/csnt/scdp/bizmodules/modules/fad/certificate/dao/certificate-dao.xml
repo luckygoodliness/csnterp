@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select * from fad_certificate where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+    <common_query_single>
+        <common>
+            <![CDATA[select * from
+                            (
+                                select
+                                uuid,
+                                business_id,
+                                certificate_no,
+                                certificate_date,
+                                make_date,
+                                certificate_type,
+                                to_char(abstracts) abstracts,
+                                debtor,
+                                creditor,
+                                maker,
+                                (select user_name from scdp_user where user_id = maker) maker_name,
+                                cashier,
+                                auditor,
+                                bookkeeper,
+                                years,
+                                months,
+                                attachment_number,
+                                to_char(receiver_or_payer_name) receiver_or_payer_name,
+                                original_form_type,
+                                (select original_form_type_name from fad_original_form_type where fad_original_form_type.original_form_type = fad_certificate.original_form_type) original_form_type_name,
+                                to_char(original_form_code) original_form_code,
+                                original_form_date,
+                                state,
+                                (select code_desc from scdp_code where code_type = upper('fad_certificate_state') and scdp_code.sys_code = fad_certificate.state) state_name,
+                                (case when feedback like '%处理完毕!' then '1' when feedback is null then '0' else '-1' end) nc_state,
+                                (case when feedback like '%处理完毕!' then '已发送' when feedback is null then '未发送' else '发送失败' end) nc_state_name,
+                                (case when exists (select 1 from fad_certifi_deficit_rel where fad_certifi_deficit_rel.certifi_id = fad_certificate.uuid) then '-1' when exists (select 1 from fad_certifi_deficit_rel where fad_certifi_deficit_rel.deficit_id = fad_certificate.uuid) then '0' else '1' end) deficit_certifi_state,
+                                (case when exists (select 1 from fad_certifi_deficit_rel where fad_certifi_deficit_rel.certifi_id = fad_certificate.uuid) then '已红冲' when exists (select 1 from fad_certifi_deficit_rel where fad_certifi_deficit_rel.deficit_id = fad_certificate.uuid) then '红冲' else '未红冲' end) deficit_certifi_state_name,
+                                (case when exists (select 1 from fad_certificate nei where nei.free2 = fad_certificate.uuid) then '2' when exists (select 1 from fad_certificate nei where nei.uuid = fad_certificate.free2) then '1' else '0' end) copy_add_state,
+                                (case when exists (select 1 from fad_certificate nei where nei.free2 = fad_certificate.uuid) then '已复制' when exists (select 1 from fad_certificate nei where nei.uuid = fad_certificate.free2) then '复制' else '未复制' end) copy_add_state_name,
+                                (case when exists (select 1 from fad_certifi_merge_split_rel where fad_certifi_merge_split_rel.merge_id = fad_certificate.uuid) then '2' when exists (select 1 from fad_certifi_merge_split_rel where fad_certifi_merge_split_rel.split_id = fad_certificate.uuid) then '1' else '0' end) merge_split_state,
+                                (case when exists (select 1 from fad_certifi_merge_split_rel where fad_certifi_merge_split_rel.merge_id = fad_certificate.uuid) then '合并' when exists (select 1 from fad_certifi_merge_split_rel where fad_certifi_merge_split_rel.split_id = fad_certificate.uuid) then '拆分' else '原始' end) merge_split_state_name,
+                                feedback,
+                                remark,
+                                create_by,
+                                create_time,
+                                update_by,
+                                update_time,
+                                loc_timezone,
+                                tbl_version,
+                                is_void,
+                                seq_no
+                         from fad_certificate
+                     ) fad_certificate
+                     where ${conditions} and ${voidfilter} and ${selfconditions}]]>
+        </common>
+    </common_query_single>
+    <common_query_load>
+        <common>
+            <![CDATA[select * from
+                            (
+                                select
+                                uuid,
+                                business_id,
+                                certificate_no,
+                                certificate_date,
+                                make_date,
+                                certificate_type,
+                                to_char(abstracts) abstracts,
+                                debtor,
+                                creditor,
+                                maker,
+                                (select user_name from scdp_user where user_id = maker) maker_name,
+                                cashier,
+                                auditor,
+                                bookkeeper,
+                                years,
+                                months,
+                                attachment_number,
+                                to_char(receiver_or_payer_name) receiver_or_payer_name,
+                                original_form_type,
+                                (select original_form_type_name from fad_original_form_type where fad_original_form_type.original_form_type = fad_certificate.original_form_type) original_form_type_name,
+                                to_char(original_form_code) original_form_code,
+                                original_form_date,
+                                state,
+                                (select code_desc from scdp_code where code_type = upper('fad_certificate_state') and scdp_code.sys_code = fad_certificate.state) state_name,
+                                (case when feedback like '%处理完毕!' then '1' when feedback is null then '0' else '-1' end) nc_state,
+                                (case when feedback like '%处理完毕!' then '已发送' when feedback is null then '未发送' else '发送失败' end) nc_state_name,
+                                (case when exists (select 1 from fad_certifi_deficit_rel where fad_certifi_deficit_rel.certifi_id = fad_certificate.uuid) then '-1' when exists (select 1 from fad_certifi_deficit_rel where fad_certifi_deficit_rel.deficit_id = fad_certificate.uuid) then '0' else '1' end) deficit_certifi_state,
+                                (case when exists (select 1 from fad_certifi_deficit_rel where fad_certifi_deficit_rel.certifi_id = fad_certificate.uuid) then '已红冲' when exists (select 1 from fad_certifi_deficit_rel where fad_certifi_deficit_rel.deficit_id = fad_certificate.uuid) then '红冲' else '未红冲' end) deficit_certifi_state_name,
+                                (case when exists (select 1 from fad_certificate nei where nei.free2 = fad_certificate.uuid) then '2' when exists (select 1 from fad_certificate nei where nei.uuid = fad_certificate.free2) then '1' else '0' end) copy_add_state,
+                                (case when exists (select 1 from fad_certificate nei where nei.free2 = fad_certificate.uuid) then '已复制' when exists (select 1 from fad_certificate nei where nei.uuid = fad_certificate.free2) then '复制' else '未复制' end) copy_add_state_name,
+                                (case when exists (select 1 from fad_certifi_merge_split_rel where fad_certifi_merge_split_rel.merge_id = fad_certificate.uuid) then '2' when exists (select 1 from fad_certifi_merge_split_rel where fad_certifi_merge_split_rel.split_id = fad_certificate.uuid) then '1' else '0' end) merge_split_state,
+                                (case when exists (select 1 from fad_certifi_merge_split_rel where fad_certifi_merge_split_rel.merge_id = fad_certificate.uuid) then '合并' when exists (select 1 from fad_certifi_merge_split_rel where fad_certifi_merge_split_rel.split_id = fad_certificate.uuid) then '拆分' else '原始' end) merge_split_state_name,
+                                feedback,
+                                remark,
+                                create_by,
+                                create_time,
+                                update_by,
+                                update_time,
+                                loc_timezone,
+                                tbl_version,
+                                is_void,
+                                seq_no
+                         from fad_certificate
+                     ) fad_certificate
+                     where uuid=?]]>
+        </common>
+    </common_query_load>
+    <common_query_currtype>
+        <common>
+            <![CDATA[select currency_code,currency_desc from fm_currency where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query_currtype>
+    <common_query_accsubjRtfreevalue>
+        <common>
+            <![CDATA[select * from fad_accsubj_rtfreevalue where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query_accsubjRtfreevalue>
+    <common_query_rtfreevalue>
+        <common>
+            <![CDATA[select * from fad_rtfreevalue_view where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query_rtfreevalue>
+    <common_query_receiverOrPayer>
+        <common>
+            <![CDATA[select * from fad_receiver_or_payer_view where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query_receiverOrPayer>
+</DAO>

@@ -1,0 +1,832 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WorkBook xmlVersion="20141222" releaseVersion="8.0.0">
+<TableDataMap>
+<TableData name="BusinessTripMain" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="invoiceReqNo"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT (SELECT U.USER_NAME FROM SCDP_USER U WHERE U.USER_ID = FI.RENDER_PERSON) AS RENDER_PERSON,
+       (SELECT O.ORG_NAME FROM SCDP_ORG O WHERE O.ORG_CODE = FI.OFFICE_ID) AS OFFICE_CODE,
+       FI.TRIP_LOCATION,
+       FI.TRIP_BEGIN_DATE,
+       FI.TRIP_END_DATE,
+       FI.TRIP_DAYS,
+       FI.TRIP_REASON,
+       FI.EXPENSES_MONEY,
+	   FI.FAD_SUBJECT_CODE,
+	   FI.PRM_PROJECT_MAIN_ID,
+       NVL((SELECT SUM(FCR.MONEY)
+             FROM FAD_CASH_REQ FCR, FAD_CASH_REQ_INVOICE FR
+            WHERE FCR.UUID = FR.FAD_CASH_REQ_ID
+              AND FR.FAD_INVOICE_ID = FI.UUID),
+           0) AS INVOICE_TOTAL_VALUE,
+       FI.EXPENSES_MONEY - NVL((SELECT SUM(NVL(I.CLEARANCE_MONEY, 0)) FROM FAD_CASH_REQ_INVOICE I WHERE I.FAD_INVOICE_ID = FI.UUID), 0) AS PAY_CASH,
+       0 AS TH_MONEY
+  FROM FAD_INVOICE FI
+ WHERE FI.INVOICE_REQ_NO = '${invoiceReqNo}']]></Query>
+</TableData>
+<TableData name="TripExpenseInfo" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="invoiceReqNo"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT T1.CODE_DESC, T2.INVOICE_NUM, T2.INVOICE_MONEY, T2.APPROVED_MONEY
+   FROM (SELECT C.CODE_DESC, C.SYS_CODE FROM SCDP_CODE C WHERE C.CODE_TYPE = 'FAD_TRIP_COST_TYPE' ORDER BY C.SEQ_NO) T1
+   LEFT JOIN (SELECT FIT.TYPE, FIT.INVOICE_NUM, FIT.INVOICE_MONEY, FIT.APPROVED_MONEY
+                FROM FAD_INVOICE FI
+                LEFT JOIN FAD_INVOICE_TRAVEL FIT
+                  ON FI.UUID = FIT.FAD_INVOICE_ID
+               WHERE FI.INVOICE_REQ_NO = '${invoiceReqNo}') T2
+     ON T1.SYS_CODE = T2.TYPE]]></Query>
+</TableData>
+<TableData name="TripLocationInfo" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="invoiceReqNo"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[ERP]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT FIS.TRIP_LOCATION, FIS.TRIP_DAYS, FIS.STANDARD, FIS.MONEY
+      FROM FAD_INVOICE FI
+      LEFT JOIN FAD_INVOICE_SUBSIDY FIS
+        ON FI.UUID = FIS.FAD_INVOICE_ID
+     WHERE FI.INVOICE_REQ_NO = '${invoiceReqNo}']]></Query>
+</TableData>
+</TableDataMap>
+<Report class="com.fr.report.worksheet.WorkSheet" name="sheet1">
+<ReportPageAttr>
+<HR/>
+<FR/>
+<HC/>
+<FC/>
+</ReportPageAttr>
+<ColumnPrivilegeControl/>
+<RowPrivilegeControl/>
+<RowHeight defaultValue="723900">
+<![CDATA[2819400,1905000,1181100,950400,950400,950400,950400,950400,950400,950400,950400,950400,950400,950400,950400,950400,950400,950400,950400,723900]]></RowHeight>
+<ColumnWidth defaultValue="2743200">
+<![CDATA[3124200,1752600,3657600,1638300,2171700,3543300,1371600,2133600,1828800,3962400,2743200,1524000,2247900,3200400,2743200]]></ColumnWidth>
+<CellElementList>
+<C c="0" r="0">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="0" cs="13">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="1" cs="13" s="0">
+<O>
+<![CDATA[中海网络科技股份有限公司]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="2" cs="13" s="1">
+<O>
+<![CDATA[差旅报销单]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="3" cs="13">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=CONCATENATE("填表日期：", YEAR(NOW()), "年", MONTH(NOW()), "月", DAY(NOW()), "日")]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="4" cs="2" s="2">
+<O>
+<![CDATA[出差人姓名]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="4" cs="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="BusinessTripMain" columnName="RENDER_PERSON"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="4" s="2">
+<O>
+<![CDATA[所属部门]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="4" cs="3" s="2">
+<O t="DSColumn">
+<Attributes dsName="BusinessTripMain" columnName="OFFICE_CODE"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="4" s="2">
+<O t="DSColumn">
+<Attributes dsName="BusinessTripMain" columnName="PRM_PROJECT_MAIN_ID"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<HighlightList>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[项目代号]]></Name>
+<Condition class="com.fr.data.condition.ObjectCondition">
+<Compare op="1">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=NULL]]></Attributes>
+</O>
+</Compare>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ValueHighlightAction">
+<O>
+<![CDATA[项目代号]]></O>
+</HighlightAction>
+</Highlight>
+<Highlight class="com.fr.report.cell.cellattr.highlight.DefaultHighlight">
+<Name>
+<![CDATA[非项目代号]]></Name>
+<Condition class="com.fr.data.condition.ObjectCondition">
+<Compare op="0">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=NULL]]></Attributes>
+</O>
+</Compare>
+</Condition>
+<HighlightAction class="com.fr.report.cell.cellattr.highlight.ValueHighlightAction">
+<O>
+<![CDATA[非项目代号]]></O>
+</HighlightAction>
+</Highlight>
+</HighlightList>
+<Expand dir="0"/>
+</C>
+<C c="10" r="4" cs="4" s="3">
+<O t="DSColumn">
+<Attributes dsName="BusinessTripMain" columnName="FAD_SUBJECT_CODE"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Result>
+<![CDATA[$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="5" cs="2" s="2">
+<O>
+<![CDATA[出差地点]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="5" cs="11" s="2">
+<O t="DSColumn">
+<Attributes dsName="BusinessTripMain" columnName="TRIP_LOCATION"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="6" cs="2" s="2">
+<O>
+<![CDATA[起止日期]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="6" s="4">
+<O>
+<![CDATA[自：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="4" r="6" cs="3" s="5">
+<O t="DSColumn">
+<Attributes dsName="BusinessTripMain" columnName="TRIP_BEGIN_DATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="7" r="6" s="6">
+<O>
+<![CDATA[至：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="6" cs="2" s="5">
+<O t="DSColumn">
+<Attributes dsName="BusinessTripMain" columnName="TRIP_END_DATE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="10" r="6" cs="2" s="6">
+<O>
+<![CDATA[出差天数：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="12" r="6" s="6">
+<O t="DSColumn">
+<Attributes dsName="BusinessTripMain" columnName="TRIP_DAYS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="13" r="6" s="7">
+<O>
+<![CDATA[天]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="7" cs="2" rs="2" s="2">
+<O>
+<![CDATA[出差事由]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="7" cs="11" rs="2" s="2">
+<O t="DSColumn">
+<Attributes dsName="BusinessTripMain" columnName="TRIP_REASON"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="9" rs="3" s="8">
+<O>
+<![CDATA[交通及住宿费]]></O>
+<PrivilegeControl/>
+<Expand leftParentDefault="false" upParentDefault="false"/>
+</C>
+<C c="2" r="9" s="2">
+<O>
+<![CDATA[种类]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="9" cs="2" s="2">
+<O>
+<![CDATA[票据张数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="9" s="2">
+<O>
+<![CDATA[支出金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="9" cs="2" s="2">
+<O>
+<![CDATA[核准金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="8" r="9" rs="3" s="8">
+<O>
+<![CDATA[出差补助费]]></O>
+<PrivilegeControl/>
+<Expand leftParentDefault="false" upParentDefault="false"/>
+</C>
+<C c="9" r="9" s="2">
+<O>
+<![CDATA[出差地点]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="9" s="2">
+<O>
+<![CDATA[天数]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="9" cs="2" s="2">
+<O>
+<![CDATA[标准]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="13" r="9" s="2">
+<O>
+<![CDATA[金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="2" r="10" s="2">
+<O t="DSColumn">
+<Attributes dsName="TripExpenseInfo" columnName="CODE_DESC"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="3" r="10" cs="2" s="9">
+<O t="DSColumn">
+<Attributes dsName="TripExpenseInfo" columnName="INVOICE_NUM"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="10" s="10">
+<O t="DSColumn">
+<Attributes dsName="TripExpenseInfo" columnName="INVOICE_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="6" r="10" cs="2" s="10">
+<O t="DSColumn">
+<Attributes dsName="TripExpenseInfo" columnName="APPROVED_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="9" r="10" s="9">
+<O t="DSColumn">
+<Attributes dsName="TripLocationInfo" columnName="TRIP_LOCATION"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="10" r="10" s="9">
+<O t="DSColumn">
+<Attributes dsName="TripLocationInfo" columnName="TRIP_DAYS"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="11" r="10" cs="2" s="10">
+<O t="DSColumn">
+<Attributes dsName="TripLocationInfo" columnName="STANDARD"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="13" r="10" s="10">
+<O t="DSColumn">
+<Attributes dsName="TripLocationInfo" columnName="MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="2" r="11" s="2">
+<O>
+<![CDATA[小计]]></O>
+<PrivilegeControl/>
+<Expand leftParentDefault="false" left="B10"/>
+</C>
+<C c="3" r="11" cs="2" s="9">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(D11)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="5" r="11" s="10">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(F11)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="6" r="11" cs="2" s="10">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(G11)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="9" r="11" cs="4" s="2">
+<O>
+<![CDATA[小计]]></O>
+<PrivilegeControl/>
+<Expand leftParentDefault="false" upParentDefault="false"/>
+</C>
+<C c="13" r="11" s="10">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=SUM(N11)]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="12" cs="2" rs="2" s="2">
+<O>
+<![CDATA[金额合计]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="12" cs="8" rs="2" s="11">
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=CONCATENATE("（大写）  ",CNMONEY(BusinessTripMain.select(EXPENSES_MONEY)))]]></Attributes>
+</O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="12" cs="3" rs="2" s="12">
+<O t="DSColumn">
+<Attributes dsName="BusinessTripMain" columnName="EXPENSES_MONEY"/>
+<Condition class="com.fr.data.condition.ListCondition"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Result>
+<![CDATA["￥"+$$$]]></Result>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0" extendable="1"/>
+</C>
+<C c="1" r="14" cs="13" rs="2" s="2">
+<O>
+<![CDATA[报 销 结 算 情 况]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="1" r="16" cs="2" s="2">
+<O>
+<![CDATA[原出差借款]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="16" cs="5" s="13">
+<O t="DSColumn">
+<Attributes dsName="BusinessTripMain" columnName="INVOICE_TOTAL_VALUE"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="16" cs="2" s="2">
+<O>
+<![CDATA[报销金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="16" cs="4" s="13">
+<O t="DSColumn">
+<Attributes dsName="BusinessTripMain" columnName="EXPENSES_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="17" cs="2" s="2">
+<O>
+<![CDATA[退回金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="17" cs="5" s="13">
+<O t="DSColumn">
+<Attributes dsName="BusinessTripMain" columnName="TH_MONEY"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="8" r="17" cs="2" s="2">
+<O>
+<![CDATA[补发金额]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="17" cs="4" s="13">
+<O t="DSColumn">
+<Attributes dsName="BusinessTripMain" columnName="PAY_CASH"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper">
+<Attr divideMode="1"/>
+</RG>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="1" r="18" cs="2" s="14">
+<O>
+<![CDATA[报销人：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="3" r="18" cs="2" s="15">
+<O t="DSColumn">
+<Attributes dsName="BusinessTripMain" columnName="RENDER_PERSON"/>
+<Complex/>
+<RG class="com.fr.report.cell.cellattr.core.group.FunctionGrouper"/>
+<Parameters/>
+</O>
+<PrivilegeControl/>
+<Expand dir="0"/>
+</C>
+<C c="5" r="18" cs="2" s="16">
+<O>
+<![CDATA[部门领导：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="7" r="18" cs="2">
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="10" r="18">
+<O>
+<![CDATA[公司领导：]]></O>
+<PrivilegeControl/>
+<Expand/>
+</C>
+<C c="11" r="18" cs="2" s="14">
+<PrivilegeControl/>
+<Expand/>
+</C>
+</CellElementList>
+<ReportAttrSet>
+<ReportSettings headerHeight="0" footerHeight="0">
+<PaperSetting orientation="1">
+<Margin top="986400" left="2743200" bottom="986400" right="2743200"/>
+</PaperSetting>
+</ReportSettings>
+<Header reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Header>
+<Footer reportPageType="0">
+<Background name="NullBackground"/>
+<LeftList/>
+<CenterList/>
+<RightList/>
+</Footer>
+</ReportAttrSet>
+<PrivilegeControl/>
+</Report>
+<ReportParameterAttr>
+<Attributes showWindow="true" delayPlaying="true" windowPosition="1" align="0"/>
+<PWTitle>
+<![CDATA[参数]]></PWTitle>
+</ReportParameterAttr>
+<StyleList>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="136"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="1" size="120"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="java.text.SimpleDateFormat">
+<![CDATA[yyyy-MM-dd]]></Format>
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" isVerticalText="1" textDirection="1" imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[¤#0]]></Format>
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<Format class="com.fr.base.CoreDecimalFormat">
+<![CDATA[#,##0.00]]></Format>
+<FRFont name="SimSun" style="0" size="88"/>
+<Background name="NullBackground"/>
+<Border>
+<Top style="1"/>
+<Bottom style="1"/>
+<Left style="1"/>
+<Right style="1"/>
+</Border>
+</Style>
+<Style horizontal_alignment="0" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="2" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+<Style horizontal_alignment="4" imageLayout="1">
+<FRFont name="SimSun" style="0" size="72"/>
+<Background name="NullBackground"/>
+<Border/>
+</Style>
+</StyleList>
+<DesignerVersion DesignerVersion="IAA"/>
+<PreviewType PreviewType="0"/>
+</WorkBook>

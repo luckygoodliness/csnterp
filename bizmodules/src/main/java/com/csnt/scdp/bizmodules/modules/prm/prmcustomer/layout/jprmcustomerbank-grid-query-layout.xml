@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>prmcustomer-dao</daotype>
+        <daokey>common_query_bank</daokey>
+    </querysql>
+    <defaultSort>pcb.create_time desc</defaultSort>
+    <conditions columns="4">
+        <JHidden cid="uuid" field="pcb.uuid"/>
+        <JText pos="A1:A1" fieldLabel_s="bankName" cid="bankName" field="pcb.bank_name"/>
+    </conditions>
+    <quickquery>
+        <QueryCids>bankName</QueryCids>
+        <ForceQueryCids></ForceQueryCids>
+    </quickquery>
+    <results>
+        <JTextCol text_s="uuid" dataIndex="uuid" width_n="120" hidden_b="true"/>
+        <JTextCol text_s="prmCustomerId" dataIndex="prmCustomerId" width_n="120" hidden_b="true"/>
+        <JTextCol text_s="bankCode" dataIndex="bankCode" width_n="120" hidden_b="true"/>
+        <JTextCol text_s="bankName" dataIndex="bankName" width_n="120"/>
+        <JTextCol text_s="bankNumber" dataIndex="bankNumber" width_n="120"/>
+    </results>
+</commonquery>

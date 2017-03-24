@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select distinct year as uuid from non_budget_monitor_s where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+    <common_query_n>
+        <common>
+            <![CDATA[select  distinct   i.year as uuid
+                             from non_project_income i
+                             where  1=1 and ${conditions}]]>
+        </common>
+    </common_query_n>
+    <query_income_year>
+        <common>
+            <![CDATA[
+select t.subject,
+       pm.uuid,
+       t.uuid as puuid,
+       NVL2(t.assigned_value,  t.assigned_value / 10000, 0) AS assigned_value,
+       NVL2(PM.occurred_value, PM.occurred_value / 10000, 0) AS occurred_value,
+       pm.company_code,
+       pm.company_name,
+       pm.department_code,
+       pm.create_by,
+       pm.create_time,
+       pm.update_by,
+       pm.update_time,
+       pm.is_void,
+       pm.loc_timezone,
+       pm.tbl_version,
+       ? as month
+  from non_project_income_in t
+  left join non_project_income_mon pm
+    on t.uuid = pm.puuid
+   and pm.month = ?
+ where t.subject in ('其他收入', '财务收入')
+   and t.year = ?
+                    ]]>
+        </common>
+    </query_income_year>
+    <query_payment_year>
+        <common>
+            <![CDATA[
+                             SELECT PM.UUID,
+                   PI.UUID AS PUUID,
+                   PI.SUBJECT,
+                   PI.SEQ_NO,
+                   NVL2(PI.ASSIGNED_VALUE, PI.ASSIGNED_VALUE / 10000, 0) AS ASSIGNED_VALUE,
+                   NVL2(PM.OCCURRED_VALUE, PM.OCCURRED_VALUE / 10000, 0) AS OCCURRED_VALUE,
+                   PM.COMPANY_CODE,
+                   PM.COMPANY_NAME,
+                   PM.DEPARTMENT_CODE,
+                   PM.CREATE_BY,
+                   PM.CREATE_TIME,
+                   PM.UPDATE_BY,
+                   PM.UPDATE_TIME,
+                   PM.IS_VOID,
+                   PM.LOC_TIMEZONE,
+                   PM.TBL_VERSION,
+                   ? AS MONTH
+              FROM NON_PROJECT_INCOME PI
+              LEFT JOIN NON_PROJECT_INCOME_MON PM
+                ON PI.UUID = PM.PUUID
+               AND PM.MONTH = ?
+             WHERE PI.YEAR = ?
+             ORDER BY PI.SEQ_NO ASC
+                    ]]>
+        </common>
+    </query_payment_year>
+
+    <query_monitor_labor_cost>
+        <common>
+            <![CDATA[
+            select * from
+            (
+                select
+                uuid,
+                monitor_base_id,
+                year,
+                month,
+                office_id,
+                subject_name,
+                case
+                    when
+                        to_date(to_char(year) || '-' || to_char(month), 'yyyy-mm')
+                        =
+                        to_date(to_char(?) || '-' || to_char(?), 'yyyy-mm')
+                    then
+                        money
+                    else
+                        null
+                end money,
+                company_code,
+                project_id,
+                department_code,
+                create_by,
+                create_time,
+                update_by,
+                update_time,
+                loc_timezone,
+                tbl_version,
+                is_void,
+                seq_no
+                from
+                monitor_labor_cost
+                where
+                office_id = ?
+                and
+                to_date(to_char(year) || '-' || to_char(month), 'yyyy-mm')
+                <=
+                to_date(to_char(?) || '-' || to_char(?), 'yyyy-mm')
+            ) main
+            where
+            to_date(to_char(main.year) || '-' || to_char(main.month), 'yyyy-mm')
+            =
+            (
+                select
+                max(to_date(to_char(slave.year) || '-' || to_char(slave.month), 'yyyy-mm'))
+                from
+                monitor_labor_cost slave
+                where
+                slave.office_id = main.office_id
+                and
+                to_date(to_char(slave.year) || '-' || to_char(slave.month), 'yyyy-mm')
+                <=
+                to_date(to_char(?) || '-' || to_char(?), 'yyyy-mm')
+            )
+            and (nvl(main.is_void, 0) <> 1)
+            ]]>
+        </common>
+    </query_monitor_labor_cost>
+    <query_monitor_labor_cost_m>
+        <common>
+            <![CDATA[
+            select
+            null uuid,
+            null monitor_base_id,
+            null year,
+            null month,
+            null office_id,
+            subject_name,
+            null money,
+            company_code,
+            project_id,
+            department_code,
+            create_by,
+            create_time,
+            update_by,
+            update_time,
+            loc_timezone,
+            tbl_version,
+            is_void,
+            seq_no
+            from
+            monitor_labor_cost_m
+            where nvl(is_void, 0) <> 1
+            ]]>
+        </common>
+    </query_monitor_labor_cost_m>
+    <query_monitor_other_share>
+        <common>
+            <![CDATA[
+            select * from
+            (
+                select
+                uuid,
+                monitor_base_id,
+                year,
+                month,
+                office_id,
+                subject_name,
+                case
+                    when
+                        to_date(to_char(year) || '-' || to_char(month), 'yyyy-mm')
+                        =
+                        to_date(to_char(?) || '-' || to_char(?), 'yyyy-mm')
+                    then
+                        money
+                    else
+                        null
+                end money,
+                company_code,
+                project_id,
+                department_code,
+                create_by,
+                create_time,
+                update_by,
+                update_time,
+                loc_timezone,
+                tbl_version,
+                is_void,
+                seq_no
+                from
+                monitor_other_share
+                where
+                office_id = ?
+                and
+                to_date(to_char(year) || '-' || to_char(month), 'yyyy-mm')
+                <=
+                to_date(to_char(?) || '-' || to_char(?), 'yyyy-mm')
+            ) main
+            where
+            to_date(to_char(main.year) || '-' || to_char(main.month), 'yyyy-mm')
+            =
+            (
+                select
+                max(to_date(to_char(slave.year) || '-' || to_char(slave.month), 'yyyy-mm'))
+                from
+                monitor_other_share slave
+                where
+                slave.office_id = main.office_id
+                and
+                to_date(to_char(slave.year) || '-' || to_char(slave.month), 'yyyy-mm')
+                <=
+                to_date(to_char(?) || '-' || to_char(?), 'yyyy-mm')
+            )
+            and (nvl(main.is_void, 0) <> 1)
+            ]]>
+        </common>
+    </query_monitor_other_share>
+    <query_monitor_other_share_m>
+        <common>
+            <![CDATA[
+            select
+            null uuid,
+            null monitor_base_id,
+            null year,
+            null month,
+            null office_id,
+            subject_name,
+            null money,
+            company_code,
+            project_id,
+            department_code,
+            create_by,
+            create_time,
+            update_by,
+            update_time,
+            loc_timezone,
+            tbl_version,
+            is_void,
+            seq_no
+            from
+            monitor_other_share_m
+            where nvl(is_void, 0) <> 1
+            ]]>
+        </common>
+    </query_monitor_other_share_m>
+</DAO>

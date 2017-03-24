@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JTab pos="A1:A1" cid="mainTab" row="flex" col="1*1" border_n="0">
+        <JPanel title_s="basicInfo" pos="A1:A1" row="flex" col="1*1" border_n="0">
+            <JForm pos="A1:A1" cid="prmProjectMainCDto" row="23*8" col="0.25*4" title_s="" border_n="0"
+                   labelWidth_n="120">
+                <JHidden cid="uuid"/>
+                <JHidden cid="tblVersion"/>
+                <JHidden cid="prmProjectMainId"/>
+                <JHidden cid="detailType"/>
+                <JHidden cid="prmContractIdDesc"/>
+                <JHidden cid="customerIdDesc"/>
+                <JHidden cid="projectManagerDesc"/>
+                <JHidden cid="contractSignMoney"/>
+                <JHidden cid="contractorOfficeDesc"/>
+                <JContract pos="A1:B1" cid="prmContractId" fieldLabel_s="prmContractId" valueField="uuid"
+                           displayDesc_b="true" allowBlank_b="true"
+                           filterConditions_j="{'pickModule_h':'pickForProject'}"
+                           refer_j='[
+                           {"refField":"projectName","valueField":"projectName"},
+                           {"refField":"contractorOffice","valueField":"contractorOffice"},
+                           {"refField":"projectManager","valueField":"projectManager"},
+                           {"refField":"customerId","valueField":"customerId"},
+                           {"refField":"taxType","valueField":"taxType"},
+                           {"refField":"contractSignMoney","valueField":"contractSignMoney"},
+                           {"refField":"contractDuration","valueField":"contractDuration"}
+                           ]'/>
+                <JText pos="C1:D1" cid="projectName" fieldLabel_s="projectName" allowBlank_b="true"/>
+                <JCustomerGrid pos="A2:B2" cid="customerId" valueField="uuid" descField="customerName"
+                               displayDesc_b="true" fieldLabel_s="customerId" allowBlank_b="true"/>
+                <JErpDepartMent pos="C2:C2" fieldLabel_s="contractorOffice" cid="contractorOffice" allowBlank_b="true"/>
+                <JUserGrid pos="D2:D2" cid="projectManager" fieldLabel_s="projectManager" valueField_s="userId"
+                           descField_s="userName" allowBlank_b="true" displayDesc_b="true"/>
+                <JDate pos="A3:A3" cid="scheduledBeginDate" fieldLabel_s="scheduledBeginDate"
+                       allowBlank_b="true"/>
+                <JDate pos="B3:B3" cid="scheduledEndDate" fieldLabel_s="scheduledEndDate" allowBlank_b="true"/>
+                <JCur pos="C3:C3" cid="projectMoney" fieldLabel_s="projectMoney" allowBlank_b="true"
+                      readOnly_b="true" adaptable_b="false"/>
+                <JCur pos="D3:D3" cid="costControlMoney" fieldLabel_s="costControlMoney" allowBlank_b="true"
+                      readOnly_b="true" adaptable_b="false"/>
+                <JCombo pos="A4:A4" cid="taxType" fieldLabel_s="taxType" allowBlank_b="true"
+                        comboType="scdp_fmcode"
+                        codeType="CDM_TAX_TYPE" displayDesc_b="true" fullInfo_b="false" multiSelect_b="false"/>
+                <JCheck pos="B4:B4" fieldLabel_s="isPreProject" cid="isPreProject"/>
+                <JDate pos="C4:C4" cid="establishDate" fieldLabel_s="establishDate"
+                       readOnly_b="true" adaptable_b="false"/>
+                <JText pos="D4:D4" cid="projectSerialNo" fieldLabel_s="projectSerialNo" readOnly_b="true"
+                       adaptable_b="false"/>
+                <JText pos="D5:D5" cid="projectCode" fieldLabel_s="projectCode" readOnly_b="true"
+                       adaptable_b="false"/>
+                <JCombo pos="D6:D6" cid="state" fieldLabel_s="state" allowBlank_b="true"
+                        comboType="scdp_fmcode"
+                        codeType="CDM_BILL_STATE" displayDesc_b="true" fullInfo_b="false" multiSelect_b="false"/>
+                <JDisplay pos="A5:A5" fieldLabel_s="contractDuration" hideLabel_b="false" labelSeparator=""
+                          allowBlank_b="true"/>
+                <JDisplay pos="B5:B5" fieldLabel_s="fundsExplanation" hideLabel_b="false" labelSeparator=""
+                          allowBlank_b="true"/>
+                <JDisplay pos="C5:C5" fieldLabel_s="remark" hideLabel_b="false" labelSeparator=""
+                          allowBlank_b="true"/>
+                <JTextArea pos="A6:A8" cid="contractDuration" fieldLabel_s="" labelWidth_n="0" allowBlank_b="true"/>
+                <JTextArea pos="B6:B8" cid="fundsExplanation" fieldLabel_s="" labelWidth_n="0" allowBlank_b="true"/>
+                <JTextArea pos="C6:C8" cid="remark" fieldLabel_s="" labelWidth_n="0" allowBlank_b="true"/>
+            </JForm>
+        </JPanel>
+        <JPanel pos="A1:A1" row="flex" col="1*1" title_s="squareDetailPC" border_n="0">
+            <JEGrid pos="A1:A1" cid="prmSquareDetailPCDto" store="Prmprojectmainc.store.SquareDetailPCStore">
+                <JDateCol text_s="schemingSquareDate" dataIndex="schemingSquareDate" width_n="150">
+                    <JDate allowBlank_b="false"/>
+                </JDateCol>
+                <JCurCol text_s="schemingSquareMoney" dataIndex="schemingSquareMoney" width_n="150">
+                    <JCur allowBlank_b="false"/>
+                </JCurCol>
+                <JCurCol text_s="schemingSquareCost" dataIndex="schemingSquareCost" width_n="150">
+                    <JCur allowBlank_b="false"/>
+                </JCurCol>
+                <JCurCol text_s="schemingSquareProfits" dataIndex="schemingSquareProfits" width_n="150">
+                    <!--<JCur allowBlank_b="false"/>-->
+                </JCurCol>
+                <JTextCol text_s="explanation" dataIndex="explanation" width_n="300">
+                    <JText allowBlank_b="false"/>
+                </JTextCol>
+            </JEGrid>
+        </JPanel>
+    </JTab>
+</view>

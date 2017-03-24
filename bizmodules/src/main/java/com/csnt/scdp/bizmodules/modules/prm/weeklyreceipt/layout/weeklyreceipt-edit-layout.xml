@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view version="1" row="flex" col="1*1">
+    <JForm pos="A1:A1" cid="prmWeeklyReceiptDto" row="23*4" col="0.25*4" title_s="" border_n="1">
+        <JHidden cid="uuid"/>
+        <JHidden cid="tblVersion"/>
+        <JText pos="A1:A1" cid="prmProjectMainId" fieldLabel_s="prmProjectMainId" allowBlank_b="true"/>
+        <JText pos="B1:B1" cid="prmWeeklyId" fieldLabel_s="prmWeeklyId" allowBlank_b="true"/>
+        <JText pos="C1:C1" cid="prmReceiptsId" fieldLabel_s="prmReceiptsId" allowBlank_b="true"/>
+        <JText pos="D1:D1" cid="payer" fieldLabel_s="payer" allowBlank_b="true"/>
+        <JText pos="A2:A2" cid="customerId" fieldLabel_s="customerId" allowBlank_b="true"/>
+        <JDec pos="B2:B2" cid="estimateMoney" fieldLabel_s="estimateMoney" allowBlank_b="true"/>
+        <JDec pos="C2:C2" cid="actualMoney" fieldLabel_s="actualMoney" allowBlank_b="true"/>
+        <!--<JText pos="D2:D2" cid="moneyType" fieldLabel_s="moneyType" allowBlank_b="true"/>-->
+        <JCombo pos="D2:D2" cid="moneyType" fieldLabel_s="moneyType" comboType="scdp_fmcode"
+                codeType="PRM_MONEY_TYPE" displayDesc_b="false" fullInfo_b="true" multiSelect_b="false"
+                pickerMaxHeight_n="60" pickerMinWidth_n="300" target="jcomboDesc,jtext|field1"/>
+        <JDatetime pos="A3:A3" cid="estimateDate" fieldLabel_s="estimateDate" allowBlank_b="true"/>
+        <JDatetime pos="B3:B3" cid="actualDate" fieldLabel_s="actualDate" allowBlank_b="true"/>
+        <JText pos="C3:C3" cid="prmUnknownReceiptsId" fieldLabel_s="prmUnknownReceiptsId" allowBlank_b="true"/>
+        <JText pos="D3:D3" cid="state" fieldLabel_s="state" allowBlank_b="true"/>
+        <JText pos="A4:A4" cid="companyCode" fieldLabel_s="companyCode" allowBlank_b="true"/>
+        <JText pos="B4:B4" cid="projectId" fieldLabel_s="projectId" allowBlank_b="true"/>
+        <JText pos="C4:C4" cid="departmentCode" fieldLabel_s="departmentCode" allowBlank_b="true"/>
+        <JText pos="D4:D4" cid="createOffice" fieldLabel_s="createOffice" allowBlank_b="true"/>
+        <JText pos="A5:A5" cid="updateOffice" fieldLabel_s="updateOffice" allowBlank_b="true"/>
+    </JForm>
+</view>

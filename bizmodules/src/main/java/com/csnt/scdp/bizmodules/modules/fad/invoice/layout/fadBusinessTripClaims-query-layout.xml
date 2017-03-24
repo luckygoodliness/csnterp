@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commonquery version="1.0">
+    <querysql>
+        <daotype>invoice-dao</daotype>
+        <daokey>non_trip_query</daokey>
+    </querysql>
+    <defaultSort>create_time desc</defaultSort>
+    <conditions columns="4">
+        <JText pos="C2:C2" fieldLabel_s="createBy" cid="createBy" field="create_by"/>
+        <JText pos="D2:D2" fieldLabel_s="updateBy" cid="updateby" field="update_by"/>
+        <JFromTo pos="A3:B3" subXtype="JDatetime" fieldLabel_s="createTime" cid="createTime" field="create_time"/>
+        <JFromTo pos="C3:D3" subXtype="JDatetime" fieldLabel_s="updateTime" cid="updateTime" field="update_time"/>
+    </conditions>
+    <results>
+        <JTextCol text_s="invoiceReqNo" dataIndex="invoiceReqNo" width_n="120"/>
+        <JTextCol text_s="部门" dataIndex="officeNameR" width_n="120"/>
+        <!--<JTextCol text_s="prmProjectMainId" dataIndex="prmProjectMainId" width_n="120"/>-->
+        <!--<JTextCol text_s="invoiceCode" dataIndex="invoiceCode" width_n="120"/>-->
+        <!--<JTextCol text_s="subjectId" dataIndex="subjectId" width_n="120"/>-->
+        <!--<JTextCol text_s="tripName" dataIndex="tripNameR" width_n="120"/>-->
+        <JTextCol text_s="tripName" dataIndex="renderPersonR" width_n="120"/>
+        <JTextCol text_s="tripLocation" dataIndex="tripLocation" width_n="120"/>
+        <!--<JTextCol text_s="subjectName" dataIndex="subjectName" width_n="120"/>-->
+        <!--<JTextCol text_s="invoiceNo" dataIndex="invoiceNo" width_n="120"/>-->
+        <!--<JIntCol text_s="invoiceNum" dataIndex="invoiceNum" width_n="100"/>-->
+        <JDecCol text_s="invoiceTotalValue" dataIndex="invoiceTotalValue" width_n="150"/>
+        <JDecCol text_s="expensesMoney" dataIndex="expensesMoney" width_n="150"/>
+        <!--<JTextCol text_s="outerNo" dataIndex="outerNo" width_n="120"/>-->
+        <!--<JTextCol text_s="renderType" dataIndex="renderType" width_n="120"/>-->
+        <!--<JTextCol text_s="invoiceType" dataIndex="invoiceType" width_n="120"/>-->
+        <!--<JTextCol text_s="payStyle" dataIndex="payStyle" width_n="120"/>-->
+        <!--<JDecCol text_s="taxRate" dataIndex="taxRate" width_n="150"/>-->
+        <!--<JTextCol text_s="renderOffice" dataIndex="renderOffice" width_n="120"/>-->
+        <!--<JTextCol text_s="buyer" dataIndex="buyer" width_n="120"/>-->
+        <!--<JTextCol text_s="warehouse" dataIndex="warehouse" width_n="120"/>-->
+        <!--<JTextCol text_s="freightSpace" dataIndex="freightSpace" width_n="120"/>-->
+        <!--<JTextCol text_s="consignee" dataIndex="consignee" width_n="120"/>-->
+        <!--<JTextCol text_s="consigneeOffice" dataIndex="consigneeOffice" width_n="120"/>-->
+        <!--<JTextCol text_s="materialRequisitionPerson" dataIndex="materialRequisitionPerson" width_n="120"/>-->
+        <!--<JTextCol text_s="materialRequisitionOffice" dataIndex="materialRequisitionOffice" width_n="120"/>-->
+        <JDatetimeCol text_s="tripBeginDate" dataIndex="tripBeginDate" width_n="150"/>
+        <JDatetimeCol text_s="tripEndDate" dataIndex="tripEndDate" width_n="150"/>
+        <JIntCol text_s="tripDays" dataIndex="tripDays" width_n="100"/>
+        <JTextCol text_s="tripReason" dataIndex="tripReason" width_n="120"/>
+        <JTextCol text_s="state" dataIndex="state" width_n="120"/>
+        <JTextCol text_s="remark" dataIndex="remark" width_n="120"/>
+        <!--<JTextCol text_s="companyCode" dataIndex="companyCode" width_n="120"/>-->
+        <!--<JTextCol text_s="projectId" dataIndex="projectId" width_n="120"/>-->
+        <!--<JTextCol text_s="departmentCode" dataIndex="departmentCode" width_n="120"/>-->
+        <!--<JTextCol text_s="部门" dataIndex="officeId" width_n="120"/>-->
+
+        <!--<JTextCol text_s="createBy" dataIndex="createBy" width_n="120"/>-->
+        <!--<JTextCol text_s="createOffice" dataIndex="createOffice" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="createTime" dataIndex="createTime" width_n="150"/>-->
+        <!--<JTextCol text_s="updateBy" dataIndex="updateBy" width_n="120"/>-->
+        <!--<JTextCol text_s="updateOffice" dataIndex="updateOffice" width_n="120"/>-->
+        <!--<JDatetimeCol text_s="updateTime" dataIndex="updateTime" width_n="150"/>-->
+    </results>
+</commonquery>

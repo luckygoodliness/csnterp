@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select m.*,s.complete_name,c.complete_name as supplier_complete_name
+                     from fad_supplier_mapping  m
+                     left join  SCM_SUPPLIER s on m.supplier_to_uuid = s.uuid
+                     left join  SCM_SUPPLIER c on m.SUPPLIER_TO_LAST_UUID = c.uuid
+                     where ${conditions} ]]>
+        </common>
+    </common_query>
+</DAO>

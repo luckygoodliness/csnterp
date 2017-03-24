@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[select * from prm_weekly where ${conditions} and ${voidfilter}]]>
+        </common>
+    </common_query>
+
+    <common_query_department>
+        <common>
+            <![CDATA[select     w.uuid,
+                                w.prm_project_main_id,
+                                w.weekle_date,
+                                w.state,
+                                w.company_code,
+                                w.project_id,
+                                w.department_code,
+                                w.create_by,
+                                w.create_time,
+                                w.update_by,
+                                w.update_time,
+                                w.loc_timezone,
+                                w.tbl_version,
+                                w.is_void,
+                                o.org_name,
+                                (select distinct  a.project_name  from (select ppm.*,pc.contract_name
+                                                                from prm_project_main ppm
+                                                                 left join PRM_CONTRACT  pc
+                                                               on ppm.prm_contract_id = pc.uuid ) a
+                                where a.uuid=w.prm_project_main_id) as project_name
+                        from   prm_weekly w
+                        left join scdp_org o
+                        on     w.department_code = o.org_code
+                        where 1=1 and ${conditions}]]>
+        </common>
+    </common_query_department>
+</DAO>

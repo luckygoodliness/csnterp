@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DAO>
+    <common_query>
+        <common>
+            <![CDATA[
+                    select t1.*,
+               t3.user_name     as project_manager_name,
+               t4.customer_name,
+               t6.code_desc as state_desc,
+               t5.org_name      as contractor_office_name
+          from (select t1.contractor_office,
+                       t1.project_manager,
+                       t1.contract_duration,
+                       t1.scheduled_begin_date,
+                       t1.scheduled_end_date,
+                       t1.tax_type,
+                       t1.funds_explanation,
+                       t1.remark,
+                       nvl(t1.state, 2) as state,
+                       t1.company_code,
+                       t1.project_id,
+                       t1.department_code,
+                       t1.create_by,
+                       t1.create_time,
+                       t1.update_by,
+                       t1.update_time,
+                       t1.loc_timezone,
+                       t1.tbl_version,
+                       t1.is_void,
+                       t1.project_code,
+                       t1.seq_no,
+                       t1.project_short_name,
+                       t1.project_serial_no,
+                       t1.contract_money,
+                       t1.establish_date,
+                       t1.prm_code_type,
+                       t1.is_major_project,
+                       t1.purchase_plan_state,
+                       t1.contract_sign_money,
+                       t1.siji_no,
+                       t1.uuid,
+                       t1.prm_contract_id,
+                       t1.project_name,
+                       t1.is_pre_project,
+                       t1.project_money,
+                       t1.cost_control_money,
+                       t1.customer_id
+                  from prm_project_main t1) t1
+          left join scdp_user t3
+            on t3.user_id = t1.project_manager
+          left join scdp_org t5
+            on t1.contractor_office = t5.org_code
+          left join (select prm_project_main_id,
+                           listagg(e.customer_name, '、') within group(order by prm_project_main_id) as customer_name
+                      from (select prm_project_main_id, customer_name
+                              from prm_contract_detail d, prm_customer c
+                             where d.customer_id = c.uuid
+                             group by d.prm_project_main_id, customer_name) e
+                     group by e.prm_project_main_id) t4
+            on t4.prm_project_main_id = t1.uuid
+          left join scdp_code t6
+            on t6.code_type = 'PRM_SQUARE_STATE'
+           and t6.sys_code = t1.state
+        where (t1.is_void is null or t1.is_void=0) and ${conditions} and ${selfconditions}]]>
+        </common>
+    </common_query>
+    <pick_main_for_change_query>
+        <common>
+            <![CDATA[select t1.*,t3.user_name as project_manager_name,
+            t4.customer_name,t6.code_desc as state_desc
+        from prm_project_main t1
+        left join scdp_user t3 on t3.user_id=t1.project_manager
+        left join prm_customer t4 on t4.uuid=t1.customer_id
+        left join scdp_code t6 on t6.code_type='PRM_SQUARE_STATE' and t6.sys_code=t1.state
+        where (t1.is_void is null or t1.is_void=0) and (t1.state is null or t1.state='0') and ${conditions}
+        and not exists (select 1 from prm_project_main_c t11 where (t11.is_void is null or t11.is_void =0)
+         and t11.prm_project_main_id=t1.uuid and (t11.state is null or t11.state!='2')
+         and t11.detail_type='${detailType}')
+         and not exists (select 1 from prm_final_estimate t12 where (t12.is_void is null or t12.is_void=0)
+         and t12.prm_project_main_id=t1.uuid and (t12.square_type='1' or t12.square_type='3') )
+         ]]>
+        </common>
+    </pick_main_for_change_query>
+    <inner_project_query>
+        <common>
+            <![CDATA[select t1.* from VW_PRM_INNER_PROJECT_REQ t1
+        where ${conditions} and ${selfconditions}]]>
+        </common>
+    </inner_project_query>
+    <prm-budget-detail-history>
+        <common>
+            select t1.* from prm_budget_detail_c t1
+            inner join prm_project_main_c t2 on t2.uuid=t1.prm_project_main_c_id
+            where (t2.is_void is null or t2.is_void=0) and t2.prm_project_main_id=?
+            and t2.state='2'
+            order by t1.serial_number asc
+        </common>
+    </prm-budget-detail-history>
+    <prm-budget-principal-history>
+        <common>
+            select t1.* from prm_budget_principal_c t1
+            inner join prm_project_main_c t2 on t2.uuid=t1.prm_project_main_c_id
+            where (t2.is_void is null or t2.is_void=0) and t2.prm_project_main_id=?
+            and t2.state='2'
+            order by t1.serial_number asc
+        </common>
+    </prm-budget-principal-history>
+    <prm-budget-accessory-history>
+        <common>
+            select t1.* from prm_budget_accessory_c t1
+            inner join prm_project_main_c t2 on t2.uuid=t1.prm_project_main_c_id
+            where (t2.is_void is null or t2.is_void=0) and t2.prm_project_main_id=?
+            and t2.state='2'
+            order by t1.serial_number asc
+        </common>
+    </prm-budget-accessory-history>
+    <prm-budget-outsource-history>
+        <common>
+            select t1.* from prm_budget_outsource_c t1
+            inner join prm_project_main_c t2 on t2.uuid=t1.prm_project_main_c_id
+            where (t2.is_void is null or t2.is_void=0) and t2.prm_project_main_id=?
+            and t2.state='2'
+            order by t1.serial_number asc
+        </common>
+    </prm-budget-outsource-history>
+    <prm-budget-run-history>
+        <common>
+            select t1.* from prm_budget_run_c t1
+            inner join prm_project_main_c t2 on t2.uuid=t1.prm_project_main_c_id
+            where (t2.is_void is null or t2.is_void=0) and t2.prm_project_main_id=?
+            and t2.state='2'
+            order by t1.serial_number asc
+        </common>
+    </prm-budget-run-history>
+    <prm-project-main-change-approved-all>
+        <common>
+            select * from prm_project_main_c t1 where (t1.is_void is null or t1.is_void=0)
+            and t1.prm_project_main_id=? and t1.detail_type in ('*','NEW') and t1.state='2'
+            order by t1.create_time asc
+        </common>
+    </prm-project-main-change-approved-all>
+    <prm-project-main-change-all>
+        <common>
+            select * from prm_project_main_c t1 where (t1.is_void is null or t1.is_void=0)
+            and t1.prm_project_main_id=? and t1.detail_type in ('*','NEW')
+            order by t1.create_time asc
+        </common>
+    </prm-project-main-change-all>
+</DAO>
